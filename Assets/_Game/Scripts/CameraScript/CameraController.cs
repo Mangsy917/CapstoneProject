@@ -10,7 +10,7 @@ using UnityEngine;
 ///                    z는 Player와 Enemy 사이 거리에 비례해서 멀어질수록 멀리서(nearZ → farZ) 찍음
 /// - Player만 있을 때 : Boundary는 멈춰 있으므로 Player를 따라가고, z는 playerOnlyZ로 고정
 /// - Boundary 칸이 비어 있으면 Player와 Enemy의 중심을 직접 계산해서 따라감
-/// - y는 항상 minY ~ maxY 범위로 제한
+/// - y는 minY ~ maxY 범위로 제한한 뒤, yOffset(0.2)만큼 위로 올려서 촬영
 ///
 /// CharStageBoundary가 Boundary 위치를 갱신한 뒤에 카메라가 움직이도록 실행 순서를 늦춰 두었습니다.
 /// </summary>
@@ -34,6 +34,8 @@ public class CameraManager : MonoBehaviour
     [SerializeField] private float minY = 2f;
     [Tooltip("카메라 y의 최댓값")]
     [SerializeField] private float maxY = 2.5f;
+    [Tooltip("촬영 위치를 위로 올리는 값. 범위 제한(minY ~ maxY)을 적용한 뒤 더해짐")]
+    [SerializeField] private float yOffset = 0.2f;
 
     [Header("Z축 - Player만 있을 때")]
     [Tooltip("Enemy가 없을 때 고정할 z값")]
@@ -111,8 +113,8 @@ public class CameraManager : MonoBehaviour
             ? desired.z
             : Mathf.SmoothDamp(current.z, desired.z, ref zoomVelocity, zoomSmoothTime);
 
-        // y 범위 제한 (보간 중에도 범위를 벗어나지 않도록)
-        xy.y = Mathf.Clamp(xy.y, Mathf.Min(minY, maxY), Mathf.Max(minY, maxY));
+        // y 범위 제한 (보간 중에도 범위를 벗어나지 않도록, 오프셋만큼 올린 범위 기준)
+        xy.y = Mathf.Clamp(xy.y, Mathf.Min(minY, maxY) + yOffset, Mathf.Max(minY, maxY) + yOffset);
 
         targetCamera.position = new Vector3(xy.x, xy.y, z);
     }
@@ -145,8 +147,8 @@ public class CameraManager : MonoBehaviour
             z = Mathf.Lerp(nearZ, farZ, t);
         }
 
-        // y 범위 제한
-        y = Mathf.Clamp(y, Mathf.Min(minY, maxY), Mathf.Max(minY, maxY));
+        // y 범위 제한 후, 오프셋만큼 위로 올림
+        y = Mathf.Clamp(y, Mathf.Min(minY, maxY), Mathf.Max(minY, maxY)) + yOffset;
 
         return new Vector3(x, y, z);
     }
