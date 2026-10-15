@@ -2767,7 +2767,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 1, y: 1, z: 0.2}
+  m_Size: {x: 0.2, y: 0.4, z: 0.2}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!54 &938055904
 Rigidbody:
@@ -3244,12 +3244,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::InputHistoryDisplay
   inputReadObject: {fileID: 1896591971}
-  ListTransform: {fileID: 1641712317}
-  History: {fileID: 2005595786}
-  FrameText: {fileID: 2125959794550254728, guid: 47053f53cb39d5d4a91c20e58e1fc41f, type: 3}
-  DirectionUI: {fileID: 4097211292933127655, guid: d3cfb9cbace0e6a48a19b26c06294096, type: 3}
-  AttackUI: {fileID: 843394275739628388, guid: c7798a035666255488a2793f1ec7a414, type: 3}
-  DirectionSprites:
+  listTransform: {fileID: 1641712317}
+  history: {fileID: 2005595786}
+  frameText: {fileID: 2125959794550254728, guid: 47053f53cb39d5d4a91c20e58e1fc41f, type: 3}
+  directionUI: {fileID: 4097211292933127655, guid: d3cfb9cbace0e6a48a19b26c06294096, type: 3}
+  attackUI: {fileID: 843394275739628388, guid: c7798a035666255488a2793f1ec7a414, type: 3}
+  directionSprites:
   - {fileID: 21300000, guid: 8c884cc90090c624a91be473159044e1, type: 3}
   - {fileID: 21300000, guid: 0bcdd660e7464c34f8a4655a359762e2, type: 3}
   - {fileID: 21300000, guid: 546b367f2e86be9439e955c75d610251, type: 3}
@@ -3259,7 +3259,7 @@ MonoBehaviour:
   - {fileID: 21300000, guid: 7cd76f0c96c3e0c4bb5c7954d95e2a1d, type: 3}
   - {fileID: 21300000, guid: ae314a46679f92649802afa7888500ef, type: 3}
   - {fileID: 21300000, guid: 59c321ee406f2ff42bffb217c09f9136, type: 3}
-  AttackSprites:
+  attackSprites:
   - {fileID: 21300000, guid: 4594890ce9881684f822c6c5cb5eb56f, type: 3}
   - {fileID: 21300000, guid: 278b326dc4227d943a78f66a78dcc9f1, type: 3}
   - {fileID: 21300000, guid: 3e5eeba33b1580e4c966cd34cda82adb, type: 3}
@@ -3281,19 +3281,19 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::InputUIVisualizer
   inputReader: {fileID: 1896591971}
-  Direction1: {fileID: 1057620145}
-  Direction2: {fileID: 2028027809}
-  Direction3: {fileID: 74091437}
-  Direction4: {fileID: 794681216}
-  Direction5: {fileID: 734895154}
-  Direction6: {fileID: 409764716}
-  Direction7: {fileID: 825447925}
-  Direction8: {fileID: 994568823}
-  Direction9: {fileID: 354735819}
-  LButton: {fileID: 376635815}
-  MButton: {fileID: 448146738}
-  HButton: {fileID: 53405532}
-  EXButton: {fileID: 1167556801}
+  direction1: {fileID: 1057620145}
+  direction2: {fileID: 2028027809}
+  direction3: {fileID: 74091437}
+  direction4: {fileID: 794681216}
+  direction5: {fileID: 734895154}
+  direction6: {fileID: 409764716}
+  direction7: {fileID: 825447925}
+  direction8: {fileID: 994568823}
+  direction9: {fileID: 354735819}
+  lButton: {fileID: 376635815}
+  mButton: {fileID: 448146738}
+  hButton: {fileID: 53405532}
+  exButton: {fileID: 1167556801}
 --- !u!1 &1111025287
 GameObject:
   m_ObjectHideFlags: 0
@@ -4279,8 +4279,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 078c1bc7109aa0449ba51b5863a1cb80, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::StateUI
-  StateReader: {fileID: 938055906}
-  CharacterMove: {fileID: 1136779412}
+  stateReader: {fileID: 938055906}
+  characterMove: {fileID: 1136779412}
   standUp: "\uC11C\uAE30"
   sitDwon: "\uC549\uAE30"
   jump: "\uC810\uD504"
@@ -4293,11 +4293,11 @@ MonoBehaviour:
   bangeok: {fileID: 1940543286}
   powerCrash: {fileID: 1479831010}
   reversal: {fileID: 218025395}
-  AirOrGround: {fileID: 1375351124}
+  airOrGround: {fileID: 1375351124}
   groundText: "\uC9C0\uC0C1"
   airText: "\uACF5\uC911"
-  Damage: {fileID: 107558402}
-  Counter: {fileID: 2119568130}
+  damage: {fileID: 107558402}
+  counter: {fileID: 2119568130}
   normalHit: "\uB178\uB9D0\uD788\uD2B8"
   counterHit: "\uCE74\uC6B4\uD130"
   punishCounter: "\uD37C\uB2C8\uC26C\uCE74\uC6B4\uD130"
@@ -4364,23 +4364,23 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::InputReader
   inputActions: {fileID: -944628639613478452, guid: 55b50e95aea794d47af6dc81b9f9d4b8, type: 3}
   actionMapName: Player
-  ControllerDL: 0
-  ControllerD: 0
-  ControllerDR: 0
-  ControllerL: 0
-  ControllerN: 0
-  ControllerR: 0
-  ControllerUL: 0
-  ControllerU: 0
-  ControllerUR: 0
-  ButtonL: 0
-  ButtonM: 0
-  ButtonH: 0
-  ButtonEX: 0
-  ButtonLDown: 0
-  ButtonMDown: 0
-  ButtonHDown: 0
-  ButtonEXDown: 0
+  controllerDL: 0
+  controllerD: 0
+  controllerDR: 0
+  controllerL: 0
+  controllerN: 0
+  controllerR: 0
+  controllerUL: 0
+  controllerU: 0
+  controllerUR: 0
+  buttonL: 0
+  buttonM: 0
+  buttonH: 0
+  buttonEX: 0
+  buttonLDown: 0
+  buttonMDown: 0
+  buttonHDown: 0
+  buttonEXDown: 0
 --- !u!1 &1930401353
 GameObject:
   m_ObjectHideFlags: 0
