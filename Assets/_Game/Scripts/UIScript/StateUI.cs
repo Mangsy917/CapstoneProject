@@ -1,15 +1,16 @@
 using TMPro;
 using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.Serialization;
 using UnityEngine.UI;
 
 public class StateUI : MonoBehaviour
 {
     [Header("캐릭터 공격 속성을 읽어올 오브젝트")]
-    [SerializeField] private CharactorState StateReader;
+    [SerializeField, FormerlySerializedAs("StateReader")] private CharactorState stateReader;
 
     [Header("캐릭터 행동")]
-    [SerializeField] private TextMeshProUGUI CharacterMove;
+    [SerializeField, FormerlySerializedAs("CharacterMove")] private TextMeshProUGUI characterMove;
 
     [Header("캐릭터 행동 - 표시할 텍스트 (인스펙터에서 수정)")]
     [SerializeField] private string standUp = "서기";
@@ -28,17 +29,17 @@ public class StateUI : MonoBehaviour
     [SerializeField] private Image reversal;
 
     [Header("캐릭터 지상판정")]
-    [SerializeField] private TextMeshProUGUI AirOrGround;
+    [SerializeField, FormerlySerializedAs("AirOrGround")] private TextMeshProUGUI airOrGround;
 
     [Header("지상판정 - 표시할 텍스트 (인스펙터에서 수정)")]
     [SerializeField] private string groundText = "지상";
     [SerializeField] private string airText = "공중";
 
     [Header("데미지")]
-    [SerializeField] private TextMeshProUGUI Damage;
+    [SerializeField, FormerlySerializedAs("Damage")] private TextMeshProUGUI damage;
 
     [Header("카운터 판정")]
-    [SerializeField] private TextMeshProUGUI Counter;
+    [SerializeField, FormerlySerializedAs("Counter")] private TextMeshProUGUI counter;
 
     [Header("카운터 판정 - 표시할 텍스트 (인스펙터에서 수정)")]
     [SerializeField] private string normalHit = "노말히트";
@@ -52,7 +53,7 @@ public class StateUI : MonoBehaviour
 
     void Update()
     {
-        if (StateReader == null) return;
+        if (stateReader == null) return;
 
         UpdateCharacterMoveText();
         UpdateAttackAttributeImages();
@@ -62,25 +63,25 @@ public class StateUI : MonoBehaviour
 
     private void UpdateCharacterMoveText()
     {
-        if (CharacterMove == null) return;
+        if (characterMove == null) return;
 
-        if (StateReader.StandUp) CharacterMove.text = standUp;
-        else if (StateReader.SitDown) CharacterMove.text = sitDwon;
-        else if (StateReader.Jump) CharacterMove.text = jump;
-        else if (StateReader.High) CharacterMove.text = high;
-        else if (StateReader.Middle) CharacterMove.text = middle;
-        else if (StateReader.Low) CharacterMove.text = low;
-        else if (StateReader.Grap) CharacterMove.text = grap;
-        else if (StateReader.pos) CharacterMove.text = pos;
-        else if (StateReader.Parry) CharacterMove.text = parry;
-        else CharacterMove.text = string.Empty;
+        if (stateReader.StandUp) characterMove.text = standUp;
+        else if (stateReader.SitDown) characterMove.text = sitDwon;
+        else if (stateReader.Jump) characterMove.text = jump;
+        else if (stateReader.High) characterMove.text = high;
+        else if (stateReader.Middle) characterMove.text = middle;
+        else if (stateReader.Low) characterMove.text = low;
+        else if (stateReader.Grap) characterMove.text = grap;
+        else if (stateReader.pos) characterMove.text = pos;
+        else if (stateReader.Parry) characterMove.text = parry;
+        else characterMove.text = string.Empty;
     }
 
     private void UpdateAttackAttributeImages()
     {
-        SetImageChannel(bangeok, StateReader.bangeok, 0);
-        SetImageChannel(powerCrash, StateReader.powerCrash, 1);
-        SetImageChannel(reversal, StateReader.reversal, 2);
+        SetImageChannel(bangeok, stateReader.bangeok, 0);
+        SetImageChannel(powerCrash, stateReader.powerCrash, 1);
+        SetImageChannel(reversal, stateReader.reversal, 2);
     }
 
     private void SetImageChannel(Image image, bool isOn, int channelIndex)
@@ -102,20 +103,20 @@ public class StateUI : MonoBehaviour
 
     private void UpdateAirOrGroundText()
     {
-        if (AirOrGround == null) return;
+        if (airOrGround == null) return;
 
-        if (StateReader.Ground) AirOrGround.text = groundText;
-        else if (StateReader.Air) AirOrGround.text = airText;
-        else AirOrGround.text = string.Empty;
+        if (stateReader.Ground) airOrGround.text = groundText;
+        else if (stateReader.Air) airOrGround.text = airText;
+        else airOrGround.text = string.Empty;
     }
 
     private void UpdateCounterText()
     {
-        if (Counter == null) return;
+        if (counter == null) return;
 
-        if (StateReader.NormalHit) Counter.text = normalHit;
-        else if (StateReader.CounterHit) Counter.text = counterHit;
-        else if (StateReader.PunishCounter) Counter.text = punishCounter;
-        else Counter.text = string.Empty;
+        if (stateReader.NormalHit) counter.text = normalHit;
+        else if (stateReader.CounterHit) counter.text = counterHit;
+        else if (stateReader.PunishCounter) counter.text = punishCounter;
+        else counter.text = string.Empty;
     }
 }

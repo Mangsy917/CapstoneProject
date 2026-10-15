@@ -358,7 +358,7 @@ public class CharacterMove : MonoBehaviour
     // ===== 커맨드 판정 내부 상태 =====
     private List<CommandData> sortedCommandList;
 
-    private static readonly AttackButtonType[] AllButtonFlags =
+    private static readonly AttackButtonType[] allButtonFlags =
     {
         AttackButtonType.L, AttackButtonType.M, AttackButtonType.H, AttackButtonType.EX
     };
@@ -803,10 +803,10 @@ public class CharacterMove : MonoBehaviour
         var pressedButtons = new List<AttackButtonType>();
 
         // 이번 프레임에 새로 눌린 버튼을 모으면서, 동시입력 판정에 쓸 "마지막으로 눌린 프레임"도 갱신한다.
-        if (inputReader.ButtonLDown) { pressedButtons.Add(AttackButtonType.L); lastPressFrame[AttackButtonType.L] = frameCounter; }
-        if (inputReader.ButtonMDown) { pressedButtons.Add(AttackButtonType.M); lastPressFrame[AttackButtonType.M] = frameCounter; }
-        if (inputReader.ButtonHDown) { pressedButtons.Add(AttackButtonType.H); lastPressFrame[AttackButtonType.H] = frameCounter; }
-        if (inputReader.ButtonEXDown) { pressedButtons.Add(AttackButtonType.EX); lastPressFrame[AttackButtonType.EX] = frameCounter; }
+        if (inputReader.buttonLDown) { pressedButtons.Add(AttackButtonType.L); lastPressFrame[AttackButtonType.L] = frameCounter; }
+        if (inputReader.buttonMDown) { pressedButtons.Add(AttackButtonType.M); lastPressFrame[AttackButtonType.M] = frameCounter; }
+        if (inputReader.buttonHDown) { pressedButtons.Add(AttackButtonType.H); lastPressFrame[AttackButtonType.H] = frameCounter; }
+        if (inputReader.buttonEXDown) { pressedButtons.Add(AttackButtonType.EX); lastPressFrame[AttackButtonType.EX] = frameCounter; }
 
         if (pressedButtons.Count == 0) return;
 
@@ -850,7 +850,7 @@ public class CharacterMove : MonoBehaviour
         int? minFrame = null;
         int? maxFrame = null;
 
-        foreach (var flag in AllButtonFlags)
+        foreach (var flag in allButtonFlags)
         {
             if ((command.buttons & flag) == 0) continue; // 이 커맨드가 요구하는 버튼이 아님
 
@@ -871,10 +871,10 @@ public class CharacterMove : MonoBehaviour
     {
         switch (flag)
         {
-            case AttackButtonType.L: return inputReader.ButtonL;
-            case AttackButtonType.M: return inputReader.ButtonM;
-            case AttackButtonType.H: return inputReader.ButtonH;
-            case AttackButtonType.EX: return inputReader.ButtonEX;
+            case AttackButtonType.L: return inputReader.buttonL;
+            case AttackButtonType.M: return inputReader.buttonM;
+            case AttackButtonType.H: return inputReader.buttonH;
+            case AttackButtonType.EX: return inputReader.buttonEX;
             default: return false;
         }
     }

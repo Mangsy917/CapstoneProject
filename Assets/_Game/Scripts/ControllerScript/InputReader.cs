@@ -19,27 +19,27 @@ public class InputReader : MonoBehaviour
     private InputAction attackL, attackM, attackH, attackEX;
 
     [Header("컨트롤러 방향 상태")]
-    public bool ControllerDL = false;
-    public bool ControllerD = false;
-    public bool ControllerDR = false;
-    public bool ControllerL = false;
-    public bool ControllerN = false;
-    public bool ControllerR = false;
-    public bool ControllerUL = false;
-    public bool ControllerU = false;
-    public bool ControllerUR = false;
+    public bool controllerDL = false;
+    public bool controllerD = false;
+    public bool controllerDR = false;
+    public bool controllerL = false;
+    public bool controllerN = false;
+    public bool controllerR = false;
+    public bool controllerUL = false;
+    public bool controllerU = false;
+    public bool controllerUR = false;
 
     [Header("컨트롤러 공격 버튼 상태 (누르고 있는 동안 true)")]
-    public bool ButtonL = false;
-    public bool ButtonM = false;
-    public bool ButtonH = false;
-    public bool ButtonEX = false;
+    public bool buttonL = false;
+    public bool buttonM = false;
+    public bool buttonH = false;
+    public bool buttonEX = false;
 
     [Header("이번 프레임에 새로 눌린 버튼 (누른 순간 1프레임만 true)")]
-    public bool ButtonLDown = false;
-    public bool ButtonMDown = false;
-    public bool ButtonHDown = false;
-    public bool ButtonEXDown = false;
+    public bool buttonLDown = false;
+    public bool buttonMDown = false;
+    public bool buttonHDown = false;
+    public bool buttonEXDown = false;
 
     /// <summary>현재 방향을 넘버패드 숫자(1~9)로 표현한 값. 5 = 중립</summary>
     public int Direction { get; private set; } = 5;
@@ -133,38 +133,38 @@ public class InputReader : MonoBehaviour
             right = false;
         }
 
-        ControllerDL = false;
-        ControllerD = false;
-        ControllerDR = false;
-        ControllerL = false;
-        ControllerN = false;
-        ControllerR = false;
-        ControllerUL = false;
-        ControllerU = false;
-        ControllerUR = false;
+        controllerDL = false;
+        controllerD = false;
+        controllerDR = false;
+        controllerL = false;
+        controllerN = false;
+        controllerR = false;
+        controllerUL = false;
+        controllerU = false;
+        controllerUR = false;
 
-        if (up && right) { ControllerUR = true; Direction = 9; }
-        else if (up && left) { ControllerUL = true; Direction = 7; }
-        else if (down && right) { ControllerDR = true; Direction = 3; }
-        else if (down && left) { ControllerDL = true; Direction = 1; }
-        else if (up) { ControllerU = true; Direction = 8; }
-        else if (down) { ControllerD = true; Direction = 2; }
-        else if (left) { ControllerL = true; Direction = 4; }
-        else if (right) { ControllerR = true; Direction = 6; }
-        else { ControllerN = true; Direction = 5; }
+        if (up && right) { controllerUR = true; Direction = 9; }
+        else if (up && left) { controllerUL = true; Direction = 7; }
+        else if (down && right) { controllerDR = true; Direction = 3; }
+        else if (down && left) { controllerDL = true; Direction = 1; }
+        else if (up) { controllerU = true; Direction = 8; }
+        else if (down) { controllerD = true; Direction = 2; }
+        else if (left) { controllerL = true; Direction = 4; }
+        else if (right) { controllerR = true; Direction = 6; }
+        else { controllerN = true; Direction = 5; }
     }
 
     private void UpdateAttackButtonStates(bool l, bool m, bool h, bool ex,
                                           bool lDown, bool mDown, bool hDown, bool exDown)
     {
-        ButtonL = l;
-        ButtonM = m;
-        ButtonH = h;
-        ButtonEX = ex;
+        buttonL = l;
+        buttonM = m;
+        buttonH = h;
+        buttonEX = ex;
 
-        ButtonLDown = lDown;
-        ButtonMDown = mDown;
-        ButtonHDown = hDown;
-        ButtonEXDown = exDown;
+        buttonLDown = lDown;
+        buttonMDown = mDown;
+        buttonHDown = hDown;
+        buttonEXDown = exDown;
     }
 }

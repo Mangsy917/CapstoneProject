@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.Serialization;
 using UnityEngine.UI;
 
 public class InputShowUI : MonoBehaviour
@@ -7,24 +8,24 @@ public class InputShowUI : MonoBehaviour
     [SerializeField] private InputReader inputReader;
 
     [Header("방향 UI")]
-    [SerializeField] private Image Direction1; // DL
-    [SerializeField] private Image Direction2; // D
-    [SerializeField] private Image Direction3; // DR
-    [SerializeField] private Image Direction4; // L
-    [SerializeField] private Image Direction5; // N (중립)
-    [SerializeField] private Image Direction6; // R
-    [SerializeField] private Image Direction7; // UL
-    [SerializeField] private Image Direction8; // U
-    [SerializeField] private Image Direction9; // UR
+    [SerializeField, FormerlySerializedAs("Direction1")] private Image direction1; // DL
+    [SerializeField, FormerlySerializedAs("Direction2")] private Image direction2; // D
+    [SerializeField, FormerlySerializedAs("Direction3")] private Image direction3; // DR
+    [SerializeField, FormerlySerializedAs("Direction4")] private Image direction4; // L
+    [SerializeField, FormerlySerializedAs("Direction5")] private Image direction5; // N (중립)
+    [SerializeField, FormerlySerializedAs("Direction6")] private Image direction6; // R
+    [SerializeField, FormerlySerializedAs("Direction7")] private Image direction7; // UL
+    [SerializeField, FormerlySerializedAs("Direction8")] private Image direction8; // U
+    [SerializeField, FormerlySerializedAs("Direction9")] private Image direction9; // UR
 
     [Header("공격 UI")]
-    [SerializeField] private Image LButton;
-    [SerializeField] private Image MButton;
-    [SerializeField] private Image HButton;
-    [SerializeField] private Image EXButton;
+    [SerializeField, FormerlySerializedAs("LButton")] private Image lButton;
+    [SerializeField, FormerlySerializedAs("MButton")] private Image mButton;
+    [SerializeField, FormerlySerializedAs("HButton")] private Image hButton;
+    [SerializeField, FormerlySerializedAs("EXButton")] private Image exButton;
 
-    private const float PressedValue = 255f / 255f;
-    private const float ReleasedValue = 123f / 255f;
+    private const float pressedValue = 255f / 255f;
+    private const float releasedValue = 123f / 255f;
 
     private void Update()
     {
@@ -34,20 +35,20 @@ public class InputShowUI : MonoBehaviour
             return;
         }
 
-        UpdateImage(Direction1, inputReader.ControllerDL);
-        UpdateImage(Direction2, inputReader.ControllerD);
-        UpdateImage(Direction3, inputReader.ControllerDR);
-        UpdateImage(Direction4, inputReader.ControllerL);
-        UpdateImage(Direction5, inputReader.ControllerN);
-        UpdateImage(Direction6, inputReader.ControllerR);
-        UpdateImage(Direction7, inputReader.ControllerUL);
-        UpdateImage(Direction8, inputReader.ControllerU);
-        UpdateImage(Direction9, inputReader.ControllerUR);
+        UpdateImage(direction1, inputReader.controllerDL);
+        UpdateImage(direction2, inputReader.controllerD);
+        UpdateImage(direction3, inputReader.controllerDR);
+        UpdateImage(direction4, inputReader.controllerL);
+        UpdateImage(direction5, inputReader.controllerN);
+        UpdateImage(direction6, inputReader.controllerR);
+        UpdateImage(direction7, inputReader.controllerUL);
+        UpdateImage(direction8, inputReader.controllerU);
+        UpdateImage(direction9, inputReader.controllerUR);
 
-        UpdateImage(LButton, inputReader.ButtonL);
-        UpdateImage(MButton, inputReader.ButtonM);
-        UpdateImage(HButton, inputReader.ButtonH);
-        UpdateImage(EXButton, inputReader.ButtonEX);
+        UpdateImage(lButton, inputReader.buttonL);
+        UpdateImage(mButton, inputReader.buttonM);
+        UpdateImage(hButton, inputReader.buttonH);
+        UpdateImage(exButton, inputReader.buttonEX);
     }
 
     private void UpdateImage(Image image, bool active)
@@ -55,7 +56,7 @@ public class InputShowUI : MonoBehaviour
         if (image == null)
             return;
 
-        float v = active ? PressedValue : ReleasedValue;
+        float v = active ? pressedValue : releasedValue;
         Color c = image.color;
         c.r = v;
         c.g = v;

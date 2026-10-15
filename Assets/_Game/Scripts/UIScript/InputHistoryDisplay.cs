@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Serialization;
 using UnityEngine.UI;
 using TMPro;
 
@@ -9,25 +10,25 @@ public class InputHistoryDisplay : MonoBehaviour
     [SerializeField] private InputReader inputReadObject;
 
     [Header("리스트가 생성될 위치")]
-    [SerializeField] private RectTransform ListTransform;
+    [SerializeField, FormerlySerializedAs("ListTransform")] private RectTransform listTransform;
 
     [Header("버튼 UI이미지")]
-    [SerializeField] private GameObject History;
+    [SerializeField, FormerlySerializedAs("History")] private GameObject history;
 
     [Header("프레임 유지시간 텍스트")]
-    [SerializeField] private GameObject FrameText;
+    [SerializeField, FormerlySerializedAs("FrameText")] private GameObject frameText;
 
     [Header("방향 아이콘")]
-    [SerializeField] private GameObject DirectionUI;
+    [SerializeField, FormerlySerializedAs("DirectionUI")] private GameObject directionUI;
 
     [Header("공격 버튼 아이콘")]
-    [SerializeField] private GameObject AttackUI;
+    [SerializeField, FormerlySerializedAs("AttackUI")] private GameObject attackUI;
 
     [Header("방향 스프라이트")]
-    [SerializeField] private Sprite[] DirectionSprites = new Sprite[9];
+    [SerializeField, FormerlySerializedAs("DirectionSprites")] private Sprite[] directionSprites = new Sprite[9];
 
     [Header("공격 버튼 스프라이트")]
-    [SerializeField] private Sprite[] AttackSprites = new Sprite[4];
+    [SerializeField, FormerlySerializedAs("AttackSprites")] private Sprite[] attackSprites = new Sprite[4];
 
     [Header("최대 리스트 생성 값")]
     [SerializeField] private int maxRows = 30;
@@ -42,8 +43,8 @@ public class InputHistoryDisplay : MonoBehaviour
     [SerializeField] private float rowStartX = 5f;
 
     private float rowHeight = 40f;
-    private const int NeutralIndex = 4;
-    private const int AttackCount = 4;
+    private const int neutralIndex = 4;
+    private const int attackCount = 4;
 
     private class HistoryRow
     {
@@ -51,7 +52,7 @@ public class InputHistoryDisplay : MonoBehaviour
         public Text frameTextLegacy;   
         public TMP_Text frameTextTMP;  
         public int frameCount;
-        public bool[] attackIconCreated = new bool[AttackCount];
+        public bool[] attackIconCreated = new bool[attackCount];
 
         public void SetFrameText(string value)
         {
@@ -64,7 +65,7 @@ public class InputHistoryDisplay : MonoBehaviour
     private HistoryRow currentRow;
 
     private int lastDirectionIndex = -1;
-    private bool[] prevAttackStates = new bool[AttackCount];
+    private bool[] prevAttackStates = new bool[attackCount];
 
     private void OnValidate()
     {
@@ -75,20 +76,20 @@ public class InputHistoryDisplay : MonoBehaviour
 
     private void Awake()
     {
-        if (ListTransform != null)
+        if (listTransform != null)
         {
-            var existingVlg = ListTransform.GetComponent<VerticalLayoutGroup>();
+            var existingVlg = listTransform.GetComponent<VerticalLayoutGroup>();
             if (existingVlg != null)
                 Destroy(existingVlg);
 
-            var existingCsf = ListTransform.GetComponent<ContentSizeFitter>();
+            var existingCsf = listTransform.GetComponent<ContentSizeFitter>();
             if (existingCsf != null)
                 Destroy(existingCsf);
         }
 
-        if (History != null)
+        if (history != null)
         {
-            RectTransform prefabRect = History.GetComponent<RectTransform>();
+            RectTransform prefabRect = history.GetComponent<RectTransform>();
             if (prefabRect != null)
                 rowHeight = prefabRect.rect.height;
         }
@@ -125,7 +126,7 @@ public class InputHistoryDisplay : MonoBehaviour
 
         bool directionChanged = dirIndex != lastDirectionIndex;
         bool attackStateChanged = false;
-        for (int i = 0; i < AttackCount; i++)
+        for (int i = 0; i < attackCount; i++)
         {
             if (curAttack[i] != prevAttackStates[i])
             {
@@ -139,7 +140,7 @@ public class InputHistoryDisplay : MonoBehaviour
             lastDirectionIndex = dirIndex;
             currentRow = CreateNewRow(dirIndex);
 
-            for (int i = 0; i < AttackCount; i++)
+            for (int i = 0; i < attackCount; i++)
             {
                 if (curAttack[i])
                     AddAttackIcon(currentRow, i);
@@ -154,30 +155,30 @@ public class InputHistoryDisplay : MonoBehaviour
     private bool HasRequiredReferences()
     {
         return inputReadObject != null
-            && ListTransform != null
-            && History != null
-            && FrameText != null
-            && DirectionUI != null
-            && AttackUI != null;
+            && listTransform != null
+            && history != null
+            && frameText != null
+            && directionUI != null
+            && attackUI != null;
     }
 
     private int GetCurrentDirectionIndex()
     {
-        if (inputReadObject.ControllerDL) return 0;
-        if (inputReadObject.ControllerD) return 1;
-        if (inputReadObject.ControllerDR) return 2;
-        if (inputReadObject.ControllerL) return 3;
-        if (inputReadObject.ControllerN) return 4;
-        if (inputReadObject.ControllerR) return 5;
-        if (inputReadObject.ControllerUL) return 6;
-        if (inputReadObject.ControllerU) return 7;
-        if (inputReadObject.ControllerUR) return 8;
-        return NeutralIndex;
+        if (inputReadObject.controllerDL) return 0;
+        if (inputReadObject.controllerD) return 1;
+        if (inputReadObject.controllerDR) return 2;
+        if (inputReadObject.controllerL) return 3;
+        if (inputReadObject.controllerN) return 4;
+        if (inputReadObject.controllerR) return 5;
+        if (inputReadObject.controllerUL) return 6;
+        if (inputReadObject.controllerU) return 7;
+        if (inputReadObject.controllerUR) return 8;
+        return neutralIndex;
     }
 
     private HistoryRow CreateNewRow(int dirIndex)
     {
-        GameObject rowObj = Instantiate(History, ListTransform);
+        GameObject rowObj = Instantiate(history, listTransform);
         EnsureHorizontalLayout(rowObj); 
 
         RectTransform rowRect = rowObj.GetComponent<RectTransform>();
@@ -221,15 +222,15 @@ public class InputHistoryDisplay : MonoBehaviour
             frameCount = 0
         };
 
-        GameObject frameObj = Instantiate(FrameText, rowObj.transform);
+        GameObject frameObj = Instantiate(frameText, rowObj.transform);
         row.frameTextLegacy = frameObj.GetComponent<Text>();
         row.frameTextTMP = frameObj.GetComponent<TMP_Text>();
         row.SetFrameText("0");
 
-        GameObject dirObj = Instantiate(DirectionUI, rowObj.transform);
+        GameObject dirObj = Instantiate(directionUI, rowObj.transform);
         Image dirImage = dirObj.GetComponent<Image>();
-        if (dirImage != null && dirIndex >= 0 && dirIndex < DirectionSprites.Length && DirectionSprites[dirIndex] != null)
-            dirImage.sprite = DirectionSprites[dirIndex];
+        if (dirImage != null && dirIndex >= 0 && dirIndex < directionSprites.Length && directionSprites[dirIndex] != null)
+            dirImage.sprite = directionSprites[dirIndex];
 
         rows.Insert(0, row);
         TrimExcessRows();
@@ -263,12 +264,12 @@ public class InputHistoryDisplay : MonoBehaviour
 
     private bool[] GetCurrentAttackStates()
     {
-        return new bool[AttackCount]
+        return new bool[attackCount]
         {
-            inputReadObject.ButtonL,
-            inputReadObject.ButtonM,
-            inputReadObject.ButtonH,
-            inputReadObject.ButtonEX
+            inputReadObject.buttonL,
+            inputReadObject.buttonM,
+            inputReadObject.buttonH,
+            inputReadObject.buttonEX
         };
     }
 
@@ -282,10 +283,10 @@ public class InputHistoryDisplay : MonoBehaviour
 
         row.attackIconCreated[attackIndex] = true;
 
-        GameObject atkObj = Instantiate(AttackUI, row.rowObject.transform);
+        GameObject atkObj = Instantiate(attackUI, row.rowObject.transform);
         Image atkImage = atkObj.GetComponent<Image>();
-        if (atkImage != null && attackIndex >= 0 && attackIndex < AttackSprites.Length && AttackSprites[attackIndex] != null)
-            atkImage.sprite = AttackSprites[attackIndex];
+        if (atkImage != null && attackIndex >= 0 && attackIndex < attackSprites.Length && attackSprites[attackIndex] != null)
+            atkImage.sprite = attackSprites[attackIndex];
 
         const int baseIndex = 2;
 
