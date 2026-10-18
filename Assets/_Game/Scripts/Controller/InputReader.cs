@@ -1,3 +1,4 @@
+using System.Xml.Serialization;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -13,10 +14,10 @@ public class InputReader : MonoBehaviour
 {
     [Header("사용할 Input Actions 에셋")]
     [SerializeField] private InputActionAsset inputActions;
-    [SerializeField] private string actionMapName = "Player";
+    [SerializeField] private string actionMapName = "Char";
 
     private InputAction moveUp, moveDown, moveLeft, moveRight;
-    private InputAction attackL, attackM, attackH, attackEX;
+    private InputAction attackL, attackM, attackH, attackEX, openUI;
 
     [Header("컨트롤러 방향 상태")]
     public bool controllerDL = false;
@@ -40,6 +41,8 @@ public class InputReader : MonoBehaviour
     public bool buttonMDown = false;
     public bool buttonHDown = false;
     public bool buttonEXDown = false;
+
+    public bool uiOpen = false;
 
     /// <summary>현재 방향을 넘버패드 숫자(1~9)로 표현한 값. 5 = 중립</summary>
     public int Direction { get; private set; } = 5;
@@ -65,33 +68,22 @@ public class InputReader : MonoBehaviour
         attackH = map.FindAction("AttackH");
         attackEX = map.FindAction("AttackEX");
 
-        map.Enable();
+        openUI = map.FindAction("OpenUI");
+    }
 
-        // Input Actions 에셋에 아직 AttackM/H/EX 등이 만들어져 있지 않아도(예: L만 먼저 테스트하는 경우)
-        // 에러 없이 동작하도록, 못 찾은 액션은 null로 남겨두고 경고만 출력한다.
-        // (null인 액션은 "안 눌림"으로 취급한다.)
-        WarnIfActionMissing(moveUp, "Up");
-        WarnIfActionMissing(moveDown, "Down");
-        WarnIfActionMissing(moveLeft, "Left");
-        WarnIfActionMissing(moveRight, "Right");
-        WarnIfActionMissing(attackL, "AttackL");
-        WarnIfActionMissing(attackM, "AttackM");
-        WarnIfActionMissing(attackH, "AttackH");
-        WarnIfActionMissing(attackEX, "AttackEX");
+    private void Start()
+    {
+
+    }
+
+    private void OnEnable()
+    {
+        inputActions?.FindActionMap(actionMapName)?.Enable();
     }
 
     private void OnDisable()
     {
         inputActions?.FindActionMap(actionMapName)?.Disable();
-    }
-
-    private void WarnIfActionMissing(InputAction action, string actionName)
-    {
-        if (action == null)
-        {
-            Debug.LogWarning($"[InputReader] '{actionName}' 액션을 찾지 못했습니다. 해당 입력은 항상 '안 눌림'으로 처리됩니다. " +
-                              "(예: L만 먼저 테스트하는 중이라면 무시해도 됩니다.)");
-        }
     }
 
     private void Update()
@@ -116,8 +108,10 @@ public class InputReader : MonoBehaviour
         bool hDown = attackH != null && attackH.WasPressedThisFrame();
         bool exDown = attackEX != null && attackEX.WasPressedThisFrame();
 
+        bool open = openUI != null && openUI.WasPressedThisFrame();
+
         UpdateDirectionState(up, down, left, right);
-        UpdateAttackButtonStates(l, m, h, ex, lDown, mDown, hDown, exDown);
+        UpdateAttackButtonStates(l, m, h, ex, lDown, mDown, hDown, exDown, open);
     }
 
     private void UpdateDirectionState(bool up, bool down, bool left, bool right)
@@ -155,7 +149,8 @@ public class InputReader : MonoBehaviour
     }
 
     private void UpdateAttackButtonStates(bool l, bool m, bool h, bool ex,
-                                          bool lDown, bool mDown, bool hDown, bool exDown)
+                                          bool lDown, bool mDown, bool hDown, bool exDown,
+                                          bool opne)
     {
         buttonL = l;
         buttonM = m;
@@ -166,5 +161,7 @@ public class InputReader : MonoBehaviour
         buttonMDown = mDown;
         buttonHDown = hDown;
         buttonEXDown = exDown;
+
+        uiOpen = opne;
     }
 }

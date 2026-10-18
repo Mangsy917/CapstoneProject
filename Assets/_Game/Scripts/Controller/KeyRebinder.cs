@@ -20,7 +20,7 @@ public class KeyRebinder : MonoBehaviour
 
     [Header("대상 Input Action Asset")]
     [SerializeField] private InputActionAsset inputActions;
-    [SerializeField] private string actionMapName = "Player";
+    [SerializeField] private string actionMapName = "Char";
 
     [Header("이동 버튼 매핑")]
     [SerializeField]
@@ -77,8 +77,8 @@ public class KeyRebinder : MonoBehaviour
             return;
         }
 
-        ApplyForGroup(action, "Keyboard", entry.keyboardOverridePath);
-        ApplyForGroup(action, "Gamepad", entry.gamepadOverridePath);
+        ApplyForGroup(action, "PC", entry.keyboardOverridePath);
+        ApplyForGroup(action, "GamePad", entry.gamepadOverridePath);
     }
 
     private void ApplyForGroup(InputAction action, string group, string newPath)
@@ -95,7 +95,6 @@ public class KeyRebinder : MonoBehaviour
                 return;
             }
         }
-
         Debug.LogWarning($"[KeyRebinder] '{action.name}' 액션에서 '{group}' 그룹 바인딩을 찾지 못했습니다.");
     }
 
@@ -106,26 +105,4 @@ public class KeyRebinder : MonoBehaviour
         var map = inputActions.FindActionMap(actionMapName);
         map?.RemoveAllBindingOverrides();
     }
-
-    // =========================================================================
-    // TODO(추후 구현 예정): UI 설정창에서 사용자가 직접 버튼을 눌러 리바인딩하는 기능.
-    // Unity Input System의 InputActionRebindingExtensions.RebindingOperation을 사용해
-    // 아래와 같은 형태로 구현할 예정. 지금은 자리만 남겨둔다.
-    //
-    // public void StartInteractiveRebind(string actionName, string group, Action onComplete)
-    // {
-    //     var map = inputActions.FindActionMap(actionMapName);
-    //     var action = map.FindAction(actionName);
-    //     action.Disable();
-    //     action.PerformInteractiveRebinding()
-    //         .WithBindingGroup(group)
-    //         .OnComplete(op =>
-    //         {
-    //             op.Dispose();
-    //             action.Enable();
-    //             onComplete?.Invoke();
-    //         })
-    //         .Start();
-    // }
-    // =========================================================================
 }
