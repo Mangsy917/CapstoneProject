@@ -8,6 +8,7 @@ using UnityEngine.EventSystems;
 // - 마우스 올리기: 그 버튼이 선택됨
 // - 선택 키 / 마우스 클릭: 선택된 버튼의 OnClick 실행
 // 선택된 버튼만 배경이 회색으로 바뀌고, 텍스트 색은 그대로 둠
+// 잠긴 줄(Interactable 꺼짐)은 위/아래 이동과 마우스 올리기로 선택되지 않음
 public class SettingMenu : MonoBehaviour
 {
     [SerializeField] private UIControl uiControl;
@@ -23,12 +24,15 @@ public class SettingMenu : MonoBehaviour
     private int selectedIndex = 0;
 
     // 누르고 있는 동안 계속 넘어가지 않도록 이전 프레임 입력을 기억
-    private bool prevUp, prevDown, prevSelect;
+    private bool prevUp, prevDown, prevLeft, prevRight, prevSelect;
 
     void Awake()
     {
-        // 모든 버튼에 마우스를 올리면 선택되도록 연결
-        foreach (Button button in GetComponentsInChildren<Button>(true))
+        // 모든 메뉴 줄에 마우스를 올리면 선택되도록 연결
+        // (스테퍼 화살표에 마우스를 올려도 부모인 메뉴 줄이 선택됨)
+        // (지금은 꺼져 있지만 나중에 켜지는 줄도 포함)
+        foreach (Transform panel in transform)
+        foreach (Button button in GetRowButtons(panel, true))
         {
             Button target = button;
             EventTrigger trigger = target.gameObject.GetComponent<EventTrigger>();
@@ -54,6 +58,8 @@ public class SettingMenu : MonoBehaviour
 
         bool up = uiControl.uiUp;
         bool down = uiControl.uiDown;
+        bool left = uiControl.uiLeft;
+        bool right = uiControl.uiRight;
         bool select = uiControl.uiSelect;
 
         // 팝업이 열려 있으면 입력만 기억하고 메뉴는 움직이지 않음
@@ -62,11 +68,22 @@ public class SettingMenu : MonoBehaviour
             if (up && !prevUp) MoveUp();
             else if (down && !prevDown) MoveDown();
 
+            // 선택된 줄에 스테퍼가 있으면 좌우로 값 변경
+            // 오른쪽 = 증가, 왼쪽 = 감소
+            ISettingStepper stepper = buttons[selectedIndex].GetComponent<ISettingStepper>();
+            if (stepper != null && CanSelect(buttons[selectedIndex]))
+            {
+                if (left && !prevLeft) stepper.Prev();
+                else if (right && !prevRight) stepper.Next();
+            }
+
             if (select && !prevSelect) Submit();
         }
 
         prevUp = up;
         prevDown = down;
+        prevLeft = left;
+        prevRight = right;
         prevSelect = select;
     }
 
@@ -86,10 +103,45 @@ public class SettingMenu : MonoBehaviour
         if (activePanel == currentPanel) return;
 
         currentPanel = activePanel;
-        buttons = currentPanel != null ? currentPanel.GetComponentsInChildren<Button>() : new Button[0];
+        buttons = currentPanel != null ? GetRowButtons(currentPanel, false) : new Button[0];
 
         selectedIndex = 0;
+        if (HasButtons() && !CanSelect(buttons[0])) Move(1);
         Refresh();
+    }
+
+    // 줄이 켜지거나 꺼졌을 때 버튼 목록을 다시 만듦 (선택은 최대한 유지)
+    // DummySettingRule처럼 줄을 켜고 끄는 스크립트에서 호출
+    public void RefreshRows()
+    {
+        if (currentPanel == null) return;
+
+        Button selected = HasButtons() ? buttons[selectedIndex] : null;
+        buttons = GetRowButtons(currentPanel, false);
+        if (!HasButtons()) return;
+
+        int index = System.Array.IndexOf(buttons, selected);
+        selectedIndex = Mathf.Clamp(index, 0, buttons.Length - 1);
+        if (!CanSelect(buttons[selectedIndex])) Move(1);
+        Refresh();
+    }
+
+    // 패널 바로 아래의 메뉴 줄 버튼만 모음 (스테퍼 화살표 버튼은 제외)
+    private Button[] GetRowButtons(Transform panel, bool includeInactive)
+    {
+        System.Collections.Generic.List<Button> rows = new System.Collections.Generic.List<Button>();
+        foreach (Transform child in panel)
+        {
+            Button button = child.GetComponent<Button>();
+            if (button != null && (includeInactive || child.gameObject.activeSelf)) rows.Add(button);
+        }
+        return rows.ToArray();
+    }
+
+    // 선택할 수 있는 줄인지 (잠긴 줄은 건너뜀)
+    private bool CanSelect(Button button)
+    {
+        return button.IsInteractable();
     }
 
     // 위 버튼으로 (처음에서 누르면 끝으로)
@@ -97,7 +149,7 @@ public class SettingMenu : MonoBehaviour
     {
         if (!HasButtons()) return;
 
-        selectedIndex = (selectedIndex - 1 + buttons.Length) % buttons.Length;
+        Move(-1);
         Refresh();
     }
 
@@ -106,8 +158,18 @@ public class SettingMenu : MonoBehaviour
     {
         if (!HasButtons()) return;
 
-        selectedIndex = (selectedIndex + 1) % buttons.Length;
+        Move(1);
         Refresh();
+    }
+
+    // dir 방향으로 선택할 수 있는 다음 줄을 찾아 이동 (잠긴 줄은 건너뜀)
+    private void Move(int dir)
+    {
+        for (int i = 0; i < buttons.Length; i++)
+        {
+            selectedIndex = (selectedIndex + dir + buttons.Length) % buttons.Length;
+            if (CanSelect(buttons[selectedIndex])) return;
+        }
     }
 
     // 선택된 버튼 실행
@@ -116,7 +178,12 @@ public class SettingMenu : MonoBehaviour
         if (!HasButtons()) return;
 
         Button button = buttons[selectedIndex];
-        if (button.interactable) button.onClick.Invoke();
+        if (!CanSelect(button)) return;
+
+        // 스테퍼 줄은 선택 키로 다음 값으로 넘김
+        ISettingStepper stepper = button.GetComponent<ISettingStepper>();
+        if (stepper != null) stepper.Next();
+        else button.onClick.Invoke();
     }
 
     // 마우스를 올린 버튼을 선택
@@ -125,7 +192,7 @@ public class SettingMenu : MonoBehaviour
         if (!HasButtons()) return;
 
         int index = System.Array.IndexOf(buttons, button);
-        if (index < 0 || index == selectedIndex) return;
+        if (index < 0 || index == selectedIndex || !CanSelect(button)) return;
 
         selectedIndex = index;
         Refresh();
