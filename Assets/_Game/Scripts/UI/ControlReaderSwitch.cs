@@ -24,9 +24,12 @@ public class ControlReaderSwitch : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (UIC.gameObject.activeSelf && UIC.uiClose)
+        // ESC/Start 또는 취소 키(K/East)로 세팅 UI를 닫음 (팝업이 열려 있으면 팝업만 닫힘)
+        bool cancel = UIC.uiCancelDown && !SettingPopup.IsAnyOpen;
+        if (UIC.gameObject.activeSelf && (UIC.uiClose || cancel))
         {
             UIC.uiClose = false;
+            UIC.uiCancelDown = false;
             settingUI.SetActive(false);
             charC.gameObject.SetActive(true);
             UIC.gameObject.SetActive(false);

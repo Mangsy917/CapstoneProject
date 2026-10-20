@@ -22,7 +22,7 @@ public class TitleBTUI : MonoBehaviour
 
     public void PressStartBT()
     {
-        SceneManager.LoadScene(sceneName);
+        LoadingScene.LoadScene(sceneName);
     }
 
     public void PressSettingBT()

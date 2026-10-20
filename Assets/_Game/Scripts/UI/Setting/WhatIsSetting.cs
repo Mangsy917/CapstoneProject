@@ -19,6 +19,14 @@ public class WhatIsSetting : MonoBehaviour
     [SerializeField] private TMP_Text commandLTXT;
     [SerializeField] private TMP_Text displaySTXT;
 
+    // SettingWindow 하위 패널 (탭과 같은 순서)
+    [SerializeField] private GameObject practiceSettingWindow;
+    [SerializeField] private GameObject shortPracticeSettingWindow;
+    [SerializeField] private GameObject parameterWindow;
+    [SerializeField] private GameObject dummySettingWindow;
+    [SerializeField] private GameObject commandListWindow;
+    [SerializeField] private GameObject displaySettingWindow;
+
     private const float selectValue = 255f / 255f;
     private const float notSelectValue = 50f / 255f;
 
@@ -31,6 +39,7 @@ public class WhatIsSetting : MonoBehaviour
     // 탭 순서 (오른쪽으로 갈수록 다음 탭, 마지막 다음은 다시 처음)
     private RectTransform[] tabs;
     private TMP_Text[] texts;
+    private GameObject[] windows;
 
     // 지금 가운데에 있는 탭 번호 (처음엔 practiceSetting)
     private int selectedIndex = 0;
@@ -40,6 +49,7 @@ public class WhatIsSetting : MonoBehaviour
     {
         tabs = new RectTransform[] { practiceSetting, shortPracticeSetting, parameter, dummySetting, commandList, displaySetting };
         texts = new TMP_Text[] { pSTXT, shortPSTXT, parameterTXT, dummyTXT, commandLTXT, displaySTXT };
+        windows = new GameObject[] { practiceSettingWindow, shortPracticeSettingWindow, parameterWindow, dummySettingWindow, commandListWindow, displaySettingWindow };
 
         Refresh();
     }
@@ -48,6 +58,9 @@ public class WhatIsSetting : MonoBehaviour
     void Update()
     {
         if (uiControl == null) return;
+
+        // 팝업이 열려 있으면 탭을 넘기지 않음
+        if (SettingPopup.IsAnyOpen) return;
 
         // E / Right Shoulder
         if (uiControl.uiRightPG) MoveRight();
@@ -69,11 +82,24 @@ public class WhatIsSetting : MonoBehaviour
         Refresh();
     }
 
+    // 클릭한 탭으로 바로 이동 (몇 칸 떨어져 있어도 한 번에)
+    // 각 탭의 Button OnClick에 연결 (0: 연습설정, 1: 간편연습설정, 2: 파라미터, 3: 더미설정, 4: 커맨드리스트, 5: 화면설정)
+    public void SelectTab(int index)
+    {
+        if (index < 0 || index >= tabs.Length || index == selectedIndex) return;
+
+        selectedIndex = index;
+        Refresh();
+    }
+
     // 선택된 번호를 기준으로 모든 탭의 위치, 글자 크기, 알파값을 다시 맞춤
     private void Refresh()
     {
         for (int i = 0; i < tabs.Length; i++)
         {
+            // 선택된 탭에 대응되는 SettingWindow 패널만 켬
+            if (windows[i] != null) windows[i].SetActive(i == selectedIndex);
+
             // 선택된 탭에서 몇 칸 떨어져 있는지 (-2 ~ 3 안으로 맞춤)
             int offset = i - selectedIndex;
             if (offset > 3) offset -= tabs.Length;
