@@ -6542,7 +6542,6 @@ MonoBehaviour:
   UIC: {fileID: 1949755787}
   pauseTargets:
   - {fileID: 938055905}
-  - {fileID: 1065353597}
   - {fileID: 1825862288}
   - {fileID: 1065353598}
 --- !u!1 &321903161
@@ -19655,6 +19654,8 @@ MonoBehaviour:
   grap: 0
   pos: 0
   parry: 0
+  dash: 0
+  run: 0
   bangeok: 0
   powerCrash: 0
   reversal: 0
@@ -21607,7 +21608,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1065353596}
-  - component: {fileID: 1065353597}
   - component: {fileID: 1065353598}
   m_Layer: 0
   m_Name: ControllerInputUIManager
@@ -21631,43 +21631,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1746188268}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1065353597
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1065353595}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7ed9892380813304baf2b7a33a913aef, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::InputHistoryDisplay
-  inputReadObject: {fileID: 1896591971}
-  listTransform: {fileID: 1641712317}
-  history: {fileID: 2005595786}
-  frameText: {fileID: 2125959794550254728, guid: 47053f53cb39d5d4a91c20e58e1fc41f, type: 3}
-  directionUI: {fileID: 4097211292933127655, guid: d3cfb9cbace0e6a48a19b26c06294096, type: 3}
-  attackUI: {fileID: 843394275739628388, guid: c7798a035666255488a2793f1ec7a414, type: 3}
-  directionSprites:
-  - {fileID: 21300000, guid: 8c884cc90090c624a91be473159044e1, type: 3}
-  - {fileID: 21300000, guid: 0bcdd660e7464c34f8a4655a359762e2, type: 3}
-  - {fileID: 21300000, guid: 546b367f2e86be9439e955c75d610251, type: 3}
-  - {fileID: 21300000, guid: 04297aa4cb651554a8f337053b23da3b, type: 3}
-  - {fileID: 21300000, guid: c4896c54b3279074fb703054453cc946, type: 3}
-  - {fileID: 21300000, guid: 8558583d50d5a684c832ad1d68fec51f, type: 3}
-  - {fileID: 21300000, guid: 7cd76f0c96c3e0c4bb5c7954d95e2a1d, type: 3}
-  - {fileID: 21300000, guid: ae314a46679f92649802afa7888500ef, type: 3}
-  - {fileID: 21300000, guid: 59c321ee406f2ff42bffb217c09f9136, type: 3}
-  attackSprites:
-  - {fileID: 21300000, guid: 4594890ce9881684f822c6c5cb5eb56f, type: 3}
-  - {fileID: 21300000, guid: 278b326dc4227d943a78f66a78dcc9f1, type: 3}
-  - {fileID: 21300000, guid: 3e5eeba33b1580e4c966cd34cda82adb, type: 3}
-  - {fileID: 21300000, guid: 24a65b176c0d6704eb9ecdd757c11b17, type: 3}
-  maxRows: 30
-  maxFrameCount: 99
-  rowSpacing: 6
-  rowStartX: 5
 --- !u!114 &1065353598
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -32221,6 +32184,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1641712317}
+  - component: {fileID: 1641712318}
   m_Layer: 5
   m_Name: ControllerHistoryUI
   m_TagString: Untagged
@@ -32248,6 +32212,43 @@ RectTransform:
   m_AnchoredPosition: {x: -860, y: 330}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &1641712318
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1641712316}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7ed9892380813304baf2b7a33a913aef, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::InputHistoryDisplay
+  inputReadObject: {fileID: 1896591971}
+  listTransform: {fileID: 1641712317}
+  history: {fileID: 2005595786}
+  frameText: {fileID: 2125959794550254728, guid: 47053f53cb39d5d4a91c20e58e1fc41f, type: 3}
+  directionUI: {fileID: 4097211292933127655, guid: d3cfb9cbace0e6a48a19b26c06294096, type: 3}
+  attackUI: {fileID: 843394275739628388, guid: c7798a035666255488a2793f1ec7a414, type: 3}
+  directionSprites:
+  - {fileID: 21300000, guid: 8c884cc90090c624a91be473159044e1, type: 3}
+  - {fileID: 21300000, guid: 0bcdd660e7464c34f8a4655a359762e2, type: 3}
+  - {fileID: 21300000, guid: 546b367f2e86be9439e955c75d610251, type: 3}
+  - {fileID: 21300000, guid: 04297aa4cb651554a8f337053b23da3b, type: 3}
+  - {fileID: 21300000, guid: c4896c54b3279074fb703054453cc946, type: 3}
+  - {fileID: 21300000, guid: 8558583d50d5a684c832ad1d68fec51f, type: 3}
+  - {fileID: 21300000, guid: 7cd76f0c96c3e0c4bb5c7954d95e2a1d, type: 3}
+  - {fileID: 21300000, guid: ae314a46679f92649802afa7888500ef, type: 3}
+  - {fileID: 21300000, guid: 59c321ee406f2ff42bffb217c09f9136, type: 3}
+  attackSprites:
+  - {fileID: 21300000, guid: 4594890ce9881684f822c6c5cb5eb56f, type: 3}
+  - {fileID: 21300000, guid: 278b326dc4227d943a78f66a78dcc9f1, type: 3}
+  - {fileID: 21300000, guid: 3e5eeba33b1580e4c966cd34cda82adb, type: 3}
+  - {fileID: 21300000, guid: 24a65b176c0d6704eb9ecdd757c11b17, type: 3}
+  maxRows: 30
+  maxFrameCount: 99
+  rowSpacing: 6
+  rowStartX: 5
 --- !u!1 &1644803272
 GameObject:
   m_ObjectHideFlags: 0
@@ -34975,6 +34976,8 @@ MonoBehaviour:
   grap: "\uC7A1\uAE30"
   pos: "\uC790\uC138"
   parry: "\uD328\uB9AC"
+  dash: "\uB300\uC26C"
+  run: "\uB2EC\uB9AC\uAE30"
   bangeok: {fileID: 1940543286}
   powerCrash: {fileID: 1479831010}
   reversal: {fileID: 218025395}

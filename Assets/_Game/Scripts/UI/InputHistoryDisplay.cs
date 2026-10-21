@@ -116,9 +116,36 @@ public class InputHistoryDisplay : MonoBehaviour
         }
     }
 
+    // 입력 표시 UI가 켜질 때마다 기록을 비우고 새로 시작
+    // (이 스크립트는 ControllerHistoryUI에 붙어 있어서, UI가 꺼져 있는 동안에는 컨트롤러를 읽지 않음)
+    private void OnEnable()
+    {
+        ClearHistory();
+    }
+
+    private void ClearHistory()
+    {
+        foreach (HistoryRow row in rows)
+        {
+            if (row.rowObject != null)
+                Destroy(row.rowObject);
+        }
+        rows.Clear();
+        currentRow = null;
+
+        // 켜진 첫 프레임에 지금 입력으로 첫 줄을 만들도록 초기화
+        lastDirectionIndex = -1;
+        prevAttackStates = new bool[attackCount];
+    }
+
     private void Update()
     {
         if (!HasRequiredReferences())
+            return;
+
+        // 세팅 UI가 열려 게임이 멈춘 동안에는 기록하지 않음
+        // (enabled를 껐다 켜면 OnEnable에서 기록이 지워지므로 ControlReaderSwitch의 멈출 목록 대신 여기서 처리)
+        if (Time.timeScale == 0f)
             return;
 
         int dirIndex = GetCurrentDirectionIndex();
