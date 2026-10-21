@@ -31,16 +31,18 @@ namespace Game.UI.Setting
         }
 
         // 팝업이 열려 있으면 뒤의 설정 메뉴, 타이틀 메뉴, 설정창 닫기는 입력을 받지 않음
-        // 닫힌 그 프레임까지 열린 것으로 봄 (닫기를 누른 선택 키로 뒤의 메뉴가 팝업을 다시 여는 것을 막음)
-        public static bool IsOpen => KBW_openCount > 0 || Time.frameCount == KBW_closedFrame;
+        // 닫힌 다음 프레임까지 열린 것으로 봄 (닫기를 누른 선택 키로 뒤의 메뉴가 팝업을 다시 여는 것을 막음)
+        // - UIControl은 한 프레임에 한 번 입력을 읽으므로, 실행 순서에 따라 뒤의 메뉴는
+        //   팝업보다 한 프레임 늦게 같은 입력을 받을 수 있음 -> 다음 프레임까지 막아야 함
+        public static bool IsOpen => KBW_openCount > 0 || Time.frameCount - KBW_closedFrame <= 1;
         private static int KBW_openCount = 0;
-        private static int KBW_closedFrame = -1;
+        private static int KBW_closedFrame = int.MinValue / 2;
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         private static void ResetOpenCount()
         {
             KBW_openCount = 0;
-            KBW_closedFrame = -1;
+            KBW_closedFrame = int.MinValue / 2;
         }
 
         // 비워두면 씬에서 찾음
