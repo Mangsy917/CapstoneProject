@@ -7572,6 +7572,8 @@ MonoBehaviour:
   playerTag: Player
   enemyTag: Enemy
   searchInterval: 0.25
+  stageLeftEnd: -100
+  stageRightEnd: 100
 --- !u!1 &354735817
 GameObject:
   m_ObjectHideFlags: 0
@@ -17200,7 +17202,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Game.UI.Setting.StartPlaceSetting
   _placeStepper: {fileID: 858530112}
   SPS_screenFade: {fileID: 561717928}
-  _stageGround: {fileID: 2079804634}
+  _stageBoundary: {fileID: 351704330}
   _characterGap: 1.9
   _centerIndex: 0
   _leftEndIndex: 1

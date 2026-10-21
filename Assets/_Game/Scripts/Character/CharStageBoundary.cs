@@ -33,6 +33,21 @@ public class CharStageBoundary : MonoBehaviour
     [Tooltip("Player / Enemy를 다시 찾는 주기(초)")]
     [SerializeField] private float searchInterval = 0.25f;
 
+    [Header("스테이지 끝")]
+    [Tooltip("스테이지 왼쪽 끝의 x 위치 (시작 위치 설정의 '왼쪽 끝'에서 캐릭터가 이 위치에 붙어 섬)")]
+    [SerializeField] private float stageLeftEnd = -100f;
+    [Tooltip("스테이지 오른쪽 끝의 x 위치 (시작 위치 설정의 '오른쪽 끝'에서 캐릭터가 이 위치에 붙어 섬)")]
+    [SerializeField] private float stageRightEnd = 100f;
+
+    /// <summary>스테이지 왼쪽 끝의 x 위치</summary>
+    public float StageLeftEnd => stageLeftEnd;
+
+    /// <summary>스테이지 오른쪽 끝의 x 위치</summary>
+    public float StageRightEnd => stageRightEnd;
+
+    /// <summary>스테이지 가운데의 x 위치</summary>
+    public float StageCenter => (stageLeftEnd + stageRightEnd) * 0.5f;
+
     private Transform player;
     private Transform enemy;
     private float searchTimer;
@@ -129,5 +144,15 @@ public class CharStageBoundary : MonoBehaviour
     private void OnValidate()
     {
         if (searchInterval < 0f) searchInterval = 0f;
+        if (stageRightEnd < stageLeftEnd) stageRightEnd = stageLeftEnd;
+    }
+
+    // 씬 뷰에서 스테이지 끝 위치를 노란 세로선으로 보여줌
+    private void OnDrawGizmosSelected()
+    {
+        Gizmos.color = Color.yellow;
+        float z = transform.position.z;
+        Gizmos.DrawLine(new Vector3(stageLeftEnd, -1f, z), new Vector3(stageLeftEnd, 10f, z));
+        Gizmos.DrawLine(new Vector3(stageRightEnd, -1f, z), new Vector3(stageRightEnd, 10f, z));
     }
 }

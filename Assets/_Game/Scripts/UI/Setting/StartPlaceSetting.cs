@@ -7,14 +7,14 @@ namespace Game.UI.Setting
     // 스테퍼를 바꾼 순간에는 적용하지 않고, 설정창을 닫을 때(ESC 등) 적용함
     // 닫을 때 값이 달라져 있으면 화면이 순간 검게 변하고, 그동안 위치를 옮긴 뒤 서서히 원래 화면으로 돌아옴
     // - 두 캐릭터의 왼쪽 / 오른쪽 순서는 그대로 둠 (순서는 StartSideSetting이 정함)
-    // - 스테이지 끝은 Stage Ground 콜라이더의 양 끝에서 캐릭터 절반 너비만큼 안쪽
+    // - 스테이지 끝은 CharStageBoundary 인스펙터의 스테이지 끝 값에서 캐릭터 절반 너비만큼 안쪽
     public class StartPlaceSetting : MonoBehaviour
     {
         [SerializeField] private SettingStepper _placeStepper;
         [SerializeField] private ScreenFade SPS_screenFade;
 
-        // 스테이지 바닥 (양 끝을 왼쪽 끝 / 오른쪽 끝으로 사용)
-        [SerializeField] private Collider _stageGround;
+        // 스테이지 끝 값을 가진 오브젝트 (비워두면 씬에서 찾음)
+        [SerializeField] private CharStageBoundary _stageBoundary;
 
         // 다시 세울 때 두 캐릭터 사이의 x 거리
         [SerializeField] private float _characterGap = 1.9f;
@@ -33,6 +33,7 @@ namespace Game.UI.Setting
         void Awake()
         {
             if (_placeStepper == null) _placeStepper = GetComponent<SettingStepper>();
+            if (_stageBoundary == null) _stageBoundary = FindAnyObjectByType<CharStageBoundary>();
 
             // 이 줄이 있는 탭이 꺼져 있어도 설정창이 닫히면 알 수 있도록 static 이벤트를 받음
             ControlReaderSwitch.SettingClosed += OnSettingClosed;
@@ -85,21 +86,21 @@ namespace Game.UI.Setting
 
         private float GetStageCenterX()
         {
-            return _stageGround != null ? _stageGround.bounds.center.x : 0f;
+            return _stageBoundary != null ? _stageBoundary.StageCenter : 0f;
         }
 
-        // 캐릭터가 설 수 있는 가장 왼쪽 x (바닥 왼쪽 끝 + 캐릭터 절반 너비)
+        // 캐릭터가 설 수 있는 가장 왼쪽 x (스테이지 왼쪽 끝 + 캐릭터 절반 너비)
         private float GetStageLeftEndX(Transform character)
         {
-            if (_stageGround == null) return GetStageCenterX();
-            return _stageGround.bounds.min.x + GetHalfWidth(character);
+            if (_stageBoundary == null) return GetStageCenterX();
+            return _stageBoundary.StageLeftEnd + GetHalfWidth(character);
         }
 
-        // 캐릭터가 설 수 있는 가장 오른쪽 x (바닥 오른쪽 끝 - 캐릭터 절반 너비)
+        // 캐릭터가 설 수 있는 가장 오른쪽 x (스테이지 오른쪽 끝 - 캐릭터 절반 너비)
         private float GetStageRightEndX(Transform character)
         {
-            if (_stageGround == null) return GetStageCenterX();
-            return _stageGround.bounds.max.x - GetHalfWidth(character);
+            if (_stageBoundary == null) return GetStageCenterX();
+            return _stageBoundary.StageRightEnd - GetHalfWidth(character);
         }
 
         private float GetHalfWidth(Transform character)
