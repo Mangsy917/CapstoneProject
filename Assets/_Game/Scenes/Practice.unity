@@ -7553,7 +7553,8 @@ Transform:
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 1123069550}
   m_Father: {fileID: 974967544}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &351704330
@@ -19454,6 +19455,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CharacterMove
   inputReader: {fileID: 1896591971}
+  characterState: {fileID: 938055906}
   playerTag: Player
   enemyTag: Enemy
   forwardWalkSpeed: 3
@@ -22497,14 +22499,14 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1123069549}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1408137889}
   - {fileID: 1655326380}
-  m_Father: {fileID: 0}
+  m_Father: {fileID: 351704329}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1124139864
 GameObject:
@@ -41712,4 +41714,3 @@ SceneRoots:
   - {fileID: 1288332251}
   - {fileID: 365009381}
   - {fileID: 2083205331}
-  - {fileID: 1123069550}

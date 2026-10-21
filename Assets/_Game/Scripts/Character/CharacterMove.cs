@@ -53,6 +53,10 @@ public class CharacterMove : MonoBehaviour
     [Tooltip("방향 입력을 읽어올 InputReader. 비워두면 같은 오브젝트에서 찾음")]
     [SerializeField] private InputReader inputReader;
 
+    [Header("캐릭터 상태")]
+    [Tooltip("이동에 맞춰 서기/앉기/점프, 지상/공중 값을 바꿀 CharactorState. 비워두면 같은 오브젝트에서 찾음")]
+    [SerializeField] private CharactorState characterState;
+
     [Header("태그")]
     [SerializeField] private string playerTag = "Player";
     [SerializeField] private string enemyTag = "Enemy";
@@ -390,10 +394,19 @@ public class CharacterMove : MonoBehaviour
     private int commandDirection = 5; // 커맨드 판정용 현재 방향 (시작은 중립)
     private int frameCounter = 0;
 
+    // ===== 캐릭터 상태(CharactorState) 연결 =====
+    // 이동으로 정해지는 자세. 바뀐 순간에만 CharactorState에 넣어서,
+    // 다른 스크립트(공격 등)가 넣은 상단/중단/하단 같은 값을 매 프레임 덮어쓰지 않도록 함
+    private enum StatePosture { None, Stand, Crouch, Jump }
+    private StatePosture appliedPosture = StatePosture.None;
+
     private void Awake()
     {
         if (inputReader == null)
             inputReader = GetComponent<InputReader>();
+
+        if (characterState == null)
+            characterState = GetComponent<CharactorState>();
 
         selfCollider = GetComponent<Collider>();
 
@@ -455,7 +468,47 @@ public class CharacterMove : MonoBehaviour
         else
             UpdateAirborne();
 
+        UpdateCharacterState();
+
         previousRelativeDirection = RelativeDirection;
+    }
+
+    // =====================================================================
+    // 캐릭터 상태(CharactorState) 연결
+    // =====================================================================
+
+    // 이동 상태 -> CharactorState
+    // - 공중(점프 중)                         : 점프 + 공중
+    // - 앉기, 앉기 + 가드                      : 앉기 + 지상
+    // - 그 외 땅 위 (중립, 걷기, 대쉬, 달리기, 점프 준비) : 서기 + 지상
+    // 상단/중단/하단, 잡기, 자세, 패리는 대응하는 동작이 아직 없어서 건드리지 않음
+    private void UpdateCharacterState()
+    {
+        if (characterState == null) return;
+
+        StatePosture posture;
+        if (!IsGrounded) posture = StatePosture.Jump;
+        else if (IsCrouching) posture = StatePosture.Crouch;
+        else posture = StatePosture.Stand;
+
+        if (posture == appliedPosture) return;
+        appliedPosture = posture;
+
+        switch (posture)
+        {
+            case StatePosture.Stand:
+                characterState.StandUp = true;
+                characterState.Ground = true;
+                break;
+            case StatePosture.Crouch:
+                characterState.SitDown = true;
+                characterState.Ground = true;
+                break;
+            case StatePosture.Jump:
+                characterState.Jump = true;
+                characterState.Air = true;
+                break;
+        }
     }
 
     // =====================================================================
