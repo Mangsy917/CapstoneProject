@@ -13,6 +13,8 @@ using UnityEngine;
 /// - Enemy가 없으면(예: Enemy 재생성 대기 중) Player의 x, y 위치를 따라감
 /// - Player도 없으면 Boundary는 마지막 위치에 그대로 멈춤
 /// - EnemyCounter가 Enemy를 새로 만들면 자동으로 다시 찾음
+/// - 스테이지 끝 벽(Stage Left Wall / Stage Right Wall)을 Stage Left End / Stage Right End에 세워서
+///   캐릭터가 스테이지 밖으로 나가지 못하게 함 (벽은 Boundary와 달리 움직이지 않음)
 ///
 /// [사용법]
 /// 1. 빈 GameObject(예: "StageBoundaryManager")를 만들고 이 스크립트를 붙입니다.
@@ -38,6 +40,18 @@ public class CharStageBoundary : MonoBehaviour
     [SerializeField] private float stageLeftEnd = -100f;
     [Tooltip("스테이지 오른쪽 끝의 x 위치 (시작 위치 설정의 '오른쪽 끝'에서 캐릭터가 이 위치에 붙어 섬)")]
     [SerializeField] private float stageRightEnd = 100f;
+
+    [Header("스테이지 끝 벽")]
+    [Tooltip("스테이지 왼쪽 끝에 세울 벽 Collider. 안쪽 면이 Stage Left End에 오도록 자동으로 옮겨짐")]
+    [SerializeField] private BoxCollider stageLeftWall;
+    [Tooltip("스테이지 오른쪽 끝에 세울 벽 Collider. 안쪽 면이 Stage Right End에 오도록 자동으로 옮겨짐")]
+    [SerializeField] private BoxCollider stageRightWall;
+    [Tooltip("벽 두께 (x)")]
+    [SerializeField] private float stageWallThickness = 1f;
+    [Tooltip("벽 높이 (y). 점프로 넘어가지 못하도록 충분히 높게")]
+    [SerializeField] private float stageWallHeight = 50f;
+    [Tooltip("벽 깊이 (z)")]
+    [SerializeField] private float stageWallDepth = 10f;
 
     /// <summary>스테이지 왼쪽 끝의 x 위치</summary>
     public float StageLeftEnd => stageLeftEnd;
@@ -65,6 +79,26 @@ public class CharStageBoundary : MonoBehaviour
 
         CenterX = boundary.position.x;
         CenterY = boundary.position.y;
+
+        PlaceStageWalls();
+    }
+
+    // 스테이지 끝 벽을 Stage Left End / Stage Right End 위치로 옮기고 크기를 맞춤
+    // (벽의 안쪽 면이 끝 위치에 오고, 바닥(y = 0)부터 위로 세움)
+    private void PlaceStageWalls()
+    {
+        PlaceStageWall(stageLeftWall, stageLeftEnd - stageWallThickness * 0.5f);
+        PlaceStageWall(stageRightWall, stageRightEnd + stageWallThickness * 0.5f);
+    }
+
+    private void PlaceStageWall(BoxCollider wall, float centerX)
+    {
+        if (wall == null) return;
+
+        wall.transform.SetPositionAndRotation(new Vector3(centerX, 0f, wall.transform.position.z), Quaternion.identity);
+        wall.transform.localScale = Vector3.one;
+        wall.size = new Vector3(stageWallThickness, stageWallHeight, stageWallDepth);
+        wall.center = new Vector3(0f, stageWallHeight * 0.5f, 0f);
     }
 
     private void Start()
@@ -145,6 +179,12 @@ public class CharStageBoundary : MonoBehaviour
     {
         if (searchInterval < 0f) searchInterval = 0f;
         if (stageRightEnd < stageLeftEnd) stageRightEnd = stageLeftEnd;
+        if (stageWallThickness < 0.01f) stageWallThickness = 0.01f;
+        if (stageWallHeight < 0.01f) stageWallHeight = 0.01f;
+        if (stageWallDepth < 0.01f) stageWallDepth = 0.01f;
+
+        // 인스펙터에서 값을 바꾸면 에디터에서도 벽이 바로 따라옴
+        PlaceStageWalls();
     }
 
     // 씬 뷰에서 스테이지 끝 위치를 노란 세로선으로 보여줌
