@@ -22,6 +22,8 @@ public class StateUI : MonoBehaviour
     [SerializeField] private string grap = "행동5";
     [SerializeField] private string pos = "행동6";
     [SerializeField] private string parry = "행동7";
+    [SerializeField] private string dash = "대쉬";
+    [SerializeField] private string run = "달리기";
 
     [Header("캐릭터 공격 속성")]
     [SerializeField] private Image bangeok;
@@ -74,6 +76,8 @@ public class StateUI : MonoBehaviour
         else if (stateReader.Grap) characterMove.text = grap;
         else if (stateReader.pos) characterMove.text = pos;
         else if (stateReader.Parry) characterMove.text = parry;
+        else if (stateReader.Dash) characterMove.text = dash;
+        else if (stateReader.Run) characterMove.text = run;
         else characterMove.text = string.Empty;
     }
 
