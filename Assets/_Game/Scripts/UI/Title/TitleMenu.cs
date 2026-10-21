@@ -70,6 +70,15 @@ public class TitleMenu : MonoBehaviour
         bool down = uiControl.uiDown;
         bool select = uiControl.uiSelect;
 
+        // 컨트롤러 설정 팝업이 열려 있으면 입력만 기억하고 메뉴는 움직이지 않음
+        if (Game.UI.Setting.KeyBindingWindow.IsOpen)
+        {
+            prevUp = up;
+            prevDown = down;
+            prevSelect = select;
+            return;
+        }
+
         if (up && !prevUp) Move(-1);
         else if (down && !prevDown) Move(1);
 

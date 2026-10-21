@@ -56,6 +56,9 @@ public class InputReader : MonoBehaviour
             return;
         }
 
+        // 컨트롤러 설정에서 바꾼 키를 적용 (씬을 넘어가도, 빌드에서는 껐다 켜도 유지)
+        Game.Controller.KeyBindingStore.Apply(inputActions);
+
         var map = inputActions.FindActionMap(actionMapName, throwIfNotFound: true);
 
         moveUp = map.FindAction("Up");

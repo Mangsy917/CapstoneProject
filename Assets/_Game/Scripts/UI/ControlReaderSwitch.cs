@@ -29,7 +29,9 @@ public class ControlReaderSwitch : MonoBehaviour
     {
         // ESC/Start 또는 취소 키(K/East)로 세팅 UI를 닫음 (팝업이 열려 있으면 팝업만 닫힘)
         bool cancel = UIC.uiCancelDown && !SettingPopup.IsAnyOpen;
-        if (UIC.gameObject.activeSelf && (UIC.uiClose || cancel))
+        // 컨트롤러 설정 팝업이 열려 있으면 ESC는 팝업만 닫음 (설정창은 그대로)
+        bool close = UIC.uiClose && !Game.UI.Setting.KeyBindingWindow.IsOpen;
+        if (UIC.gameObject.activeSelf && (close || cancel))
         {
             UIC.uiClose = false;
             UIC.uiCancelDown = false;

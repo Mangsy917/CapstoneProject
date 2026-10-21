@@ -12,7 +12,8 @@ using UnityEngine.EventSystems;
 public class SettingPopup : MonoBehaviour
 {
     // 팝업이 하나라도 열려 있으면 뒤의 설정 메뉴는 입력을 받지 않음
-    public static bool IsAnyOpen => openCount > 0;
+    // (컨트롤러 설정 팝업이 열려 있을 때도 포함)
+    public static bool IsAnyOpen => openCount > 0 || Game.UI.Setting.KeyBindingWindow.IsOpen;
     private static int openCount = 0;
 
     // Domain Reload를 꺼둔 상태로 플레이해도 이전 값이 남지 않도록 초기화

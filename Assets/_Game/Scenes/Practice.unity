@@ -11620,7 +11620,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 570089146}
-  - component: {fileID: 570089148}
   m_Layer: 0
   m_Name: ControllerSettingManager
   m_TagString: Untagged
@@ -11643,46 +11642,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 313926195}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &570089148
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 570089145}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 031a6952c39e5a649934bf0a6c087e53, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::KeyRebinder
-  inputActions: {fileID: -944628639613478452, guid: 55b50e95aea794d47af6dc81b9f9d4b8, type: 3}
-  actionMapName: Char
-  movementOverrides:
-  - actionName: Up
-    keyboardOverridePath: <Keyboard>/w
-    gamepadOverridePath: 
-  - actionName: Down
-    keyboardOverridePath: <Keyboard>/s
-    gamepadOverridePath: 
-  - actionName: Left
-    keyboardOverridePath: <Keyboard>/a
-    gamepadOverridePath: 
-  - actionName: Right
-    keyboardOverridePath: <Keyboard>/d
-    gamepadOverridePath: 
-  attackOverrides:
-  - actionName: AttackL
-    keyboardOverridePath: <Keyboard>/u
-    gamepadOverridePath: <Gamepad>/buttonWest
-  - actionName: AttackM
-    keyboardOverridePath: <Keyboard>/i
-    gamepadOverridePath: <Gamepad>/buttonNorth
-  - actionName: AttackH
-    keyboardOverridePath: <Keyboard>/j
-    gamepadOverridePath: <Gamepad>/buttonSouth
-  - actionName: AttackEX
-    keyboardOverridePath: <Keyboard>/k
-    gamepadOverridePath: <Gamepad>/buttonEast
 --- !u!1 &576015544
 GameObject:
   m_ObjectHideFlags: 0
@@ -14855,7 +14814,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 755219719}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 1963019541}
+        m_TargetAssemblyTypeName: Game.UI.Setting.KeyBindingWindow, Assembly-CSharp
+        m_MethodName: Open
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: 
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &755219719
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -33779,6 +33750,7 @@ RectTransform:
   - {fileID: 486463181}
   - {fileID: 64703611}
   - {fileID: 1415293898}
+  - {fileID: 1963019540}
   m_Father: {fileID: 1288332251}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
@@ -37481,6 +37453,127 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1955644308}
   m_CullTransparentMesh: 1
+--- !u!1001 &1963019539
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 1737168971}
+    m_Modifications:
+    - target: {fileID: 931769532835858086, guid: 0f34b24feb41c8a4794dbaaea5c9fe22, type: 3}
+      propertyPath: m_Pivot.x
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 931769532835858086, guid: 0f34b24feb41c8a4794dbaaea5c9fe22, type: 3}
+      propertyPath: m_Pivot.y
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 931769532835858086, guid: 0f34b24feb41c8a4794dbaaea5c9fe22, type: 3}
+      propertyPath: m_AnchorMax.x
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 931769532835858086, guid: 0f34b24feb41c8a4794dbaaea5c9fe22, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 931769532835858086, guid: 0f34b24feb41c8a4794dbaaea5c9fe22, type: 3}
+      propertyPath: m_AnchorMin.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 931769532835858086, guid: 0f34b24feb41c8a4794dbaaea5c9fe22, type: 3}
+      propertyPath: m_AnchorMin.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 931769532835858086, guid: 0f34b24feb41c8a4794dbaaea5c9fe22, type: 3}
+      propertyPath: m_SizeDelta.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 931769532835858086, guid: 0f34b24feb41c8a4794dbaaea5c9fe22, type: 3}
+      propertyPath: m_SizeDelta.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 931769532835858086, guid: 0f34b24feb41c8a4794dbaaea5c9fe22, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 931769532835858086, guid: 0f34b24feb41c8a4794dbaaea5c9fe22, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 931769532835858086, guid: 0f34b24feb41c8a4794dbaaea5c9fe22, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 931769532835858086, guid: 0f34b24feb41c8a4794dbaaea5c9fe22, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 931769532835858086, guid: 0f34b24feb41c8a4794dbaaea5c9fe22, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 931769532835858086, guid: 0f34b24feb41c8a4794dbaaea5c9fe22, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 931769532835858086, guid: 0f34b24feb41c8a4794dbaaea5c9fe22, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 931769532835858086, guid: 0f34b24feb41c8a4794dbaaea5c9fe22, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 931769532835858086, guid: 0f34b24feb41c8a4794dbaaea5c9fe22, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 931769532835858086, guid: 0f34b24feb41c8a4794dbaaea5c9fe22, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 931769532835858086, guid: 0f34b24feb41c8a4794dbaaea5c9fe22, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 931769532835858086, guid: 0f34b24feb41c8a4794dbaaea5c9fe22, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1609111180306687561, guid: 0f34b24feb41c8a4794dbaaea5c9fe22, type: 3}
+      propertyPath: m_Name
+      value: P_KeyBindingWindow
+      objectReference: {fileID: 0}
+    - target: {fileID: 1609111180306687561, guid: 0f34b24feb41c8a4794dbaaea5c9fe22, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6011039696789179170, guid: 0f34b24feb41c8a4794dbaaea5c9fe22, type: 3}
+      propertyPath: KBW_uiControl
+      value: 
+      objectReference: {fileID: 1949755787}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 0f34b24feb41c8a4794dbaaea5c9fe22, type: 3}
+--- !u!224 &1963019540 stripped
+RectTransform:
+  m_CorrespondingSourceObject: {fileID: 931769532835858086, guid: 0f34b24feb41c8a4794dbaaea5c9fe22, type: 3}
+  m_PrefabInstance: {fileID: 1963019539}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1963019541 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 6011039696789179170, guid: 0f34b24feb41c8a4794dbaaea5c9fe22, type: 3}
+  m_PrefabInstance: {fileID: 1963019539}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7a271c21f90d0e54688405abb39efaa4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Game.UI.Setting.KeyBindingWindow
 --- !u!1 &1963887770
 GameObject:
   m_ObjectHideFlags: 0

@@ -1,7 +1,5 @@
-using NUnit.Framework.Internal;
 using System;
 using Unity.VisualScripting;
-using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -34,6 +32,9 @@ public class UIControl : MonoBehaviour
             enabled = false;
             return;
         }
+
+        // 컨트롤러 설정에서 바꾼 키를 적용 (씬을 넘어가도, 빌드에서는 껐다 켜도 유지)
+        Game.Controller.KeyBindingStore.Apply(uiControl);
 
         var map = uiControl.FindActionMap(actionMapName, throwIfNotFound: true);
 
