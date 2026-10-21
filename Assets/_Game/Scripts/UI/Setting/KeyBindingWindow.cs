@@ -31,13 +31,16 @@ namespace Game.UI.Setting
         }
 
         // 팝업이 열려 있으면 뒤의 설정 메뉴, 타이틀 메뉴, 설정창 닫기는 입력을 받지 않음
-        public static bool IsOpen => KBW_openCount > 0;
+        // 닫힌 그 프레임까지 열린 것으로 봄 (닫기를 누른 선택 키로 뒤의 메뉴가 팝업을 다시 여는 것을 막음)
+        public static bool IsOpen => KBW_openCount > 0 || Time.frameCount == KBW_closedFrame;
         private static int KBW_openCount = 0;
+        private static int KBW_closedFrame = -1;
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         private static void ResetOpenCount()
         {
             KBW_openCount = 0;
+            KBW_closedFrame = -1;
         }
 
         // 비워두면 씬에서 찾음
@@ -131,6 +134,7 @@ namespace Game.UI.Setting
         void OnDisable()
         {
             KBW_openCount--;
+            KBW_closedFrame = Time.frameCount;
             StopWaitingForKey();
         }
 
