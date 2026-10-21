@@ -31,11 +31,8 @@ namespace Game.UI.Setting
 
         void Start()
         {
-            // 처음 값에 맞춰서 한 번 적용 (시작할 때는 깜빡이지 않음)
-            if (_sideStepper == null) return;
-
-            _appliedIndex = _sideStepper.Index;
-            ApplySide(_appliedIndex);
+            // 처음 값을 적용된 값으로 기억 (설정창을 처음 열 때 캐릭터가 움직이지 않도록 위치는 건드리지 않음)
+            if (_sideStepper != null) _appliedIndex = _sideStepper.Index;
         }
 
         void OnDestroy()
