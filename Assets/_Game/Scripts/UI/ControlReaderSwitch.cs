@@ -11,6 +11,9 @@ public class ControlReaderSwitch : MonoBehaviour
     [Tooltip("프레임 수로 동작하는 스크립트(CharacterMove, InputHistoryDisplay 등)를 넣어주세요.")]
     [SerializeField] private Behaviour[] pauseTargets;
 
+    // 세팅 UI가 닫힐 때 호출됨 (닫을 때 적용하는 설정에서 사용)
+    public static event System.Action SettingClosed;
+
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
@@ -34,6 +37,7 @@ public class ControlReaderSwitch : MonoBehaviour
             charC.gameObject.SetActive(true);
             UIC.gameObject.SetActive(false);
             SetGamePaused(false);
+            SettingClosed?.Invoke();
         }
         else if (charC.gameObject.activeSelf && charC.uiOpen)
         {

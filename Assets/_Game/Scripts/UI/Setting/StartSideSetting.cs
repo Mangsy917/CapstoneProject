@@ -1,92 +1,58 @@
-using System.Collections;
 using UnityEngine;
-using UnityEngine.UI;
 
 namespace Game.UI.Setting
 {
     // 시작 사이드 줄(BTN_ChooseSite)에 붙여서 사용
     // 스테퍼 값(왼쪽 / 오른쪽)에 맞춰 Player가 Enemy의 왼쪽 또는 오른쪽에 서도록 두 캐릭터의 x 위치를 바꿈
-    // 값이 바뀌면 화면이 순간 검게 변하고, 그동안 위치를 바꾼 뒤 서서히 원래 화면으로 돌아옴
-    // - Fade Image에는 화면 전체를 덮는 검은색 Image를 넣음 (설정창보다 위에 그려지도록 배치)
-    // - 설정창이 열려 있으면 게임이 멈춰 있으므로(timeScale 0) 실제 시간으로 동작함
+    // 스테퍼를 바꾼 순간에는 적용하지 않고, 설정창을 닫을 때(ESC 등) 적용함
+    // 닫을 때 값이 달라져 있으면 화면이 순간 검게 변하고, 그동안 위치를 바꾼 뒤 서서히 원래 화면으로 돌아옴
+    // - Screen Fade에는 설정창 밖에 있는 ScreenFade 오브젝트를 넣음
     public class StartSideSetting : MonoBehaviour
     {
         [SerializeField] private SettingStepper _sideStepper;
-
-        // 화면을 덮을 검은색 Image
-        [SerializeField] private Image _fadeImage;
+        [SerializeField] private ScreenFade _screenFade;
 
         // 스테퍼 Options에서 왼쪽이 몇 번째인지 (왼쪽, 오른쪽 순서면 0)
         [SerializeField] private int _leftIndex = 0;
 
-        // 검은 화면을 유지하는 시간(초)
-        [SerializeField] private float _blackHoldTime = 0.1f;
-        // 검은 화면에서 게임 화면으로 돌아오는 시간(초)
-        [SerializeField] private float _fadeTime = 0.5f;
-
         [SerializeField] private string SSS_playerTag = "Player";
         [SerializeField] private string SSS_enemyTag = "Enemy";
 
-        private Coroutine _fadeRoutine;
+        // 마지막으로 게임에 적용한 값
+        private int _appliedIndex;
 
         void Awake()
         {
             if (_sideStepper == null) _sideStepper = GetComponent<SettingStepper>();
-            if (_sideStepper != null) _sideStepper.onValueChanged.AddListener(OnSideChanged);
 
-            if (_fadeImage != null)
-            {
-                // 검은 화면이 마우스 입력을 막지 않도록 함
-                _fadeImage.raycastTarget = false;
-                SetFadeAlpha(0f);
-            }
+            // 이 줄이 있는 탭이 꺼져 있어도 설정창이 닫히면 알 수 있도록 static 이벤트를 받음
+            ControlReaderSwitch.SettingClosed += OnSettingClosed;
         }
 
         void Start()
         {
             // 처음 값에 맞춰서 한 번 적용 (시작할 때는 깜빡이지 않음)
-            if (_sideStepper != null) ApplySide(_sideStepper.Index);
+            if (_sideStepper == null) return;
+
+            _appliedIndex = _sideStepper.Index;
+            ApplySide(_appliedIndex);
         }
 
-        void OnDisable()
+        void OnDestroy()
         {
-            // 설정창이 닫히는 등 중간에 꺼지면 검은 화면이 남지 않도록 지움
-            if (_fadeRoutine != null)
-            {
-                StopCoroutine(_fadeRoutine);
-                _fadeRoutine = null;
-            }
-            SetFadeAlpha(0f);
+            ControlReaderSwitch.SettingClosed -= OnSettingClosed;
         }
 
-        // 시작 사이드가 바뀌었을 때
-        private void OnSideChanged(int index)
+        // 설정창이 닫혔을 때: 값이 바뀌었으면 화면을 깜빡이며 적용
+        private void OnSettingClosed()
         {
-            if (_fadeRoutine != null) StopCoroutine(_fadeRoutine);
-            _fadeRoutine = StartCoroutine(SwitchSideRoutine(index));
-        }
+            if (_sideStepper == null || _sideStepper.Index == _appliedIndex) return;
 
-        private IEnumerator SwitchSideRoutine(int index)
-        {
-            // 순간 검은 화면으로
-            SetFadeAlpha(1f);
+            int index = _sideStepper.Index;
+            _appliedIndex = index;
 
-            // 화면이 가려진 동안 위치를 바꿈
-            ApplySide(index);
-
-            yield return new WaitForSecondsRealtime(_blackHoldTime);
-
-            // 서서히 게임 화면으로
-            float elapsedTime = 0f;
-            while (elapsedTime < _fadeTime)
-            {
-                elapsedTime += Time.unscaledDeltaTime;
-                SetFadeAlpha(1f - Mathf.Clamp01(elapsedTime / _fadeTime));
-                yield return null;
-            }
-
-            SetFadeAlpha(0f);
-            _fadeRoutine = null;
+            if (_screenFade != null) _screenFade.Play(onBlack: () => ApplySide(index));
+            else ApplySide(index);
         }
 
         // Player가 고른 쪽에 서도록 Player와 Enemy의 x 위치를 맞바꿈 (이미 그쪽에 있으면 그대로 둠)
@@ -128,15 +94,6 @@ namespace Game.UI.Setting
                 }
             }
             return closestEnemy;
-        }
-
-        private void SetFadeAlpha(float alpha)
-        {
-            if (_fadeImage == null) return;
-
-            Color color = _fadeImage.color;
-            color.a = alpha;
-            _fadeImage.color = color;
         }
     }
 }

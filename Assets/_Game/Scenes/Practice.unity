@@ -11524,6 +11524,7 @@ GameObject:
   - component: {fileID: 561717925}
   - component: {fileID: 561717927}
   - component: {fileID: 561717926}
+  - component: {fileID: 561717928}
   m_Layer: 5
   m_Name: ScreenFade
   m_TagString: Untagged
@@ -11588,6 +11589,21 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 561717924}
   m_CullTransparentMesh: 1
+--- !u!114 &561717928
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 561717924}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2ae4d14354e20aa469c53d4e8859986f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Game.UI.ScreenFade
+  _fadeImage: {fileID: 561717926}
+  _blackHoldTime: 0.1
+  _fadeTime: 0.5
 --- !u!1 &570089145
 GameObject:
   m_ObjectHideFlags: 0
@@ -24815,10 +24831,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Game.UI.Setting.StartSideSetting
   _sideStepper: {fileID: 1225280759}
-  _fadeImage: {fileID: 561717926}
+  _screenFade: {fileID: 561717928}
   _leftIndex: 0
-  _blackHoldTime: 0.1
-  _fadeTime: 0.5
   SSS_playerTag: Player
   SSS_enemyTag: Enemy
 --- !u!1 &1232348704
