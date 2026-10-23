@@ -27136,7 +27136,6 @@ GameObject:
   m_Component:
   - component: {fileID: 1389828400}
   - component: {fileID: 1389828399}
-  - component: {fileID: 1389828398}
   - component: {fileID: 1389828397}
   - component: {fileID: 1389828396}
   - component: {fileID: 1389828395}
@@ -27428,7 +27427,7 @@ MonoBehaviour:
   enemyTag: Enemy
   forwardWalkSpeed: 3
   backWalkSpeed: 2
-  jumpVelocity: 15
+  jumpVelocity: 13
   forwardJumpSpeed: 4
   backJumpSpeed: 4
   gravity: 25
@@ -27465,33 +27464,6 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 5, y: 9, z: 0.2}
   m_Center: {x: 0, y: 0, z: 0}
---- !u!54 &1389828398
-Rigidbody:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1389828391}
-  serializedVersion: 5
-  m_Mass: 1
-  m_LinearDamping: 0
-  m_AngularDamping: 0.05
-  m_CenterOfMass: {x: 0, y: 0, z: 0}
-  m_InertiaTensor: {x: 1, y: 1, z: 1}
-  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ImplicitCom: 1
-  m_ImplicitTensor: 1
-  m_UseGravity: 1
-  m_IsKinematic: 0
-  m_Interpolate: 0
-  m_Constraints: 120
-  m_CollisionDetection: 0
 --- !u!212 &1389828399
 SpriteRenderer:
   serializedVersion: 2
