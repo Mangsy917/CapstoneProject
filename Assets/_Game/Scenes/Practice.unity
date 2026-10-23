@@ -11792,6 +11792,7 @@ GameObject:
   - component: {fileID: 577075895}
   - component: {fileID: 577075897}
   - component: {fileID: 577075896}
+  - component: {fileID: 577075898}
   m_Layer: 5
   m_Name: BackSprite
   m_TagString: Untagged
@@ -11840,7 +11841,7 @@ MonoBehaviour:
       m_Calls: []
   m_Sprite: {fileID: 0}
   m_Type: 0
-  m_PreserveAspect: 0
+  m_PreserveAspect: 1
   m_FillCenter: 1
   m_FillMethod: 4
   m_FillAmount: 1
@@ -11856,6 +11857,23 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 577075894}
   m_CullTransparentMesh: 1
+--- !u!114 &577075898
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 577075894}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c49c20d831d61804d888eac3995e80c8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Game.UI.ButtonIconDisplay
+  BID_inputActions: {fileID: -944628639613478452, guid: 55b50e95aea794d47af6dc81b9f9d4b8, type: 3}
+  BID_actionMapName: UI
+  BID_actionName: Cancel
+  BID_buttonIcons: {fileID: 11400000, guid: 049a0b5a7750bfc41a7eb8d08f8ecd12, type: 2}
+  _iconImage: {fileID: 577075896}
 --- !u!1 &578121476
 GameObject:
   m_ObjectHideFlags: 0
@@ -29314,6 +29332,7 @@ GameObject:
   - component: {fileID: 1465029244}
   - component: {fileID: 1465029246}
   - component: {fileID: 1465029245}
+  - component: {fileID: 1465029247}
   m_Layer: 5
   m_Name: SelectSprite
   m_TagString: Untagged
@@ -29362,7 +29381,7 @@ MonoBehaviour:
       m_Calls: []
   m_Sprite: {fileID: 0}
   m_Type: 0
-  m_PreserveAspect: 0
+  m_PreserveAspect: 1
   m_FillCenter: 1
   m_FillMethod: 4
   m_FillAmount: 1
@@ -29378,6 +29397,23 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1465029243}
   m_CullTransparentMesh: 1
+--- !u!114 &1465029247
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1465029243}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c49c20d831d61804d888eac3995e80c8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Game.UI.ButtonIconDisplay
+  BID_inputActions: {fileID: -944628639613478452, guid: 55b50e95aea794d47af6dc81b9f9d4b8, type: 3}
+  BID_actionMapName: UI
+  BID_actionName: Select
+  BID_buttonIcons: {fileID: 11400000, guid: 049a0b5a7750bfc41a7eb8d08f8ecd12, type: 2}
+  _iconImage: {fileID: 1465029245}
 --- !u!1 &1467410934
 GameObject:
   m_ObjectHideFlags: 0

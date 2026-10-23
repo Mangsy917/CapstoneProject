@@ -11,7 +11,8 @@ using UnityEngine.UI;
 namespace Game.UI.Setting
 {
     // 컨트롤러 설정 팝업 (P_KeyBindingWindow 프리팹)에 붙여서 사용
-    // 왼쪽에 공격 버튼 이름, 오른쪽에 키보드 / 게임패드에 지금 연결된 키를 보여주고,
+    // 왼쪽에 공격 버튼 이름, 오른쪽에 지금 쓰는 컨트롤러(키보드 / 플레이스테이션 / Xbox)에 연결된 키를
+    // 버튼 스프라이트로 보여줌 (스프라이트가 없는 키는 글자로). 컨트롤러가 바뀌면 바로 그 컨트롤러 쪽으로 바뀜
     // 줄을 고른 뒤 새 키를 누르면 그 키로 바뀜 (누른 기기에 맞춰 키보드 또는 게임패드 쪽이 바뀜)
     // - 위/아래: 줄 이동, 선택 키 / 마우스 클릭: 키 바꾸기 시작 (줄) 또는 실행 (기본값, 닫기)
     // - 취소 키 / ESC: 팝업 닫기, 키 입력 대기 중에는 ESC(게임패드 Start)로 바꾸기 취소
@@ -28,6 +29,8 @@ namespace Game.UI.Setting
             public Button rowButton;
             public TMP_Text keyboardText;
             public TMP_Text gamepadText;
+            public Image keyboardIcon;
+            public Image gamepadIcon;
         }
 
         // 팝업이 열려 있으면 뒤의 설정 메뉴, 타이틀 메뉴, 설정창 닫기는 입력을 받지 않음
@@ -54,6 +57,15 @@ namespace Game.UI.Setting
         [SerializeField] private Button _resetButton;
         [SerializeField] private Button _closeButton;
         [SerializeField] private TMP_Text _guideText;
+
+        [Tooltip("키별 버튼 스프라이트 목록")]
+        [SerializeField] private Game.UI.ButtonIconSet _buttonIcons;
+        [Tooltip("키보드 열 제목. 키보드를 쓸 때만 보임")]
+        [SerializeField] private TMP_Text _keyboardHeader;
+        [Tooltip("게임패드 열 제목. 패드를 쓸 때만 보이고, 패드 종류에 맞춰 글자가 바뀜")]
+        [SerializeField] private TMP_Text _gamepadHeader;
+        [SerializeField] private string _playStationHeaderText = "플레이스테이션";
+        [SerializeField] private string _xboxHeaderText = "Xbox";
 
         [SerializeField] private string _guideMessage = "바꿀 버튼을 고르고 선택 키를 누르세요";
         [SerializeField] private string _waitingMessage = "새 키를 누르세요  (ESC: 취소)";
@@ -131,6 +143,8 @@ namespace Game.UI.Setting
 
             // 팝업을 연 키를 아직 누르고 있어도 바로 실행되지 않도록 현재 입력을 기억
             RememberInput();
+
+            ControllerTypeDetector.OnControllerTypeChanged += HandleControllerTypeChanged;
         }
 
         void OnDisable()
@@ -138,6 +152,13 @@ namespace Game.UI.Setting
             KBW_openCount--;
             KBW_closedFrame = Time.frameCount;
             StopWaitingForKey();
+
+            ControllerTypeDetector.OnControllerTypeChanged -= HandleControllerTypeChanged;
+        }
+
+        private void HandleControllerTypeChanged(ControllerTypeDetector.ControllerType type)
+        {
+            RefreshKeyTexts();
         }
 
         // 컨트롤러 설정 버튼의 OnClick에 연결
@@ -222,9 +243,7 @@ namespace Game.UI.Setting
             _highlightIndex = rowIndex;
             RefreshHighlight();
 
-            BindingRow row = _bindingRows[rowIndex];
-            if (row.keyboardText != null) row.keyboardText.text = _waitingKeyText;
-            if (row.gamepadText != null) row.gamepadText.text = _waitingKeyText;
+            RefreshRow(_bindingRows[rowIndex], isWaiting: true);
             SetGuide(_waitingMessage);
 
             // 다음에 눌리는 버튼(키보드 키, 게임패드 버튼)을 받음
@@ -395,23 +414,77 @@ namespace Game.UI.Setting
 
         // ===== 화면 =====
 
+        // 지금 컨트롤러 종류의 열만 보이게 하고, 각 줄의 키를 다시 그림
         private void RefreshKeyTexts()
         {
-            foreach (BindingRow row in _bindingRows)
+            var type = ControllerTypeDetector.CurrentType;
+            bool isKeyboard = type == ControllerTypeDetector.ControllerType.Keyboard;
+
+            if (_keyboardHeader != null) _keyboardHeader.gameObject.SetActive(isKeyboard);
+            if (_gamepadHeader != null)
             {
-                InputAction action = FindAction(row.KBW_actionName);
-                if (row.keyboardText != null) row.keyboardText.text = GetKeyName(action, KeyboardGroup);
-                if (row.gamepadText != null) row.gamepadText.text = GetKeyName(action, GamepadGroup);
+                _gamepadHeader.gameObject.SetActive(!isKeyboard);
+                _gamepadHeader.text = type == ControllerTypeDetector.ControllerType.PlayStation ? _playStationHeaderText : _xboxHeaderText;
+            }
+
+            for (int i = 0; i < _bindingRows.Length; i++)
+            {
+                RefreshRow(_bindingRows[i], isWaiting: _isWaitingForKey && i == _waitingRowIndex);
             }
         }
 
-        private string GetKeyName(InputAction action, string group)
+        // 한 줄의 키 표시. 스프라이트가 있으면 스프라이트, 없으면 글자, 키 입력 대기 중이면 "..."
+        private void RefreshRow(BindingRow row, bool isWaiting)
+        {
+            var type = ControllerTypeDetector.CurrentType;
+            bool isKeyboard = type == ControllerTypeDetector.ControllerType.Keyboard;
+
+            // 안 쓰는 쪽 열은 숨김
+            SetColumnVisible(row.keyboardText, row.keyboardIcon, isKeyboard);
+            SetColumnVisible(row.gamepadText, row.gamepadIcon, !isKeyboard);
+
+            TMP_Text keyText = isKeyboard ? row.keyboardText : row.gamepadText;
+            Image keyIcon = isKeyboard ? row.keyboardIcon : row.gamepadIcon;
+
+            Sprite sprite = null;
+            string keyName = _waitingKeyText;
+            if (!isWaiting)
+            {
+                string path = FindBindingPath(FindAction(row.KBW_actionName), ControllerTypeDetector.GetBindingGroup(type));
+                sprite = _buttonIcons != null ? _buttonIcons.GetSprite(type, path) : null;
+                keyName = GetKeyName(path, type);
+            }
+
+            if (keyIcon != null)
+            {
+                keyIcon.sprite = sprite;
+                keyIcon.enabled = sprite != null;
+            }
+            if (keyText != null) keyText.text = sprite != null ? "" : keyName;
+        }
+
+        private static void SetColumnVisible(TMP_Text keyText, Image keyIcon, bool isVisible)
+        {
+            if (keyText != null) keyText.gameObject.SetActive(isVisible);
+            if (keyIcon != null) keyIcon.gameObject.SetActive(isVisible);
+        }
+
+        private string FindBindingPath(InputAction action, string group)
         {
             int bindingIndex = FindBindingIndex(action, group);
-            if (bindingIndex < 0) return "-";
+            return bindingIndex < 0 ? null : action.bindings[bindingIndex].effectivePath;
+        }
 
-            string path = action.bindings[bindingIndex].effectivePath;
-            if (group == GamepadGroup)
+        private static string GetKeyName(string path, ControllerTypeDetector.ControllerType type)
+        {
+            if (string.IsNullOrEmpty(path)) return "-";
+
+            if (type == ControllerTypeDetector.ControllerType.PlayStation)
+            {
+                string buttonName = GetPlayStationButtonName(path);
+                if (buttonName != null) return buttonName;
+            }
+            else if (type == ControllerTypeDetector.ControllerType.Xbox)
             {
                 string buttonName = GetGamepadButtonName(path);
                 if (buttonName != null) return buttonName;
@@ -421,7 +494,28 @@ namespace Game.UI.Setting
             return keyName.Length == 1 ? keyName.ToUpper() : keyName;
         }
 
-        // 게임패드 버튼은 Xbox 패드 이름으로 보여줌
+        // 플레이스테이션 패드 버튼 이름 (스프라이트가 없을 때 글자로 보여줌)
+        private static string GetPlayStationButtonName(string path)
+        {
+            string buttonPath = path.Replace("<Gamepad>/", "");
+            switch (buttonPath)
+            {
+                case "buttonSouth": return "×";
+                case "buttonEast": return "○";
+                case "buttonWest": return "□";
+                case "buttonNorth": return "△";
+                case "leftShoulder": return "L1";
+                case "rightShoulder": return "R1";
+                case "leftTrigger": return "L2";
+                case "rightTrigger": return "R2";
+                case "leftStickPress": return "L3";
+                case "rightStickPress": return "R3";
+                case "select": return "Share";
+                default: return null;
+            }
+        }
+
+        // Xbox 패드 버튼 이름 (스프라이트가 없을 때 글자로 보여줌)
         private static string GetGamepadButtonName(string path)
         {
             string buttonPath = path.Replace("<Gamepad>/", "");
