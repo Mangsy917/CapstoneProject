@@ -47,9 +47,15 @@ namespace Game.Character
 
         private string GetStateName()
         {
-            if (CAP_characterAttack != null && CAP_characterAttack.IsAttacking &&
-                !string.IsNullOrEmpty(CAP_characterAttack.CurrentAttack.AnimationState))
-                return CAP_characterAttack.CurrentAttack.AnimationState;
+            if (CAP_characterAttack != null && CAP_characterAttack.IsAttacking)
+            {
+                AttackData attack = CAP_characterAttack.CurrentAttack;
+                // 착지 경직 중이면 착지 애니메이션 (비어 있으면 공격 애니메이션 유지)
+                if (CAP_characterAttack.IsLanding && !string.IsNullOrEmpty(attack.LandingAnimationState))
+                    return attack.LandingAnimationState;
+                if (!string.IsNullOrEmpty(attack.AnimationState))
+                    return attack.AnimationState;
+            }
 
             if (CAP_characterMove == null) return _idleState;
             if (!CAP_characterMove.IsGrounded) return _jumpState;

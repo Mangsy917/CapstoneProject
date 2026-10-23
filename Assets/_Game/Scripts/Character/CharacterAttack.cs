@@ -16,7 +16,8 @@ namespace Game.Character
             None,     // 공격 안 함
             Startup,  // 준비 (발생 전)
             Active,   // 공격 판정 중 (지속)
-            Recovery  // 회수
+            Recovery, // 회수
+            Landing   // 착지 경직
         }
 
         [Tooltip("커맨드 성공을 받아올 CharacterCommand. 비워두면 같은 오브젝트에서 찾음")]
@@ -38,6 +39,9 @@ namespace Game.Character
 
         public bool IsAttacking => CurrentAttack != null;
 
+        /// <summary>착지 경직 중인지 (이 동안에도 IsAttacking은 true라서 움직일 수 없음)</summary>
+        public bool IsLanding => CurrentPhase == AttackPhase.Landing;
+
         public event Action<AttackData> OnAttackStarted;
         public event Action<AttackPhase> OnPhaseChanged;
         public event Action<AttackData> OnAttackEnded;
@@ -46,6 +50,7 @@ namespace Game.Character
         private int[] _remainingArmorHits = new int[0];
 
         private bool _isAirAttack; // 점프 중에 시작한 공격인지 (착지하면 끝남)
+        private int _landingFrame;  // 착지 경직이 시작된 뒤 지난 프레임 (착지한 프레임 = 1)
 
         private void Awake()
         {
@@ -71,12 +76,34 @@ namespace Game.Character
         {
             if (!IsAttacking) return;
 
+            if (IsLanding)
+            {
+                _landingFrame++;
+                if (_landingFrame > CurrentAttack.LandingRecoveryFrames) EndAttack();
+                return;
+            }
+
             AttackFrame++;
+
+            // 공중 공격이 착지하면, 착지 경직이 있으면 경직으로 넘어가고 없으면 바로 끝남
+            if (_isAirAttack && IsGrounded())
+            {
+                if (CurrentAttack.LandingRecoveryFrames > 0)
+                {
+                    _landingFrame = 1;
+                    SetPhase(AttackPhase.Landing);
+                }
+                else
+                {
+                    EndAttack();
+                }
+                return;
+            }
 
             // HoldUntilLanding이면 공중에 있는 동안은 프레임이 다 지나도 끝내지 않음
             bool isFramesOver = AttackFrame > CurrentAttack.TotalFrames &&
                                 !(CurrentAttack.HoldUntilLanding && !IsGrounded());
-            if (isFramesOver || (_isAirAttack && IsGrounded()))
+            if (isFramesOver)
             {
                 EndAttack();
                 return;
@@ -143,6 +170,7 @@ namespace Game.Character
             AttackData endedAttack = CurrentAttack;
             CurrentAttack = null;
             AttackFrame = 0;
+            _landingFrame = 0;
             SetPhase(AttackPhase.None);
             OnAttackEnded?.Invoke(endedAttack);
         }
@@ -187,7 +215,7 @@ namespace Game.Character
         /// <summary>지금 프레임에 이 특성이 켜져 있는지 (예: HasTrait(AttackTrait.Invincible))</summary>
         public bool HasTrait(AttackTrait trait)
         {
-            if (!IsAttacking) return false;
+            if (!IsAttacking || IsLanding) return false; // 착지 경직 중에는 특성이 없음
 
             var windows = CurrentAttack.TraitWindows;
             for (int i = 0; i < windows.Length; i++)
@@ -203,7 +231,7 @@ namespace Game.Character
         /// </summary>
         public bool TryAbsorbHit(AttackHeight incomingHeight)
         {
-            if (!IsAttacking) return false;
+            if (!IsAttacking || IsLanding) return false;
 
             AttackHeightMask incomingMask = (AttackHeightMask)(1 << (int)incomingHeight);
             var windows = CurrentAttack.TraitWindows;

@@ -101,6 +101,12 @@ namespace Game.Character
         [Tooltip("체크하면 공중에 있는 동안은 프레임이 다 지나도 공격이 끝나지 않고, 착지할 때 끝남")]
         [SerializeField] private bool _holdUntilLanding = false;
 
+        [Header("착지 경직")]
+        [Tooltip("공중에서 착지했을 때 움직일 수 없는 프레임 수. 0이면 경직 없음")]
+        [SerializeField] private int _landingRecoveryFrames = 0;
+        [Tooltip("착지 경직 동안 재생할 Animator 상태 이름. 비워두면 공격 애니메이션을 그대로 유지")]
+        [SerializeField] private string _landingAnimationState;
+
         [Header("애니메이션")]
         [Tooltip("공격 중 재생할 Animator 상태 이름")]
         [SerializeField] private string _animationState;
@@ -118,6 +124,8 @@ namespace Game.Character
         public float LaunchForwardSpeed => _launchForwardSpeed;
         public float LaunchUpSpeed => _launchUpSpeed;
         public bool HoldUntilLanding => _holdUntilLanding;
+        public int LandingRecoveryFrames => _landingRecoveryFrames;
+        public string LandingAnimationState => _landingAnimationState;
         public string AnimationState => _animationState;
         public Projectile ProjectilePrefab => _projectilePrefab;
         public int ProjectileSpawnFrame => _projectileSpawnFrame;
@@ -152,6 +160,7 @@ namespace Game.Character
             if (_projectileSpawnFrame < 1) _projectileSpawnFrame = 1;
             if (_launchFrame < 0) _launchFrame = 0;
             if (_launchUpSpeed < 0f) _launchUpSpeed = 0f;
+            if (_landingRecoveryFrames < 0) _landingRecoveryFrames = 0;
 
             if (_traitWindows == null) return;
             foreach (var window in _traitWindows)
