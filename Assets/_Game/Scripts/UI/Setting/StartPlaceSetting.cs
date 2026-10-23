@@ -10,6 +10,13 @@ namespace Game.UI.Setting
     // - 스테이지 끝은 CharStageBoundary 인스펙터의 스테이지 끝 값에서 캐릭터 절반 너비만큼 안쪽
     public class StartPlaceSetting : MonoBehaviour
     {
+        public enum Place
+        {
+            Center,  // 중앙
+            LeftEnd, // 왼쪽 벽
+            RightEnd // 오른쪽 벽
+        }
+
         [SerializeField] private SettingStepper _placeStepper;
         [SerializeField] private ScreenFade SPS_screenFade;
 
@@ -60,6 +67,23 @@ namespace Game.UI.Setting
 
             if (SPS_screenFade != null) SPS_screenFade.Play(onBlack: () => ApplyPlace(index));
             else ApplyPlace(index);
+        }
+
+        /// <summary>
+        /// 시작 위치를 place로 바꾸고 두 캐릭터를 바로 그 위치에 세움 (재시작 + 레버 방향에서 사용)
+        /// 설정창의 시작 위치 스테퍼 값도 같이 바뀜
+        /// </summary>
+        public void SetPlaceAndApply(Place place)
+        {
+            if (_placeStepper == null) return;
+
+            switch (place)
+            {
+                case Place.LeftEnd: _placeStepper.SetIndex(_leftEndIndex); break;
+                case Place.RightEnd: _placeStepper.SetIndex(_rightEndIndex); break;
+                default: _placeStepper.SetIndex(_centerIndex); break;
+            }
+            ApplyCurrent();
         }
 
         /// <summary>지금 고른 시작 위치에 두 캐릭터를 바로 다시 세움 (재시작에서 사용)</summary>

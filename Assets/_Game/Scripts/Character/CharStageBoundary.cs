@@ -126,7 +126,8 @@ public class CharStageBoundary : MonoBehaviour
 
     /// <summary>
     /// 캐릭터를 순간이동시킨 뒤 호출. Boundary 벽을 바로 두 캐릭터 중심으로 옮기고,
-    /// Pushbox가 벽을 넘어간 것으로 보고 캐릭터를 되돌리지 않도록 지금 위치를 기억시킴
+    /// Pushbox가 벽을 넘어간 것으로 보고 캐릭터를 되돌리지 않도록 지금 위치를 기억시키고,
+    /// 카메라도 천천히 따라오지 않고 바로 새 위치로 옮김
     /// </summary>
     public static void SyncAfterTeleport()
     {
@@ -135,6 +136,11 @@ public class CharStageBoundary : MonoBehaviour
             stageBoundary.UpdateBoundary();
         }
         Game.Character.Pushbox.SyncAfterTeleport();
+
+        foreach (var cameraManager in FindObjectsByType<CameraManager>(FindObjectsSortMode.None))
+        {
+            cameraManager.SnapToTarget();
+        }
     }
 
     private void UpdateBoundary()

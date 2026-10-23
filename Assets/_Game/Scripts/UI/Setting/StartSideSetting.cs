@@ -52,6 +52,20 @@ namespace Game.UI.Setting
             else ApplySide(index);
         }
 
+        /// <summary>
+        /// 시작 사이드를 바꾸고 두 캐릭터를 바로 그 사이드로 세움 (재시작 + 레버 위에서 사용)
+        /// isPlayerLeft가 false면 Player가 오른쪽(2P 자리). 설정창의 시작 사이드 스테퍼 값도 같이 바뀜
+        /// </summary>
+        public void SetSideAndApply(bool isPlayerLeft)
+        {
+            if (_sideStepper == null) return;
+
+            // 선택지는 왼쪽 / 오른쪽 두 개라서, 왼쪽이 아닌 쪽이 오른쪽
+            int rightIndex = _leftIndex == 0 ? 1 : 0;
+            _sideStepper.SetIndex(isPlayerLeft ? _leftIndex : rightIndex);
+            ApplyCurrent();
+        }
+
         /// <summary>지금 고른 사이드대로 두 캐릭터를 바로 바꿔 세움 (재시작에서 사용)</summary>
         public void ApplyCurrent()
         {

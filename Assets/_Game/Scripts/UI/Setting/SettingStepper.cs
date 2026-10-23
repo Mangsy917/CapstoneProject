@@ -27,12 +27,16 @@ public class SettingStepper : MonoBehaviour, ISettingStepper
     // 지금 선택된 선택지 번호
     public int Index { get; private set; }
 
+    // 탭이 처음 켜지기 전(Awake 전)에 다른 스크립트가 값을 정했는지 (예: 재시작 + 레버로 시작 위치를 바꿈)
+    private bool isIndexSet;
+
     void Awake()
     {
         if (leftButton != null) leftButton.onClick.AddListener(Prev);
         if (rightButton != null) rightButton.onClick.AddListener(Next);
 
-        Index = ClampIndex(defaultIndex);
+        // 이미 정해진 값이 있으면 처음 값으로 덮어쓰지 않음
+        if (!isIndexSet) Index = ClampIndex(defaultIndex);
         RefreshText();
     }
 
@@ -59,6 +63,7 @@ public class SettingStepper : MonoBehaviour, ISettingStepper
         if (options == null || options.Length == 0) return;
 
         index = ClampIndex(index);
+        isIndexSet = true;
         if (index == Index) return;
 
         Index = index;
