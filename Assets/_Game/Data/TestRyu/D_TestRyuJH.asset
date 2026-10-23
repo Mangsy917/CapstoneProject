@@ -22,3 +22,5 @@ MonoBehaviour:
   _projectilePrefab: {fileID: 0}
   _projectileSpawnFrame: 1
   _projectileSpawnOffset: {x: 1, y: 0.3}
+  _landingRecoveryFrames: 5
+  _landingAnimationState: Sit

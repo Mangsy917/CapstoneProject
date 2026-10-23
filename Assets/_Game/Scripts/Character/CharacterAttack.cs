@@ -52,6 +52,9 @@ namespace Game.Character
         private bool _isAirAttack; // 점프 중에 시작한 공격인지 (착지하면 끝남)
         private int _landingFrame;  // 착지 경직이 시작된 뒤 지난 프레임 (착지한 프레임 = 1)
 
+        // 공중에서 프레임이 다 끝난 공격. 착지하면 이 공격의 착지 경직을 시작함
+        private AttackData _pendingLandingAttack;
+
         private void Awake()
         {
             if (_characterCommand == null) _characterCommand = GetComponent<CharacterCommand>();
@@ -74,7 +77,12 @@ namespace Game.Character
 
         private void Update()
         {
-            if (!IsAttacking) return;
+            if (!IsAttacking)
+            {
+                if (_pendingLandingAttack != null && IsGrounded())
+                    StartLanding(_pendingLandingAttack);
+                return;
+            }
 
             if (IsLanding)
             {
@@ -89,14 +97,9 @@ namespace Game.Character
             if (_isAirAttack && IsGrounded())
             {
                 if (CurrentAttack.LandingRecoveryFrames > 0)
-                {
-                    _landingFrame = 1;
-                    SetPhase(AttackPhase.Landing);
-                }
+                    StartLanding(CurrentAttack);
                 else
-                {
                     EndAttack();
-                }
                 return;
             }
 
@@ -105,6 +108,9 @@ namespace Game.Character
                                 !(CurrentAttack.HoldUntilLanding && !IsGrounded());
             if (isFramesOver)
             {
+                // 공중에서 끝난 공격은 점프 모습으로 돌아가고, 착지할 때 착지 경직을 받음
+                if (_isAirAttack && !IsGrounded() && CurrentAttack.LandingRecoveryFrames > 0)
+                    _pendingLandingAttack = CurrentAttack;
                 EndAttack();
                 return;
             }
@@ -153,6 +159,7 @@ namespace Game.Character
             CurrentAttack = attack;
             AttackFrame = 0; // 이번 프레임 Update에서 1이 됨
             _isAirAttack = !IsGrounded();
+            _pendingLandingAttack = null; // 공중에서 다시 공격하면 새 공격의 착지 경직을 따름
 
             var windows = attack.TraitWindows;
             _remainingArmorHits = new int[windows.Length];
@@ -163,6 +170,15 @@ namespace Game.Character
 
             ApplyCharacterState(attack);
             OnAttackStarted?.Invoke(attack);
+        }
+
+        // 착지 경직 시작. 이 동안은 공격 중으로 취급해서 움직일 수 없음
+        private void StartLanding(AttackData attack)
+        {
+            CurrentAttack = attack;
+            _pendingLandingAttack = null;
+            _landingFrame = 1;
+            SetPhase(AttackPhase.Landing);
         }
 
         private void EndAttack()
