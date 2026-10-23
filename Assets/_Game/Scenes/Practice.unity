@@ -28107,7 +28107,7 @@ MonoBehaviour:
   enemyTag: Enemy
   forwardWalkSpeed: 3
   backWalkSpeed: 2
-  jumpVelocity: 13
+  jumpVelocity: 12
   forwardJumpSpeed: 4
   backJumpSpeed: 4
   gravity: 25
