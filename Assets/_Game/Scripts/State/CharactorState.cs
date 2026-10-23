@@ -13,6 +13,8 @@ public class CharactorState : MonoBehaviour
     public bool grap = false; //잡기
     public bool pos = false; //자세
     public bool parry = false; //패리
+    public bool dash = false; //대쉬 (앞대쉬, 백대쉬)
+    public bool run = false; //달리기
 
     [Header("공격 속성")]
     public bool bangeok = false; //반격기
@@ -29,7 +31,7 @@ public class CharactorState : MonoBehaviour
     public bool counterHit = false; //카운터히트
     public bool punishCounter = false; //윕퍼니시
 
-    private enum ActionType { StandUp, SitDown, Jump, High, Middle, Low, Grap, Pos, Parry }
+    private enum ActionType { StandUp, SitDown, Jump, High, Middle, Low, Grap, Pos, Parry, Dash, Run }
     private enum GroundType { Ground, Air }
     private enum CounterType { NormalHit, CounterHit, PunishCounter }
 
@@ -42,6 +44,8 @@ public class CharactorState : MonoBehaviour
     public bool Grap { get => grap; set => SetAction(ActionType.Grap, value); }
     public bool Pos { get => pos; set => SetAction(ActionType.Pos, value); }
     public bool Parry { get => parry; set => SetAction(ActionType.Parry, value); }
+    public bool Dash { get => dash; set => SetAction(ActionType.Dash, value); }
+    public bool Run { get => run; set => SetAction(ActionType.Run, value); }
 
     public bool Ground { get => ground; set => SetGroundState(GroundType.Ground, value); }
     public bool Air { get => air; set => SetGroundState(GroundType.Air, value); }
@@ -63,6 +67,8 @@ public class CharactorState : MonoBehaviour
             grap = type == ActionType.Grap;
             pos = type == ActionType.Pos;
             parry = type == ActionType.Parry;
+            dash = type == ActionType.Dash;
+            run = type == ActionType.Run;
         }
         else
         {
@@ -77,6 +83,8 @@ public class CharactorState : MonoBehaviour
                 case ActionType.Grap: grap = false; break;
                 case ActionType.Pos: pos = false; break;
                 case ActionType.Parry: parry = false; break;
+                case ActionType.Dash: dash = false; break;
+                case ActionType.Run: run = false; break;
             }
         }
         EnsureActionDefault();
@@ -123,7 +131,7 @@ public class CharactorState : MonoBehaviour
 
     private void EnsureActionDefault()
     {
-        if (!standUp && !sitDown && !jump && !high && !middle && !low && !grap && !pos && !parry)
+        if (!standUp && !sitDown && !jump && !high && !middle && !low && !grap && !pos && !parry && !dash && !run)
         {
             standUp = true;
         }
@@ -137,7 +145,7 @@ public class CharactorState : MonoBehaviour
         }
     }
 
-    private bool prevStandUp, prevSitDown, prevJump, prevHigh, prevMiddle, prevLow, prevGrap, prevPos, prevParry;
+    private bool prevStandUp, prevSitDown, prevJump, prevHigh, prevMiddle, prevLow, prevGrap, prevPos, prevParry, prevDash, prevRun;
     private bool prevGround, prevAir;
     private bool prevNormalHit, prevCounterHit, prevPunishCounter;
     private bool validateInitialized;
@@ -160,6 +168,8 @@ public class CharactorState : MonoBehaviour
         else if (grap && !prevGrap) SetAction(ActionType.Grap, true);
         else if (pos && !prevPos) SetAction(ActionType.Pos, true);
         else if (parry && !prevParry) SetAction(ActionType.Parry, true);
+        else if (dash && !prevDash) SetAction(ActionType.Dash, true);
+        else if (run && !prevRun) SetAction(ActionType.Run, true);
         else EnsureActionDefault(); 
 
         if (ground && !prevGround) SetGroundState(GroundType.Ground, true);
@@ -177,6 +187,7 @@ public class CharactorState : MonoBehaviour
     {
         prevStandUp = standUp; prevSitDown = sitDown; prevJump = jump; prevHigh = high;
         prevMiddle = middle; prevLow = Low; prevGrap = grap; prevPos = pos; prevParry = parry;
+        prevDash = dash; prevRun = run;
         prevGround = ground; prevAir = air;
         prevNormalHit = normalHit; prevCounterHit = counterHit; prevPunishCounter = punishCounter;
     }

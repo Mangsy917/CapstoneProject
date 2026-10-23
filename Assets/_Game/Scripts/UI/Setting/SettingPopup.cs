@@ -12,14 +12,20 @@ using UnityEngine.EventSystems;
 public class SettingPopup : MonoBehaviour
 {
     // 팝업이 하나라도 열려 있으면 뒤의 설정 메뉴는 입력을 받지 않음
-    public static bool IsAnyOpen => openCount > 0;
+    // (컨트롤러 설정 팝업이 열려 있을 때도 포함)
+    // 닫힌 다음 프레임까지 열린 것으로 봄 (아니오를 누른 선택 키로 뒤의 메뉴가 팝업을 다시 여는 것을 막음)
+    // - UIControl은 한 프레임에 한 번 입력을 읽으므로, 실행 순서에 따라 뒤의 메뉴는
+    //   팝업보다 한 프레임 늦게 같은 입력을 받을 수 있음 -> 다음 프레임까지 막아야 함
+    public static bool IsAnyOpen => openCount > 0 || Time.frameCount - SP_closedFrame <= 1 || Game.UI.Setting.KeyBindingWindow.IsOpen;
     private static int openCount = 0;
+    private static int SP_closedFrame = int.MinValue / 2;
 
     // Domain Reload를 꺼둔 상태로 플레이해도 이전 값이 남지 않도록 초기화
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
     private static void ResetOpenCount()
     {
         openCount = 0;
+        SP_closedFrame = int.MinValue / 2;
     }
 
     [SerializeField] private UIControl uiControl;
@@ -72,6 +78,7 @@ public class SettingPopup : MonoBehaviour
     void OnDisable()
     {
         openCount--;
+        SP_closedFrame = Time.frameCount;
     }
 
     // Update is called once per frame

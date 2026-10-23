@@ -1,12 +1,9 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 
 /// <summary>
-/// 격투게임 캐릭터 이동 + 커맨드(기술) 판정.
-/// InputReader의 방향 입력(넘버패드 1~9)과 버튼 입력을 읽어서 Player 태그 오브젝트를 움직이고,
-/// 등록된 커맨드가 입력됐는지 판정합니다.
+/// 격투게임 캐릭터 이동.
+/// InputReader의 방향 입력(넘버패드 1~9)을 읽어서 Player 태그 오브젝트를 움직입니다.
+/// 커맨드(기술) 판정은 CharacterCommand에서 처리합니다.
 ///
 /// [좌우 판정]
 /// - Player.x < Enemy.x (Player가 왼쪽, 오른쪽을 바라봄)  → A 조건
@@ -52,6 +49,14 @@ public class CharacterMove : MonoBehaviour
     [Header("입력")]
     [Tooltip("방향 입력을 읽어올 InputReader. 비워두면 같은 오브젝트에서 찾음")]
     [SerializeField] private InputReader inputReader;
+
+    [Header("캐릭터 상태")]
+    [Tooltip("이동에 맞춰 서기/앉기/점프, 지상/공중 값을 바꿀 CharactorState. 비워두면 같은 오브젝트에서 찾음")]
+    [SerializeField] private CharactorState characterState;
+
+    [Header("공격")]
+    [Tooltip("공격 중인지 알려줄 CharacterAttack. 공격 중에는 땅에서 움직이지 않음. 비워두면 같은 오브젝트에서 찾음")]
+    [SerializeField] private Game.Character.CharacterAttack characterAttack;
 
     [Header("태그")]
     [SerializeField] private string playerTag = "Player";
@@ -104,210 +109,6 @@ public class CharacterMove : MonoBehaviour
     [Tooltip("Enemy를 다시 찾는 주기(초)")]
     [SerializeField] private float searchInterval = 0.25f;
 
-    // =====================================================================
-    // 커맨드(방향 입력) 판정 관련  ※ InputReader에서 옮겨온 부분
-    // =====================================================================
-
-    [Header("커맨드 입력 판정 설정")]
-    [Tooltip("각 커맨드의 windowFrames를 0(또는 음수)으로 두면 이 값이 기본값으로 사용됩니다.")]
-    [SerializeField] private int defaultCommandWindowFrames = 4;
-
-    [Tooltip("방향 입력 기록을 얼마나 오래(프레임 수) 보관할지. 너무 오래된 입력은 자동으로 버려집니다.")]
-    [SerializeField] private int historyMaxFrames = 60;
-
-    [Tooltip("requireAllButtons(동시입력) 커맨드에서 comboWindowFrames를 0(또는 음수)으로 두면 이 값이 기본값으로 사용됩니다.\n" +
-              "예) 2로 두면 L, M을 2프레임 이내에 누른 경우까지 '동시에 누름'으로 인정합니다.")]
-    [SerializeField] private int defaultComboWindowFrames = 2;
-
-    [Tooltip("체크하면 커맨드를 '바라보는 방향' 기준으로 판정합니다.\n" +
-             "예) 오른쪽에 서 있을 때도 화면상 214가 아니라 커맨드표 그대로 236으로 파동권이 나갑니다.\n" +
-             "끄면 화면상 방향(절대 방향) 그대로 판정합니다.")]
-    [SerializeField] private bool useRelativeDirectionForCommands = true;
-
-    [System.Flags]
-    public enum AttackButtonType
-    {
-        L = 1 << 0,
-        M = 1 << 1,
-        H = 1 << 2,
-        EX = 1 << 3
-    }
-
-    [System.Serializable]
-    public class CommandData
-    {
-        public string commandName;
-        public int[] directionSequence;
-        public AttackButtonType buttons;
-        public bool requireAllButtons = false;
-        public int comboWindowFrames = 2;
-        public bool requireNeutralDirection = false;
-        public int windowFrames = 0;
-        public int[] stepWindowFrames;
-        public int priority = 0;
-    }
-
-    [Header("등록된 커맨드 목록")]
-    [Tooltip("commandName은 커맨드 이름, " +
-        "directionSequence은 레버 커맨드 숫자, " +
-        "buttons은 눌러야 인식되는 버튼, " +
-        "requireAllButtons은 버튼에서 선택한 버튼들을 전부 눌러야 기술이 나가도록 하는 기능, " +
-        "comboWindowFrames은 버튼을 물리적으로 완벽하게 동시에 누를 수 없으니, 동시에 누를 수 있는 유예 프레임 시간, " +
-        "requireNeutralDirection은 레버 입력 없이 버튼만 눌러도 나가는 기술들일 때 사용, " +
-        "windowFrames은 각 버튼이나 레버 사이에 연속적으로 이어 질 수 있도록 유예 프레임 시간을 뜻함(숫자가 높을수록 널널한판정, 숫자가 낮을수록 빡빡한판정, " +
-        "stepWindowFrames은 레버 방향 입력 시 다음 입력이 몇프레임 이내에 이어져야 커맨드가 성공인지, " +
-        "priority는 기술을 읽을때의 우선도")]
-    [SerializeField]
-    private List<CommandData> commandList = new List<CommandData>
-    {
-        new CommandData
-        {
-            commandName = "전인파동권",
-            directionSequence = new int[] { 2, 3, 6, 2, 3, 6 },
-            buttons = AttackButtonType.L | AttackButtonType.M | AttackButtonType.H | AttackButtonType.EX,
-            windowFrames = 5,
-            stepWindowFrames = new int[] { 0, 0, 12, 0, 0, 0 },
-            priority = 20
-        },
-        new CommandData
-        {
-            commandName = "전인파장격",
-            directionSequence = new int[] { 2, 1, 4, 2, 1, 4 },
-            buttons = AttackButtonType.L | AttackButtonType.M | AttackButtonType.H | AttackButtonType.EX,
-            windowFrames = 5,
-            stepWindowFrames = new int[] { 0, 0, 12, 0, 0, 0 },
-            priority = 20
-        },
-        new CommandData
-        {
-            commandName = "약승룡권",
-            directionSequence = new int[] { 6, 2, 3 },
-            buttons = AttackButtonType.L,
-            windowFrames = 4,
-            stepWindowFrames = new int[] { 10, 8, 8 },
-            priority = 10
-        },
-        new CommandData
-        {
-            commandName = "중승룡권",
-            directionSequence = new int[] { 6, 2, 3 },
-            buttons = AttackButtonType.M,
-            windowFrames = 4,
-            stepWindowFrames = new int[] { 10, 8, 8 },
-            priority = 10
-        },
-        new CommandData
-        {
-            commandName = "강승룡권",
-            directionSequence = new int[] { 6, 2, 3 },
-            buttons = AttackButtonType.H,
-            windowFrames = 5,
-            stepWindowFrames = new int[] { 10, 8, 8 },
-            priority = 10
-        },
-        new CommandData
-        {
-            commandName = "EX승룡권",
-            directionSequence = new int[] { 6, 2, 3 },
-            buttons = AttackButtonType.EX,
-            windowFrames = 5,
-            stepWindowFrames = new int[] { 10, 8, 8 },
-            priority = 10
-        },
-        new CommandData
-        {
-            commandName = "약파동권",
-            directionSequence = new int[] { 2, 3, 6 },
-            buttons = AttackButtonType.L,
-            windowFrames = 5,
-            priority = 0
-        },
-        new CommandData
-        {
-            commandName = "중파동권",
-            directionSequence = new int[] { 2, 3, 6 },
-            buttons = AttackButtonType.M,
-            windowFrames = 5,
-            priority = 0
-        },
-        new CommandData
-        {
-            commandName = "강파동권",
-            directionSequence = new int[] { 2, 3, 6 },
-            buttons = AttackButtonType.H,
-            windowFrames = 5,
-            priority = 0
-        },
-        new CommandData
-        {
-            commandName = "EX파동권",
-            directionSequence = new int[] { 2, 3, 6 },
-            buttons = AttackButtonType.EX,
-            windowFrames = 5,
-            priority = 0
-        },
-        new CommandData
-        {
-            commandName = "약파장격",
-            directionSequence = new int[] { 2, 1, 4 },
-            buttons = AttackButtonType.L,
-            windowFrames = 5,
-            priority = 0
-        },
-        new CommandData
-        {
-            commandName = "중파장격",
-            directionSequence = new int[] { 2, 1, 4 },
-            buttons = AttackButtonType.M,
-            windowFrames = 5,
-            priority = 0
-        },
-        new CommandData
-        {
-            commandName = "강파장격",
-            directionSequence = new int[] { 2, 1, 4 },
-            buttons = AttackButtonType.H,
-            windowFrames = 5,
-            priority = 0
-        },
-        new CommandData
-        {
-            commandName = "EX파장격",
-            directionSequence = new int[] { 2, 1, 4 },
-            buttons = AttackButtonType.EX,
-            windowFrames = 5,
-            priority = 0
-        },
-        new CommandData
-        {
-            commandName = "전인스택",
-            directionSequence = new int[] { 2, 2 },
-            buttons = AttackButtonType.L | AttackButtonType.M | AttackButtonType.H | AttackButtonType.EX,
-            windowFrames = 10,
-            priority = 5
-        },
-        new CommandData
-        {
-            commandName = "잡기",
-            directionSequence = new int[0],
-            buttons = AttackButtonType.L | AttackButtonType.M,
-            requireAllButtons = true,
-            comboWindowFrames = 2,
-            requireNeutralDirection = true,
-            priority = 5
-        },
-        new CommandData
-        {
-            commandName = "도발",
-            directionSequence = new int[0],
-            buttons = AttackButtonType.L | AttackButtonType.M | AttackButtonType.H | AttackButtonType.EX,
-            requireAllButtons = true,
-            comboWindowFrames = 2,
-            requireNeutralDirection = true,
-            priority = 10
-        }
-    };
-
     // ===== 다른 스크립트(애니메이션, 피격 판정 등)에서 읽어갈 상태 =====
 
     /// <summary>현재 이동 상태</summary>
@@ -331,12 +132,6 @@ public class CharacterMove : MonoBehaviour
     public bool IsBackDashing => CurrentState == MoveState.BackDash;
     public bool IsRunning => isRunning;
 
-    /// <summary>가장 최근에 성공한 커맨드</summary>
-    public CommandData LastCommand { get; private set; }
-
-    /// <summary>커맨드 입력에 성공했을 때 호출되는 이벤트 (공격/애니메이션 스크립트에서 구독)</summary>
-    public event Action<CommandData> OnCommandTriggered;
-
     // ===== 이동 내부 상태 =====
     private Transform enemy;
     private float searchTimer;
@@ -354,64 +149,36 @@ public class CharacterMove : MonoBehaviour
     private float runOverlapTimer = -1f;                // 달리는 중 Enemy와 겹친 뒤 지난 시간 (-1이면 아직 안 겹침)
     private Collider selfCollider;
     private Collider enemyCollider;
+    private Game.Character.Pushbox selfPushbox;
+    private Game.Character.Pushbox enemyPushbox;
 
-    // ===== 커맨드 판정 내부 상태 =====
-    private List<CommandData> sortedCommandList;
+    private int frameCounter = 0; // 대쉬, 점프 준비 판정에 쓰는 프레임 수
 
-    private static readonly AttackButtonType[] allButtonFlags =
-    {
-        AttackButtonType.L, AttackButtonType.M, AttackButtonType.H, AttackButtonType.EX
-    };
-
-    // 각 버튼이 "마지막으로 눌린" 프레임을 기록해, 동시입력 콤보(예: L+M)
-    // 판정 시 "서로 몇 프레임 이내에 눌렸는지"를 계산하는 데 사용한다.
-    private readonly Dictionary<AttackButtonType, int> lastPressFrame = new Dictionary<AttackButtonType, int>
-    {
-        { AttackButtonType.L, int.MinValue / 2 },
-        { AttackButtonType.M, int.MinValue / 2 },
-        { AttackButtonType.H, int.MinValue / 2 },
-        { AttackButtonType.EX, int.MinValue / 2 },
-    };
-
-    // 방향이 "바뀐 시점"만 기록하는 입력 기록 버퍼
-    private struct DirectionEntry
-    {
-        public int direction;
-        public int frame;
-
-        public DirectionEntry(int direction, int frame)
-        {
-            this.direction = direction;
-            this.frame = frame;
-        }
-    }
-
-    private readonly List<DirectionEntry> directionHistory = new List<DirectionEntry>();
-    private int commandDirection = 5; // 커맨드 판정용 현재 방향 (시작은 중립)
-    private int frameCounter = 0;
+    // ===== 캐릭터 상태(CharactorState) 연결 =====
+    // 이동으로 정해지는 자세. 바뀐 순간에만 CharactorState에 넣어서,
+    // 다른 스크립트(공격 등)가 넣은 상단/중단/하단 같은 값을 매 프레임 덮어쓰지 않도록 함
+    private enum StatePosture { None, Stand, Crouch, Jump, Dash, Run }
+    private StatePosture appliedPosture = StatePosture.None;
 
     private void Awake()
     {
         if (inputReader == null)
             inputReader = GetComponent<InputReader>();
 
+        if (characterState == null)
+            characterState = GetComponent<CharactorState>();
+
+        if (characterAttack == null)
+            characterAttack = GetComponent<Game.Character.CharacterAttack>();
+
         selfCollider = GetComponent<Collider>();
+        selfPushbox = GetComponent<Game.Character.Pushbox>();
 
         if (inputReader == null)
             Debug.LogError("[CharacterMove] InputReader를 찾을 수 없습니다. Input Reader 칸에 지정해 주세요.", this);
 
         if (!CompareTag(playerTag))
             Debug.LogWarning($"[CharacterMove] 이 오브젝트의 태그가 '{playerTag}'가 아닙니다. Player 태그 오브젝트에 붙여 주세요.", this);
-
-        // priority가 높은 커맨드부터, 그다음은 방향 시퀀스가 긴(=더 구체적인) 커맨드부터
-        // 검사하도록 미리 정렬해둔다. (예: 623L이 236L보다 먼저 검사되도록 priority로 순서를 명시)
-        sortedCommandList = commandList
-            .OrderByDescending(c => c.priority)
-            .ThenByDescending(c => c.directionSequence?.Length ?? 0)
-            .ToList();
-
-        // 최초 상태(중립)를 기록에 남겨둔다.
-        directionHistory.Add(new DirectionEntry(commandDirection, frameCounter));
     }
 
     private void Start()
@@ -444,18 +211,76 @@ public class CharacterMove : MonoBehaviour
         RawDirection = inputReader.Direction;
         RelativeDirection = ToRelativeDirection(RawDirection, IsFacingRight);
 
-        // 커맨드 판정
-        RecordDirection(useRelativeDirectionForCommands ? RelativeDirection : RawDirection);
-        PruneOldHistory();
-        CheckCommands();
+        CancelDashTapOnOtherDirection();
 
-        // 이동
-        if (IsGrounded)
-            UpdateGrounded();
-        else
+        bool isAttacking = characterAttack != null && characterAttack.IsAttacking;
+
+        // 이동 (공격 중에는 땅에서 멈추고, 공중 공격은 점프 궤도를 그대로 따라감)
+        if (!IsGrounded)
             UpdateAirborne();
+        else if (isAttacking)
+            StopForAttack();
+        else
+            UpdateGrounded();
+
+        // 공격 중에는 CharacterAttack이 넣은 상단/중단/하단/잡기 값을 덮어쓰지 않음.
+        // 공격이 끝나면 이동 자세를 다시 넣도록 기록을 지워둠
+        if (isAttacking)
+            appliedPosture = StatePosture.None;
+        else
+            UpdateCharacterState();
 
         previousRelativeDirection = RelativeDirection;
+    }
+
+    // =====================================================================
+    // 캐릭터 상태(CharactorState) 연결
+    // =====================================================================
+
+    // 이동 상태 -> CharactorState
+    // - 공중(점프 중)                         : 점프 + 공중
+    // - 앉기, 앉기 + 가드                      : 앉기 + 지상
+    // - 앞대쉬, 백대쉬                         : 대쉬 + 지상
+    // - 달리기                                 : 달리기 + 지상
+    // - 그 외 땅 위 (중립, 걷기, 점프 준비)       : 서기 + 지상
+    // 상단/중단/하단, 잡기, 자세, 패리는 대응하는 동작이 아직 없어서 건드리지 않음
+    private void UpdateCharacterState()
+    {
+        if (characterState == null) return;
+
+        StatePosture posture;
+        if (!IsGrounded) posture = StatePosture.Jump;
+        else if (IsCrouching) posture = StatePosture.Crouch;
+        else if (IsDashing || IsBackDashing) posture = StatePosture.Dash;
+        else if (IsRunning) posture = StatePosture.Run;
+        else posture = StatePosture.Stand;
+
+        if (posture == appliedPosture) return;
+        appliedPosture = posture;
+
+        switch (posture)
+        {
+            case StatePosture.Stand:
+                characterState.StandUp = true;
+                characterState.Ground = true;
+                break;
+            case StatePosture.Crouch:
+                characterState.SitDown = true;
+                characterState.Ground = true;
+                break;
+            case StatePosture.Jump:
+                characterState.Jump = true;
+                characterState.Air = true;
+                break;
+            case StatePosture.Dash:
+                characterState.Dash = true;
+                characterState.Ground = true;
+                break;
+            case StatePosture.Run:
+                characterState.Run = true;
+                characterState.Ground = true;
+                break;
+        }
     }
 
     // =====================================================================
@@ -510,6 +335,32 @@ public class CharacterMove : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// 재시작할 때 호출. 점프, 대쉬, 달리기, 대쉬 입력 대기를 모두 취소하고 바닥에 선 중립 상태로 되돌림
+    /// </summary>
+    public void ResetMovement()
+    {
+        StopForAttack();
+        IsGrounded = true;
+        airVelocity = Vector2.zero;
+        lastForwardTapFrame = int.MinValue / 2;
+        lastBackTapFrame = int.MinValue / 2;
+        appliedPosture = StatePosture.None; // 다음 프레임에 서기 자세를 다시 넣음
+
+        Vector3 position = transform.position;
+        position.y = groundY;
+        transform.position = position;
+    }
+
+    // 공격이 시작되면 하던 점프 준비, 대쉬, 달리기를 취소하고 제자리에 멈춤
+    private void StopForAttack()
+    {
+        isJumpStarting = false;
+        dashTimer = 0f;
+        StopRun();
+        CurrentState = MoveState.Neutral;
+    }
+
     private void Move(float xSpeed)
     {
         transform.position += new Vector3(xSpeed * Time.deltaTime, 0f, 0f);
@@ -520,9 +371,23 @@ public class CharacterMove : MonoBehaviour
     // =====================================================================
 
     /// <summary>
+    /// 66 / 44 사이에는 중립(5)만 거쳐야 대쉬로 인정되도록,
+    /// 레버가 6(또는 4)도 5도 아닌 방향으로 바뀌면 기다리던 대쉬 입력을 취소.
+    /// 예) 656은 대쉬, 636 / 6363636 / 414141은 대쉬가 아님
+    /// 대쉬, 점프, 공격 중에도 놓치지 않도록 매 프레임 확인
+    /// </summary>
+    private void CancelDashTapOnOtherDirection()
+    {
+        if (RelativeDirection == previousRelativeDirection || RelativeDirection == 5) return;
+
+        if (RelativeDirection != 6) lastForwardTapFrame = int.MinValue / 2;
+        if (RelativeDirection != 4) lastBackTapFrame = int.MinValue / 2;
+    }
+
+    /// <summary>
     /// 6(또는 4)을 새로 누른 순간을 기록하고, dashInputWindowFrames 이내에 한 번 더 새로 누르면 대쉬 시작.
     /// "새로 누름" = 직전 프레임에는 그 방향이 아니었다가 이번 프레임에 그 방향이 된 것
-    /// (그래서 66 사이에 레버를 한 번 놓아야 인정됨)
+    /// (그래서 66 사이에 레버를 한 번 놓아야 인정됨. 놓는 동안 중립 말고 다른 방향을 거치면 취소됨)
     /// </summary>
     private bool TryStartDash()
     {
@@ -632,11 +497,15 @@ public class CharacterMove : MonoBehaviour
 
     /// <summary>
     /// Enemy와 겹쳤는지 확인.
-    /// 양쪽 모두 Collider가 있으면 Collider 범위로, 없으면 x축 거리(overlapDistance)로 판정
+    /// 양쪽 모두 Pushbox가 있으면 맞닿았는지로 (Pushbox가 겹침을 풀어주므로 겹치지는 않음),
+    /// Collider가 있으면 Collider 범위로, 둘 다 없으면 x축 거리(overlapDistance)로 판정
     /// </summary>
     private bool IsOverlappingEnemy()
     {
         if (enemy == null) return false;
+
+        if (selfPushbox != null && enemyPushbox != null)
+            return Game.Character.Pushbox.IsTouching(selfPushbox, enemyPushbox);
 
         if (selfCollider != null && enemyCollider != null)
             return selfCollider.bounds.Intersects(enemyCollider.bounds);
@@ -686,6 +555,24 @@ public class CharacterMove : MonoBehaviour
             case 9: StartJump(MoveState.JumpForward, facingSign * forwardJumpSpeed); break;
             default: StartJump(MoveState.JumpNeutral, 0f); break;
         }
+    }
+
+    /// <summary>
+    /// 공격(승룡권 등)으로 공중에 뛰어오름. forwardSpeed는 바라보는 쪽이 +
+    /// </summary>
+    public void LaunchIntoAir(float forwardSpeed, float upSpeed)
+    {
+        isJumpStarting = false;
+        dashTimer = 0f;
+        StopRun();
+
+        float facingSign = IsFacingRight ? 1f : -1f;
+        MoveState jumpState = forwardSpeed > 0f ? MoveState.JumpForward
+                            : forwardSpeed < 0f ? MoveState.JumpBack
+                            : MoveState.JumpNeutral;
+        CurrentState = jumpState;
+        IsGrounded = false;
+        airVelocity = new Vector2(facingSign * forwardSpeed, upSpeed);
     }
 
     private void StartJump(MoveState jumpState, float xSpeed)
@@ -768,160 +655,7 @@ public class CharacterMove : MonoBehaviour
         }
 
         enemyCollider = enemy != null ? enemy.GetComponent<Collider>() : null;
-    }
-
-    // =====================================================================
-    // 커맨드 판정  ※ InputReader에서 옮겨온 부분
-    // =====================================================================
-
-    private void RecordDirection(int newDirection)
-    {
-        // 방향이 바뀐 순간만 기록한다 (같은 방향을 계속 누르고 있는 프레임은 기록하지 않음)
-        if (newDirection != commandDirection)
-        {
-            commandDirection = newDirection;
-            directionHistory.Add(new DirectionEntry(commandDirection, frameCounter));
-        }
-    }
-
-    private void PruneOldHistory()
-    {
-        int cutoffFrame = frameCounter - historyMaxFrames;
-        int removeCount = 0;
-        while (removeCount < directionHistory.Count - 1 && directionHistory[removeCount].frame < cutoffFrame)
-        {
-            removeCount++;
-        }
-        if (removeCount > 0)
-        {
-            directionHistory.RemoveRange(0, removeCount);
-        }
-    }
-
-    private void CheckCommands()
-    {
-        var pressedButtons = new List<AttackButtonType>();
-
-        // 이번 프레임에 새로 눌린 버튼을 모으면서, 동시입력 판정에 쓸 "마지막으로 눌린 프레임"도 갱신한다.
-        if (inputReader.buttonLDown) { pressedButtons.Add(AttackButtonType.L); lastPressFrame[AttackButtonType.L] = frameCounter; }
-        if (inputReader.buttonMDown) { pressedButtons.Add(AttackButtonType.M); lastPressFrame[AttackButtonType.M] = frameCounter; }
-        if (inputReader.buttonHDown) { pressedButtons.Add(AttackButtonType.H); lastPressFrame[AttackButtonType.H] = frameCounter; }
-        if (inputReader.buttonEXDown) { pressedButtons.Add(AttackButtonType.EX); lastPressFrame[AttackButtonType.EX] = frameCounter; }
-
-        if (pressedButtons.Count == 0) return;
-
-        // 한 프레임에 여러 버튼이 동시에 눌리는 경우(예: L, M이 정확히 같은 프레임에 눌림),
-        // 같은 콤보 커맨드가 버튼별로 중복 출력되지 않도록 이번 프레임에 이미 채택된 커맨드를 기록해둔다.
-        var triggeredThisFrame = new HashSet<CommandData>();
-
-        foreach (var button in pressedButtons)
-        {
-            foreach (var command in sortedCommandList)
-            {
-                if (triggeredThisFrame.Contains(command)) continue;
-
-                // 커맨드에 이 버튼이 체크돼 있지 않으면(비트가 없으면) 건너뛴다.
-                if ((command.buttons & button) == 0) continue;
-
-                // 동시입력(콤보) 커맨드는 buttons에 포함된 버튼이 전부, 서로 comboWindowFrames 이내에 눌려 있어야 한다.
-                if (command.requireAllButtons && !IsButtonComboSatisfied(command)) continue;
-
-                // 방향이 중립일 때만 발동하는 커맨드(예: 중립 잡기) 조건 체크
-                if (command.requireNeutralDirection && commandDirection != 5) continue;
-
-                // directionSequence가 비어 있으면 방향 조건 없이(버튼 조건만으로) 통과시킨다.
-                bool motionOk = command.directionSequence == null || command.directionSequence.Length == 0
-                    || CheckMotionInput(command);
-
-                if (motionOk)
-                {
-                    Debug.Log($"[Command] '{command.commandName}' 커맨드 입력 성공! (버튼: {button}, 프레임: {frameCounter})");
-                    triggeredThisFrame.Add(command);
-                    LastCommand = command;
-                    OnCommandTriggered?.Invoke(command);
-                    break; // 이 버튼에 대해서는 가장 구체적인/우선순위 높은 커맨드 하나만 채택하고 종료
-                }
-            }
-        }
-    }
-
-    private bool IsButtonComboSatisfied(CommandData command)
-    {
-        int? minFrame = null;
-        int? maxFrame = null;
-
-        foreach (var flag in allButtonFlags)
-        {
-            if ((command.buttons & flag) == 0) continue; // 이 커맨드가 요구하는 버튼이 아님
-
-            if (!IsButtonCurrentlyPressed(flag)) return false; // 요구 버튼 중 하나라도 안 눌려 있으면 실패
-
-            int pressFrame = lastPressFrame[flag];
-            if (minFrame == null || pressFrame < minFrame) minFrame = pressFrame;
-            if (maxFrame == null || pressFrame > maxFrame) maxFrame = pressFrame;
-        }
-
-        if (minFrame == null) return false; // buttons에 체크된 버튼이 하나도 없음
-
-        int window = command.comboWindowFrames > 0 ? command.comboWindowFrames : defaultComboWindowFrames;
-        return (maxFrame.Value - minFrame.Value) <= window;
-    }
-
-    private bool IsButtonCurrentlyPressed(AttackButtonType flag)
-    {
-        switch (flag)
-        {
-            case AttackButtonType.L: return inputReader.buttonL;
-            case AttackButtonType.M: return inputReader.buttonM;
-            case AttackButtonType.H: return inputReader.buttonH;
-            case AttackButtonType.EX: return inputReader.buttonEX;
-            default: return false;
-        }
-    }
-
-    private int GetGapWindow(CommandData command, int gapIndex)
-    {
-        var steps = command.stepWindowFrames;
-        if (steps != null && steps.Length == command.directionSequence.Length &&
-            gapIndex >= 0 && gapIndex < steps.Length && steps[gapIndex] > 0)
-        {
-            return steps[gapIndex];
-        }
-
-        return command.windowFrames > 0 ? command.windowFrames : defaultCommandWindowFrames;
-    }
-
-    private bool CheckMotionInput(CommandData command)
-    {
-        int[] motion = command.directionSequence;
-        if (motion == null || motion.Length == 0) return false;
-
-        int motionIndex = motion.Length - 1; // 가장 최근에 요구되는 방향부터 역순으로 매칭
-        int lastMatchedFrame = frameCounter;  // 버튼이 눌린 현재 프레임을 기준점으로 시작
-
-        for (int i = directionHistory.Count - 1; i >= 0; i--)
-        {
-            if (motionIndex < 0) break;
-
-            DirectionEntry entry = directionHistory[i];
-
-            if (entry.direction == motion[motionIndex])
-            {
-                // 직전에 매칭된 시점(버튼 입력 또는 다음 방향)과의 프레임 차가
-                // 이 구간에 허용된 유예 프레임을 넘으면 실패로 처리한다.
-                int gapWindow = GetGapWindow(command, motionIndex);
-                if (lastMatchedFrame - entry.frame > gapWindow)
-                {
-                    return false;
-                }
-
-                lastMatchedFrame = entry.frame;
-                motionIndex--;
-            }
-            // 매칭되지 않는 방향(예: 623 도중 스쳐 지나가는 중립, 6236L의 여분의 6)은 그냥 건너뛴다.
-        }
-
-        return motionIndex < 0; // 모든 방향 단계를 순서대로 다 찾았으면 성공
+        enemyPushbox = enemy != null ? enemy.GetComponent<Game.Character.Pushbox>() : null;
     }
 
     private void OnValidate()
@@ -933,7 +667,6 @@ public class CharacterMove : MonoBehaviour
         if (jumpVelocity < 0f) jumpVelocity = 0f;
         if (gravity < 0.01f) gravity = 0.01f;
         if (searchInterval < 0f) searchInterval = 0f;
-        if (historyMaxFrames < 1) historyMaxFrames = 1;
         if (jumpDirectionBufferFrames < 0) jumpDirectionBufferFrames = 0;
         if (dashInputWindowFrames < 1) dashInputWindowFrames = 1;
         if (forwardDashSpeed < 0f) forwardDashSpeed = 0f;

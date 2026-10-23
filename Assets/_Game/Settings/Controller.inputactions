@@ -95,6 +95,16 @@
                     "interactions": "",
                     "initialStateCheck": false,
                     "priority": 0
+                },
+                {
+                    "name": "Restart",
+                    "type": "Button",
+                    "id": "2cf019db-da83-4d4f-9c7c-78147277600c",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false,
+                    "priority": 0
                 }
             ],
             "bindings": [
@@ -337,6 +347,39 @@
                     "processors": "",
                     "groups": ";GamePad",
                     "action": "OpenUI",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "3ea11c89-b591-4a52-a62d-4dc7fe5e2869",
+                    "path": "<Keyboard>/space",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": ";PC",
+                    "action": "Restart",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "ec688881-cd38-42c4-9bd9-a80776e69326",
+                    "path": "<DualShockGamepad>/touchpadButton",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": ";GamePad",
+                    "action": "Restart",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "120f2df1-4cc2-41db-aff9-cba2fcc16a25",
+                    "path": "<Gamepad>/select",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": ";GamePad",
+                    "action": "Restart",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

@@ -1,5 +1,4 @@
 using UnityEngine;
-using UnityEditor.SceneManagement;
 using UnityEngine.SceneManagement;
 using JetBrains.Annotations;
 
@@ -38,6 +37,9 @@ public class TitleBTUI : MonoBehaviour
     public void PressExitBT()
     {
         Application.Quit();
+        // 에디터 전용 코드는 빌드에 들어가면 빌드가 실패하므로 에디터에서만 컴파일
+#if UNITY_EDITOR
         UnityEditor.EditorApplication.isPlaying = false;
+#endif
     }
 }

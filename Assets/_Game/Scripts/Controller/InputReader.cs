@@ -4,10 +4,10 @@ using UnityEngine.InputSystem;
 
 /// <summary>
 /// 키보드 / 컨트롤러 입력을 읽어서 방향과 버튼 상태로 정리합니다.
-/// 커맨드(기술) 판정은 CharacterMove에서 처리합니다.
+/// 커맨드(기술) 판정은 CharacterCommand에서 처리합니다.
 ///
 /// 다른 스크립트보다 먼저 실행되도록 실행 순서를 앞당겨 두었습니다.
-/// (CharacterMove가 같은 프레임의 최신 입력을 읽을 수 있도록)
+/// (CharacterMove, CharacterCommand가 같은 프레임의 최신 입력을 읽을 수 있도록)
 /// </summary>
 [DefaultExecutionOrder(-100)]
 public class InputReader : MonoBehaviour
@@ -17,7 +17,7 @@ public class InputReader : MonoBehaviour
     [SerializeField] private string actionMapName = "Char";
 
     private InputAction moveUp, moveDown, moveLeft, moveRight;
-    private InputAction attackL, attackM, attackH, attackEX, openUI;
+    private InputAction attackL, attackM, attackH, attackEX, openUI, restart;
 
     [Header("컨트롤러 방향 상태")]
     public bool controllerDL = false;
@@ -44,6 +44,9 @@ public class InputReader : MonoBehaviour
 
     public bool uiOpen = false;
 
+    [Header("재시작 키 (누른 순간 1프레임만 true)")]
+    public bool restartDown = false;
+
     /// <summary>현재 방향을 넘버패드 숫자(1~9)로 표현한 값. 5 = 중립</summary>
     public int Direction { get; private set; } = 5;
 
@@ -55,6 +58,9 @@ public class InputReader : MonoBehaviour
             enabled = false;
             return;
         }
+
+        // 컨트롤러 설정에서 바꾼 키를 적용 (씬을 넘어가도, 빌드에서는 껐다 켜도 유지)
+        Game.Controller.KeyBindingStore.Apply(inputActions);
 
         var map = inputActions.FindActionMap(actionMapName, throwIfNotFound: true);
 
@@ -69,6 +75,7 @@ public class InputReader : MonoBehaviour
         attackEX = map.FindAction("AttackEX");
 
         openUI = map.FindAction("OpenUI");
+        restart = map.FindAction("Restart");
     }
 
     private void Start()
@@ -112,6 +119,10 @@ public class InputReader : MonoBehaviour
 
         UpdateDirectionState(up, down, left, right);
         UpdateAttackButtonStates(l, m, h, ex, lDown, mDown, hDown, exDown, open);
+
+        // 플레이스테이션 패드는 터치패드로만 재시작 (Share 버튼은 무시)
+        restartDown = restart != null && restart.WasPressedThisFrame() &&
+                      !ControllerTypeDetector.IsPlayStationShareButton(restart.activeControl);
     }
 
     private void UpdateDirectionState(bool up, bool down, bool left, bool right)

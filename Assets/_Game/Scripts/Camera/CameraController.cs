@@ -119,6 +119,20 @@ public class CameraManager : MonoBehaviour
         targetCamera.position = new Vector3(xy.x, xy.y, z);
     }
 
+    /// <summary>
+    /// 천천히 따라가지 않고 목표 위치로 바로 옮김 (재시작 등으로 캐릭터를 순간이동시킨 뒤 호출)
+    /// </summary>
+    public void SnapToTarget()
+    {
+        if (targetCamera == null) return;
+        if (!IsValid(player)) FindTargets();
+        if (player == null) return;
+
+        targetCamera.position = GetDesiredPosition();
+        followVelocity = Vector2.zero;
+        zoomVelocity = 0f;
+    }
+
     private Vector3 GetDesiredPosition()
     {
         float x, y, z;
