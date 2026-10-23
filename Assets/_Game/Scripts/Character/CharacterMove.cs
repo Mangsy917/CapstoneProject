@@ -149,6 +149,8 @@ public class CharacterMove : MonoBehaviour
     private float runOverlapTimer = -1f;                // 달리는 중 Enemy와 겹친 뒤 지난 시간 (-1이면 아직 안 겹침)
     private Collider selfCollider;
     private Collider enemyCollider;
+    private Game.Character.Pushbox selfPushbox;
+    private Game.Character.Pushbox enemyPushbox;
 
     private int frameCounter = 0; // 대쉬, 점프 준비 판정에 쓰는 프레임 수
 
@@ -170,6 +172,7 @@ public class CharacterMove : MonoBehaviour
             characterAttack = GetComponent<Game.Character.CharacterAttack>();
 
         selfCollider = GetComponent<Collider>();
+        selfPushbox = GetComponent<Game.Character.Pushbox>();
 
         if (inputReader == null)
             Debug.LogError("[CharacterMove] InputReader를 찾을 수 없습니다. Input Reader 칸에 지정해 주세요.", this);
@@ -461,11 +464,15 @@ public class CharacterMove : MonoBehaviour
 
     /// <summary>
     /// Enemy와 겹쳤는지 확인.
-    /// 양쪽 모두 Collider가 있으면 Collider 범위로, 없으면 x축 거리(overlapDistance)로 판정
+    /// 양쪽 모두 Pushbox가 있으면 맞닿았는지로 (Pushbox가 겹침을 풀어주므로 겹치지는 않음),
+    /// Collider가 있으면 Collider 범위로, 둘 다 없으면 x축 거리(overlapDistance)로 판정
     /// </summary>
     private bool IsOverlappingEnemy()
     {
         if (enemy == null) return false;
+
+        if (selfPushbox != null && enemyPushbox != null)
+            return Game.Character.Pushbox.IsTouching(selfPushbox, enemyPushbox);
 
         if (selfCollider != null && enemyCollider != null)
             return selfCollider.bounds.Intersects(enemyCollider.bounds);
@@ -615,6 +622,7 @@ public class CharacterMove : MonoBehaviour
         }
 
         enemyCollider = enemy != null ? enemy.GetComponent<Collider>() : null;
+        enemyPushbox = enemy != null ? enemy.GetComponent<Game.Character.Pushbox>() : null;
     }
 
     private void OnValidate()
