@@ -27846,6 +27846,7 @@ MonoBehaviour:
   _characterCommand: {fileID: 1389828393}
   CA_characterState: {fileID: 1389828395}
   CA_characterMove: {fileID: 1389828396}
+  CA_opponentTag: Enemy
 --- !u!114 &1389828393
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -28229,9 +28230,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d3571f86751cca64dbe92a53293a1eee, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Game.Character.CharacterAnimationPlayer
-  _animator: {fileID: 0}
-  CAP_characterMove: {fileID: 0}
-  CAP_characterAttack: {fileID: 0}
+  _animator: {fileID: 1389828402}
+  CAP_characterMove: {fileID: 1389828396}
+  CAP_characterAttack: {fileID: 1389828392}
   _idleState: Idle
   _sitState: Sit
   _jumpState: Jump
@@ -35918,7 +35919,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 078c1bc7109aa0449ba51b5863a1cb80, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::StateUI
-  stateReader: {fileID: 0}
+  stateReader: {fileID: 1389828395}
   characterMove: {fileID: 1136779412}
   standUp: "\uC11C\uAE30"
   sitDwon: "\uC549\uAE30"
