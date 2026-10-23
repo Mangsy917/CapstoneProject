@@ -72,7 +72,11 @@ namespace Game.Character
             if (!IsAttacking) return;
 
             AttackFrame++;
-            if (AttackFrame > CurrentAttack.TotalFrames || (_isAirAttack && IsGrounded()))
+
+            // HoldUntilLanding이면 공중에 있는 동안은 프레임이 다 지나도 끝내지 않음
+            bool isFramesOver = AttackFrame > CurrentAttack.TotalFrames &&
+                                !(CurrentAttack.HoldUntilLanding && !IsGrounded());
+            if (isFramesOver || (_isAirAttack && IsGrounded()))
             {
                 EndAttack();
                 return;
@@ -82,6 +86,12 @@ namespace Game.Character
 
             if (CurrentAttack.ProjectilePrefab != null && AttackFrame == CurrentAttack.ProjectileSpawnFrame)
                 SpawnProjectile(CurrentAttack);
+
+            if (AttackFrame == CurrentAttack.LaunchFrame && CA_characterMove != null)
+            {
+                CA_characterMove.LaunchIntoAir(CurrentAttack.LaunchForwardSpeed, CurrentAttack.LaunchUpSpeed);
+                _isAirAttack = true; // 뛰어오른 뒤 착지하면 공격이 끝남
+            }
         }
 
         private bool IsGrounded()

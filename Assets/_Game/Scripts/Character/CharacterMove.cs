@@ -517,6 +517,24 @@ public class CharacterMove : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// 공격(승룡권 등)으로 공중에 뛰어오름. forwardSpeed는 바라보는 쪽이 +
+    /// </summary>
+    public void LaunchIntoAir(float forwardSpeed, float upSpeed)
+    {
+        isJumpStarting = false;
+        dashTimer = 0f;
+        StopRun();
+
+        float facingSign = IsFacingRight ? 1f : -1f;
+        MoveState jumpState = forwardSpeed > 0f ? MoveState.JumpForward
+                            : forwardSpeed < 0f ? MoveState.JumpBack
+                            : MoveState.JumpNeutral;
+        CurrentState = jumpState;
+        IsGrounded = false;
+        airVelocity = new Vector2(facingSign * forwardSpeed, upSpeed);
+    }
+
     private void StartJump(MoveState jumpState, float xSpeed)
     {
         CurrentState = jumpState;

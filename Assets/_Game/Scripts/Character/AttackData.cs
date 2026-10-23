@@ -91,6 +91,16 @@ namespace Game.Character
         [Tooltip("예) 슈퍼아머 / 시작 1 / 끝 8 / 상단 / 2회 → 1~8프레임 동안 상단 공격을 2번까지 버팀")]
         [SerializeField] private TraitWindow[] _traitWindows = new TraitWindow[0];
 
+        [Header("공중으로 뛰어오르기")]
+        [Tooltip("이 프레임에 앞으로 뛰어오름 (공격 시작 프레임 = 1). 0이면 뛰어오르지 않음")]
+        [SerializeField] private int _launchFrame = 0;
+        [Tooltip("뛰어오를 때 앞으로 가는 속도 (음수면 뒤로)")]
+        [SerializeField] private float _launchForwardSpeed = 2f;
+        [Tooltip("뛰어오를 때 위로 향하는 속도")]
+        [SerializeField] private float _launchUpSpeed = 9f;
+        [Tooltip("체크하면 공중에 있는 동안은 프레임이 다 지나도 공격이 끝나지 않고, 착지할 때 끝남")]
+        [SerializeField] private bool _holdUntilLanding = false;
+
         [Header("애니메이션")]
         [Tooltip("공격 중 재생할 Animator 상태 이름")]
         [SerializeField] private string _animationState;
@@ -104,6 +114,10 @@ namespace Game.Character
         [SerializeField] private Vector2 _projectileSpawnOffset = new Vector2(1f, 0.3f);
 
         public string AttackName => _attackName;
+        public int LaunchFrame => _launchFrame;
+        public float LaunchForwardSpeed => _launchForwardSpeed;
+        public float LaunchUpSpeed => _launchUpSpeed;
+        public bool HoldUntilLanding => _holdUntilLanding;
         public string AnimationState => _animationState;
         public Projectile ProjectilePrefab => _projectilePrefab;
         public int ProjectileSpawnFrame => _projectileSpawnFrame;
@@ -136,6 +150,8 @@ namespace Game.Character
             if (_activeFrames < 1) _activeFrames = 1;
             if (_recoveryFrames < 0) _recoveryFrames = 0;
             if (_projectileSpawnFrame < 1) _projectileSpawnFrame = 1;
+            if (_launchFrame < 0) _launchFrame = 0;
+            if (_launchUpSpeed < 0f) _launchUpSpeed = 0f;
 
             if (_traitWindows == null) return;
             foreach (var window in _traitWindows)

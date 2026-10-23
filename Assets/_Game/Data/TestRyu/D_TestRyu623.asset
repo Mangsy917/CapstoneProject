@@ -23,6 +23,10 @@ MonoBehaviour:
     _endFrame: 5
     _armorHeights: 0
     _armorHitCount: 0
+  _launchFrame: 3
+  _launchForwardSpeed: 2
+  _launchUpSpeed: 9
+  _holdUntilLanding: 1
   _animationState: 623
   _projectilePrefab: {fileID: 0}
   _projectileSpawnFrame: 1
