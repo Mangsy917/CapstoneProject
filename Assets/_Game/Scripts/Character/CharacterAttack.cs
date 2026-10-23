@@ -29,6 +29,9 @@ namespace Game.Character
         [Tooltip("바라보는 방향, 땅/공중 상태를 알려줄 CharacterMove. 비워두면 같은 오브젝트에서 찾음")]
         [SerializeField] private CharacterMove CA_characterMove;
 
+        [Tooltip("투사체가 맞힐 상대의 태그 (Player에는 Enemy)")]
+        [SerializeField] private string CA_opponentTag = "Enemy";
+
         /// <summary>지금 진행 중인 공격 (공격 중이 아니면 null)</summary>
         public AttackData CurrentAttack { get; private set; }
 
@@ -144,13 +147,15 @@ namespace Game.Character
             Vector3 position = transform.position + new Vector3(isFacingRight ? offset.x : -offset.x, offset.y, 0f);
 
             Projectile projectile = Instantiate(attack.ProjectilePrefab, position, Quaternion.identity);
-            projectile.Launch(isFacingRight);
+            projectile.Launch(isFacingRight, owner: gameObject, targetTag: CA_opponentTag);
         }
 
         // 공격 중에 들어온 커맨드는 무시함 (캔슬은 아직 없음)
+        // 내가 쏜 투사체가 화면에 남아 있으면 투사체 공격(장풍)은 나가지 않음
         private void HandleCommandTriggered(CharacterCommand.CommandData command)
         {
             if (command.attack == null || IsAttacking) return;
+            if (command.attack.ProjectilePrefab != null && Projectile.HasActiveProjectile(gameObject)) return;
             StartAttack(command.attack);
         }
 
