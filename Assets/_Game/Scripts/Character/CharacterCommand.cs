@@ -100,6 +100,13 @@ namespace Game.Character
         /// <summary>커맨드 입력에 성공했을 때 호출되는 이벤트 (공격/애니메이션 스크립트에서 구독)</summary>
         public event Action<CommandData> OnCommandTriggered;
 
+        /// <summary>
+        /// 지금 쓸 수 있는 커맨드인지 알려주는 함수 (비어 있으면 모두 쓸 수 있음)
+        /// false인 커맨드는 입력이 맞아도 건너뛰고, 우선순위가 그다음인 커맨드를 찾음
+        /// 예) 장풍이 남아 있으면 236L은 건너뛰고, 같은 L 버튼의 일반 공격이 나감
+        /// </summary>
+        public Func<CommandData, bool> CanUseCommand { get; set; }
+
         private static readonly AttackButtonType[] _allButtonFlags =
         {
             AttackButtonType.L, AttackButtonType.M, AttackButtonType.H, AttackButtonType.EX
@@ -212,6 +219,9 @@ namespace Game.Character
                 foreach (var command in _sortedCommandList)
                 {
                     if (triggeredThisFrame.Contains(command)) continue;
+
+                    // 지금 쓸 수 없는 커맨드(예: 장풍이 남아 있을 때의 장풍)는 건너뛰고 다음 커맨드를 찾음
+                    if (CanUseCommand != null && !CanUseCommand(command)) continue;
 
                     // 커맨드에 이 버튼이 체크돼 있지 않으면(비트가 없으면) 건너뛴다.
                     if ((command.buttons & button) == 0) continue;

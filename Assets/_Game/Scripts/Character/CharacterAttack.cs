@@ -70,12 +70,24 @@ namespace Game.Character
 
         private void OnEnable()
         {
-            if (_characterCommand != null) _characterCommand.OnCommandTriggered += HandleCommandTriggered;
+            if (_characterCommand == null) return;
+            _characterCommand.OnCommandTriggered += HandleCommandTriggered;
+            _characterCommand.CanUseCommand = CanUseCommand;
         }
 
         private void OnDisable()
         {
-            if (_characterCommand != null) _characterCommand.OnCommandTriggered -= HandleCommandTriggered;
+            if (_characterCommand == null) return;
+            _characterCommand.OnCommandTriggered -= HandleCommandTriggered;
+            if (_characterCommand.CanUseCommand == CanUseCommand) _characterCommand.CanUseCommand = null;
+        }
+
+        // 커맨드 판정에서 쓸 수 있는 커맨드인지 알려줌
+        // 내가 쏜 투사체가 남아 있으면 투사체 공격(장풍) 커맨드는 쓸 수 없음 → 같은 버튼의 다른 공격이 나감
+        private bool CanUseCommand(CharacterCommand.CommandData command)
+        {
+            if (command.attack == null || command.attack.ProjectilePrefab == null) return true;
+            return !Projectile.HasActiveProjectile(gameObject);
         }
 
         private void Update()
@@ -151,11 +163,9 @@ namespace Game.Character
         }
 
         // 공격 중에 들어온 커맨드는 무시함 (캔슬은 아직 없음)
-        // 내가 쏜 투사체가 화면에 남아 있으면 투사체 공격(장풍)은 나가지 않음
         private void HandleCommandTriggered(CharacterCommand.CommandData command)
         {
-            if (command.attack == null || IsAttacking) return;
-            if (command.attack.ProjectilePrefab != null && Projectile.HasActiveProjectile(gameObject)) return;
+            if (command.attack == null || IsAttacking || !CanUseCommand(command)) return;
             StartAttack(command.attack);
         }
 
