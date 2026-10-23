@@ -180,10 +180,9 @@ public class SettingMenu : MonoBehaviour
         Button button = buttons[selectedIndex];
         if (!CanSelect(button)) return;
 
-        // 스테퍼 줄은 선택 키로 다음 값으로 넘김
-        ISettingStepper stepper = button.GetComponent<ISettingStepper>();
-        if (stepper != null) stepper.Next();
-        else button.onClick.Invoke();
+        // 스테퍼 줄은 선택 키로 바꾸지 않음 (값은 레버 좌우로만 바꿈)
+        if (button.GetComponent<ISettingStepper>() != null) return;
+        button.onClick.Invoke();
     }
 
     // 마우스를 올린 버튼을 선택
