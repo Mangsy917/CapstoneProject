@@ -34,6 +34,7 @@ namespace Game.Character
             public int windowFrames = 0;
             public int[] stepWindowFrames;
             public int priority = 0;
+            public AttackData attack;
         }
 
         [Header("입력")]
@@ -69,7 +70,8 @@ namespace Game.Character
             "requireNeutralDirection은 레버 입력 없이 버튼만 눌러도 나가는 기술들일 때 사용, " +
             "windowFrames은 각 버튼이나 레버 사이에 연속적으로 이어 질 수 있도록 유예 프레임 시간을 뜻함(숫자가 높을수록 널널한판정, 숫자가 낮을수록 빡빡한판정, " +
             "stepWindowFrames은 레버 방향 입력 시 다음 입력이 몇프레임 이내에 이어져야 커맨드가 성공인지, " +
-            "priority는 기술을 읽을때의 우선도")]
+            "priority는 기술을 읽을때의 우선도, " +
+            "attack은 커맨드가 성공하면 나갈 공격(AttackData)")]
         [SerializeField]
         private List<CommandData> CC_commandList = new List<CommandData>
         {

@@ -54,6 +54,10 @@ public class CharacterMove : MonoBehaviour
     [Tooltip("이동에 맞춰 서기/앉기/점프, 지상/공중 값을 바꿀 CharactorState. 비워두면 같은 오브젝트에서 찾음")]
     [SerializeField] private CharactorState characterState;
 
+    [Header("공격")]
+    [Tooltip("공격 중인지 알려줄 CharacterAttack. 공격 중에는 땅에서 움직이지 않음. 비워두면 같은 오브젝트에서 찾음")]
+    [SerializeField] private Game.Character.CharacterAttack characterAttack;
+
     [Header("태그")]
     [SerializeField] private string playerTag = "Player";
     [SerializeField] private string enemyTag = "Enemy";
@@ -162,6 +166,9 @@ public class CharacterMove : MonoBehaviour
         if (characterState == null)
             characterState = GetComponent<CharactorState>();
 
+        if (characterAttack == null)
+            characterAttack = GetComponent<Game.Character.CharacterAttack>();
+
         selfCollider = GetComponent<Collider>();
 
         if (inputReader == null)
@@ -201,13 +208,22 @@ public class CharacterMove : MonoBehaviour
         RawDirection = inputReader.Direction;
         RelativeDirection = ToRelativeDirection(RawDirection, IsFacingRight);
 
-        // 이동
-        if (IsGrounded)
-            UpdateGrounded();
-        else
-            UpdateAirborne();
+        bool isAttacking = characterAttack != null && characterAttack.IsAttacking;
 
-        UpdateCharacterState();
+        // 이동 (공격 중에는 땅에서 멈추고, 공중 공격은 점프 궤도를 그대로 따라감)
+        if (!IsGrounded)
+            UpdateAirborne();
+        else if (isAttacking)
+            StopForAttack();
+        else
+            UpdateGrounded();
+
+        // 공격 중에는 CharacterAttack이 넣은 상단/중단/하단/잡기 값을 덮어쓰지 않음.
+        // 공격이 끝나면 이동 자세를 다시 넣도록 기록을 지워둠
+        if (isAttacking)
+            appliedPosture = StatePosture.None;
+        else
+            UpdateCharacterState();
 
         previousRelativeDirection = RelativeDirection;
     }
@@ -312,6 +328,15 @@ public class CharacterMove : MonoBehaviour
                 break;
             default: CurrentState = MoveState.Neutral; break;
         }
+    }
+
+    // 공격이 시작되면 하던 점프 준비, 대쉬, 달리기를 취소하고 제자리에 멈춤
+    private void StopForAttack()
+    {
+        isJumpStarting = false;
+        dashTimer = 0f;
+        StopRun();
+        CurrentState = MoveState.Neutral;
     }
 
     private void Move(float xSpeed)
