@@ -4,10 +4,10 @@ using UnityEngine.InputSystem;
 
 /// <summary>
 /// 키보드 / 컨트롤러 입력을 읽어서 방향과 버튼 상태로 정리합니다.
-/// 커맨드(기술) 판정은 CharacterMove에서 처리합니다.
+/// 커맨드(기술) 판정은 CharacterCommand에서 처리합니다.
 ///
 /// 다른 스크립트보다 먼저 실행되도록 실행 순서를 앞당겨 두었습니다.
-/// (CharacterMove가 같은 프레임의 최신 입력을 읽을 수 있도록)
+/// (CharacterMove, CharacterCommand가 같은 프레임의 최신 입력을 읽을 수 있도록)
 /// </summary>
 [DefaultExecutionOrder(-100)]
 public class InputReader : MonoBehaviour
