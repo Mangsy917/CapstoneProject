@@ -6541,11 +6541,11 @@ MonoBehaviour:
   charC: {fileID: 1896591971}
   UIC: {fileID: 1949755787}
   pauseTargets:
-  - {fileID: 938055905}
   - {fileID: 1825862288}
   - {fileID: 1065353598}
-  - {fileID: 938055908}
-  - {fileID: 938055909}
+  - {fileID: 1389828396}
+  - {fileID: 1389828393}
+  - {fileID: 1389828392}
 --- !u!1 &321903161
 GameObject:
   m_ObjectHideFlags: 0
@@ -19270,436 +19270,6 @@ RectTransform:
   m_AnchoredPosition: {x: 550, y: 0}
   m_SizeDelta: {x: 520, y: 50}
   m_Pivot: {x: 1, y: 0.5}
---- !u!1 &938055900
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 938055902}
-  - component: {fileID: 938055901}
-  - component: {fileID: 938055904}
-  - component: {fileID: 938055903}
-  - component: {fileID: 938055905}
-  - component: {fileID: 938055906}
-  - component: {fileID: 938055907}
-  - component: {fileID: 938055908}
-  - component: {fileID: 938055909}
-  m_Layer: 0
-  m_Name: Player
-  m_TagString: Player
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!212 &938055901
-SpriteRenderer:
-  serializedVersion: 2
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 938055900}
-  m_Enabled: 1
-  m_CastShadows: 0
-  m_ReceiveShadows: 0
-  m_DynamicOccludee: 1
-  m_StaticShadowCaster: 0
-  m_MotionVectors: 1
-  m_LightProbeUsage: 1
-  m_ReflectionProbeUsage: 1
-  m_RayTracingMode: 0
-  m_RayTraceProcedural: 0
-  m_RayTracingAccelStructBuildFlagsOverride: 0
-  m_RayTracingAccelStructBuildFlags: 1
-  m_SmallMeshCulling: 1
-  m_ForceMeshLod: -1
-  m_MeshLodSelectionBias: 0
-  m_RenderingLayerMask: 1
-  m_RendererPriority: 0
-  m_Materials:
-  - {fileID: 2100000, guid: 9dfc825aed78fcd4ba02077103263b40, type: 2}
-  m_StaticBatchInfo:
-    firstSubMesh: 0
-    subMeshCount: 0
-  m_StaticBatchRoot: {fileID: 0}
-  m_ProbeAnchor: {fileID: 0}
-  m_LightProbeVolumeOverride: {fileID: 0}
-  m_ScaleInLightmap: 1
-  m_ReceiveGI: 1
-  m_PreserveUVs: 0
-  m_IgnoreNormalsForChartDetection: 0
-  m_ImportantGI: 0
-  m_StitchLightmapSeams: 1
-  m_SelectedEditorRenderState: 0
-  m_MinimumChartSize: 4
-  m_AutoUVMaxDistance: 0.5
-  m_AutoUVMaxAngle: 89
-  m_LightmapParameters: {fileID: 0}
-  m_GlobalIlluminationMeshLod: 0
-  m_SortingLayerID: 0
-  m_SortingLayer: 0
-  m_SortingOrder: 0
-  m_MaskInteraction: 0
-  m_Sprite: {fileID: 432973827, guid: f81cee5994be266499fa3983a31266c8, type: 3}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_FlipX: 0
-  m_FlipY: 0
-  m_DrawMode: 0
-  m_Size: {x: 1, y: 1}
-  m_AdaptiveModeThreshold: 0.5
-  m_SpriteTileMode: 0
-  m_WasSpriteAssigned: 1
-  m_SpriteSortPoint: 0
---- !u!4 &938055902
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 938055900}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 1.5, z: 0}
-  m_LocalScale: {x: 5, y: 5, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!65 &938055903
-BoxCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 938055900}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Size: {x: 0.2, y: 0.4, z: 0.2}
-  m_Center: {x: 0, y: 0, z: 0}
---- !u!54 &938055904
-Rigidbody:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 938055900}
-  serializedVersion: 5
-  m_Mass: 1
-  m_LinearDamping: 0
-  m_AngularDamping: 0.05
-  m_CenterOfMass: {x: 0, y: 0, z: 0}
-  m_InertiaTensor: {x: 1, y: 1, z: 1}
-  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ImplicitCom: 1
-  m_ImplicitTensor: 1
-  m_UseGravity: 1
-  m_IsKinematic: 0
-  m_Interpolate: 0
-  m_Constraints: 120
-  m_CollisionDetection: 0
---- !u!114 &938055905
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 938055900}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a957ad8723a883e4dbccd2286411c1ac, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::CharacterMove
-  inputReader: {fileID: 1896591971}
-  characterState: {fileID: 938055906}
-  characterAttack: {fileID: 938055909}
-  playerTag: Player
-  enemyTag: Enemy
-  forwardWalkSpeed: 3
-  backWalkSpeed: 2
-  jumpVelocity: 15
-  forwardJumpSpeed: 4
-  backJumpSpeed: 4
-  gravity: 25
-  jumpDirectionBufferFrames: 4
-  dashInputWindowFrames: 20
-  forwardDashSpeed: 7
-  forwardDashDuration: 0.2
-  backDashSpeed: 6
-  backDashDuration: 0.25
-  runSpeedMultiplier: 1.5
-  runStopDelayAfterOverlap: 1
-  overlapDistance: 1
-  useStartYAsGround: 1
-  groundY: 0
-  searchInterval: 0.25
---- !u!114 &938055906
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 938055900}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: fc39cb35496cec247a33a4539491d106, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::CharactorState
-  standUp: 1
-  sitDown: 0
-  jump: 0
-  high: 0
-  middle: 0
-  low: 0
-  grap: 0
-  pos: 0
-  parry: 0
-  dash: 0
-  run: 0
-  bangeok: 0
-  powerCrash: 0
-  reversal: 0
-  ground: 1
-  air: 0
-  normalHit: 0
-  counterHit: 0
-  punishCounter: 0
---- !u!114 &938055907
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 938055900}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 472f4919eb3809c41a342428a3417623, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Game.Character.CharacterFlip
-  _spriteRenderer: {fileID: 938055901}
-  CF_characterMove: {fileID: 938055905}
-  _opponentTag: Enemy
---- !u!114 &938055908
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 938055900}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a1254142c011ce6468ef86f22b24b103, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Game.Character.CharacterCommand
-  CC_inputReader: {fileID: 1896591971}
-  CC_characterMove: {fileID: 938055905}
-  _bufferFrames: 20
-  _defaultCommandWindowFrames: 4
-  _defaultComboWindowFrames: 2
-  _useRelativeDirection: 1
-  CC_commandList:
-  - commandName: "\uC804\uC778\uD30C\uB3D9\uAD8C"
-    directionSequence: 020000000300000006000000020000000300000006000000
-    buttons: 15
-    requireAllButtons: 0
-    comboWindowFrames: 2
-    requireNeutralDirection: 0
-    windowFrames: 5
-    stepWindowFrames: 00000000000000000c000000000000000000000000000000
-    priority: 20
-    attack: {fileID: 0}
-  - commandName: "\uC804\uC778\uD30C\uC7A5\uACA9"
-    directionSequence: 020000000100000004000000020000000100000004000000
-    buttons: 15
-    requireAllButtons: 0
-    comboWindowFrames: 2
-    requireNeutralDirection: 0
-    windowFrames: 5
-    stepWindowFrames: 00000000000000000c000000000000000000000000000000
-    priority: 20
-    attack: {fileID: 0}
-  - commandName: "\uC57D\uC2B9\uB8E1\uAD8C"
-    directionSequence: 060000000200000003000000
-    buttons: 1
-    requireAllButtons: 0
-    comboWindowFrames: 2
-    requireNeutralDirection: 0
-    windowFrames: 4
-    stepWindowFrames: 0a0000000800000008000000
-    priority: 10
-    attack: {fileID: 0}
-  - commandName: "\uC911\uC2B9\uB8E1\uAD8C"
-    directionSequence: 060000000200000003000000
-    buttons: 2
-    requireAllButtons: 0
-    comboWindowFrames: 2
-    requireNeutralDirection: 0
-    windowFrames: 4
-    stepWindowFrames: 0a0000000800000008000000
-    priority: 10
-    attack: {fileID: 0}
-  - commandName: "\uAC15\uC2B9\uB8E1\uAD8C"
-    directionSequence: 060000000200000003000000
-    buttons: 4
-    requireAllButtons: 0
-    comboWindowFrames: 2
-    requireNeutralDirection: 0
-    windowFrames: 5
-    stepWindowFrames: 0a0000000800000008000000
-    priority: 10
-    attack: {fileID: 0}
-  - commandName: "EX\uC2B9\uB8E1\uAD8C"
-    directionSequence: 060000000200000003000000
-    buttons: 8
-    requireAllButtons: 0
-    comboWindowFrames: 2
-    requireNeutralDirection: 0
-    windowFrames: 5
-    stepWindowFrames: 0a0000000800000008000000
-    priority: 10
-    attack: {fileID: 0}
-  - commandName: "\uC57D\uD30C\uB3D9\uAD8C"
-    directionSequence: 020000000300000006000000
-    buttons: 1
-    requireAllButtons: 0
-    comboWindowFrames: 2
-    requireNeutralDirection: 0
-    windowFrames: 5
-    stepWindowFrames: 
-    priority: 0
-    attack: {fileID: 0}
-  - commandName: "\uC911\uD30C\uB3D9\uAD8C"
-    directionSequence: 020000000300000006000000
-    buttons: 2
-    requireAllButtons: 0
-    comboWindowFrames: 2
-    requireNeutralDirection: 0
-    windowFrames: 5
-    stepWindowFrames: 
-    priority: 0
-    attack: {fileID: 0}
-  - commandName: "\uAC15\uD30C\uB3D9\uAD8C"
-    directionSequence: 020000000300000006000000
-    buttons: 4
-    requireAllButtons: 0
-    comboWindowFrames: 2
-    requireNeutralDirection: 0
-    windowFrames: 5
-    stepWindowFrames: 
-    priority: 0
-    attack: {fileID: 0}
-  - commandName: "EX\uD30C\uB3D9\uAD8C"
-    directionSequence: 020000000300000006000000
-    buttons: 8
-    requireAllButtons: 0
-    comboWindowFrames: 2
-    requireNeutralDirection: 0
-    windowFrames: 5
-    stepWindowFrames: 
-    priority: 0
-    attack: {fileID: 0}
-  - commandName: "\uC57D\uD30C\uC7A5\uACA9"
-    directionSequence: 020000000100000004000000
-    buttons: 1
-    requireAllButtons: 0
-    comboWindowFrames: 2
-    requireNeutralDirection: 0
-    windowFrames: 5
-    stepWindowFrames: 
-    priority: 0
-    attack: {fileID: 0}
-  - commandName: "\uC911\uD30C\uC7A5\uACA9"
-    directionSequence: 020000000100000004000000
-    buttons: 2
-    requireAllButtons: 0
-    comboWindowFrames: 2
-    requireNeutralDirection: 0
-    windowFrames: 5
-    stepWindowFrames: 
-    priority: 0
-    attack: {fileID: 0}
-  - commandName: "\uAC15\uD30C\uC7A5\uACA9"
-    directionSequence: 020000000100000004000000
-    buttons: 4
-    requireAllButtons: 0
-    comboWindowFrames: 2
-    requireNeutralDirection: 0
-    windowFrames: 5
-    stepWindowFrames: 
-    priority: 0
-    attack: {fileID: 0}
-  - commandName: "EX\uD30C\uC7A5\uACA9"
-    directionSequence: 020000000100000004000000
-    buttons: 8
-    requireAllButtons: 0
-    comboWindowFrames: 2
-    requireNeutralDirection: 0
-    windowFrames: 5
-    stepWindowFrames: 
-    priority: 0
-    attack: {fileID: 0}
-  - commandName: "\uC804\uC778\uC2A4\uD0DD"
-    directionSequence: 0200000002000000
-    buttons: 15
-    requireAllButtons: 0
-    comboWindowFrames: 2
-    requireNeutralDirection: 0
-    windowFrames: 10
-    stepWindowFrames: 
-    priority: 5
-    attack: {fileID: 0}
-  - commandName: "\uC7A1\uAE30"
-    directionSequence: 
-    buttons: 3
-    requireAllButtons: 1
-    comboWindowFrames: 2
-    requireNeutralDirection: 1
-    windowFrames: 0
-    stepWindowFrames: 
-    priority: 5
-    attack: {fileID: 0}
-  - commandName: "\uB3C4\uBC1C"
-    directionSequence: 
-    buttons: 15
-    requireAllButtons: 1
-    comboWindowFrames: 2
-    requireNeutralDirection: 1
-    windowFrames: 0
-    stepWindowFrames: 
-    priority: 10
-    attack: {fileID: 0}
---- !u!114 &938055909
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 938055900}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2aef2eef4c9d39847887f1bb0a4749fe, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Game.Character.CharacterAttack
-  _characterCommand: {fileID: 938055908}
-  CA_characterState: {fileID: 938055906}
 --- !u!1 &963099060
 GameObject:
   m_ObjectHideFlags: 0
@@ -27556,6 +27126,487 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1375351122}
   m_CullTransparentMesh: 1
+--- !u!1 &1389828391
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1389828400}
+  - component: {fileID: 1389828399}
+  - component: {fileID: 1389828398}
+  - component: {fileID: 1389828397}
+  - component: {fileID: 1389828396}
+  - component: {fileID: 1389828395}
+  - component: {fileID: 1389828394}
+  - component: {fileID: 1389828393}
+  - component: {fileID: 1389828392}
+  - component: {fileID: 1389828402}
+  - component: {fileID: 1389828401}
+  m_Layer: 0
+  m_Name: Test_Ryu
+  m_TagString: Player
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1389828392
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1389828391}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2aef2eef4c9d39847887f1bb0a4749fe, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Game.Character.CharacterAttack
+  _characterCommand: {fileID: 1389828393}
+  CA_characterState: {fileID: 1389828395}
+  CA_characterMove: {fileID: 1389828396}
+--- !u!114 &1389828393
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1389828391}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a1254142c011ce6468ef86f22b24b103, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Game.Character.CharacterCommand
+  CC_inputReader: {fileID: 1896591971}
+  CC_characterMove: {fileID: 1389828396}
+  _bufferFrames: 20
+  _defaultCommandWindowFrames: 4
+  _defaultComboWindowFrames: 2
+  _useRelativeDirection: 1
+  CC_commandList:
+  - commandName: 623
+    directionSequence: 060000000200000003000000
+    holdDirections: 
+    usableState: 0
+    buttons: 15
+    requireAllButtons: 0
+    comboWindowFrames: 0
+    windowFrames: 4
+    stepWindowFrames: 0a0000000800000008000000
+    priority: 30
+    attack: {fileID: 11400000, guid: 8c80e6c56f25c0f4e9efd450eb944575, type: 2}
+  - commandName: 236
+    directionSequence: 020000000300000006000000
+    holdDirections: 
+    usableState: 0
+    buttons: 15
+    requireAllButtons: 0
+    comboWindowFrames: 0
+    windowFrames: 5
+    stepWindowFrames: 
+    priority: 20
+    attack: {fileID: 11400000, guid: 288798401c1844e4f8c17ae8eb4bbc7b, type: 2}
+  - commandName: 214
+    directionSequence: 020000000100000004000000
+    holdDirections: 
+    usableState: 0
+    buttons: 15
+    requireAllButtons: 0
+    comboWindowFrames: 0
+    windowFrames: 5
+    stepWindowFrames: 
+    priority: 20
+    attack: {fileID: 11400000, guid: cc8e5e457240f8b4eac342269cca70ce, type: 2}
+  - commandName: 22
+    directionSequence: 0200000002000000
+    holdDirections: 
+    usableState: 0
+    buttons: 15
+    requireAllButtons: 0
+    comboWindowFrames: 0
+    windowFrames: 10
+    stepWindowFrames: 
+    priority: 15
+    attack: {fileID: 11400000, guid: 4b918e69514e5fe4cae6ba0c42854600, type: 2}
+  - commandName: 2L
+    directionSequence: 
+    holdDirections: 010000000200000003000000
+    usableState: 0
+    buttons: 1
+    requireAllButtons: 0
+    comboWindowFrames: 0
+    windowFrames: 0
+    stepWindowFrames: 
+    priority: 10
+    attack: {fileID: 11400000, guid: 3d996900fbbcc79438c766d5df8a9008, type: 2}
+  - commandName: 2M
+    directionSequence: 
+    holdDirections: 010000000200000003000000
+    usableState: 0
+    buttons: 2
+    requireAllButtons: 0
+    comboWindowFrames: 0
+    windowFrames: 0
+    stepWindowFrames: 
+    priority: 10
+    attack: {fileID: 11400000, guid: 51ad805b93b465c45a8618ca68e76ee1, type: 2}
+  - commandName: 2H
+    directionSequence: 
+    holdDirections: 010000000200000003000000
+    usableState: 0
+    buttons: 4
+    requireAllButtons: 0
+    comboWindowFrames: 0
+    windowFrames: 0
+    stepWindowFrames: 
+    priority: 10
+    attack: {fileID: 11400000, guid: 9ff6135b7fa1a3640a460b0fd497d1bd, type: 2}
+  - commandName: 6M
+    directionSequence: 
+    holdDirections: 06000000
+    usableState: 0
+    buttons: 2
+    requireAllButtons: 0
+    comboWindowFrames: 0
+    windowFrames: 0
+    stepWindowFrames: 
+    priority: 10
+    attack: {fileID: 11400000, guid: a85aa76ae8a309c4aa13bab6a7c5129d, type: 2}
+  - commandName: 6H
+    directionSequence: 
+    holdDirections: 06000000
+    usableState: 0
+    buttons: 4
+    requireAllButtons: 0
+    comboWindowFrames: 0
+    windowFrames: 0
+    stepWindowFrames: 
+    priority: 10
+    attack: {fileID: 11400000, guid: c45ab2b4b54693f4083ee4e72117d296, type: 2}
+  - commandName: 4H
+    directionSequence: 
+    holdDirections: 04000000
+    usableState: 0
+    buttons: 4
+    requireAllButtons: 0
+    comboWindowFrames: 0
+    windowFrames: 0
+    stepWindowFrames: 
+    priority: 10
+    attack: {fileID: 11400000, guid: 2bfbbaddc791b94408bf3ebc1f76ddf8, type: 2}
+  - commandName: L
+    directionSequence: 
+    holdDirections: 
+    usableState: 0
+    buttons: 1
+    requireAllButtons: 0
+    comboWindowFrames: 0
+    windowFrames: 0
+    stepWindowFrames: 
+    priority: 0
+    attack: {fileID: 11400000, guid: 6476ccdde7006f641883c327f100e8ac, type: 2}
+  - commandName: M
+    directionSequence: 
+    holdDirections: 
+    usableState: 0
+    buttons: 2
+    requireAllButtons: 0
+    comboWindowFrames: 0
+    windowFrames: 0
+    stepWindowFrames: 
+    priority: 0
+    attack: {fileID: 11400000, guid: dc69b23218b36bc46850bbdb8b7b6afc, type: 2}
+  - commandName: H
+    directionSequence: 
+    holdDirections: 
+    usableState: 0
+    buttons: 4
+    requireAllButtons: 0
+    comboWindowFrames: 0
+    windowFrames: 0
+    stepWindowFrames: 
+    priority: 0
+    attack: {fileID: 11400000, guid: 54f85cb6cfb30844d87c1a394bd1e3ff, type: 2}
+  - commandName: JL
+    directionSequence: 
+    holdDirections: 
+    usableState: 1
+    buttons: 1
+    requireAllButtons: 0
+    comboWindowFrames: 0
+    windowFrames: 0
+    stepWindowFrames: 
+    priority: 0
+    attack: {fileID: 11400000, guid: 128ef3b68e54e0c49bdc38c9b3029597, type: 2}
+  - commandName: JM
+    directionSequence: 
+    holdDirections: 
+    usableState: 1
+    buttons: 2
+    requireAllButtons: 0
+    comboWindowFrames: 0
+    windowFrames: 0
+    stepWindowFrames: 
+    priority: 0
+    attack: {fileID: 11400000, guid: 4354aba73cfb4f84fa204a4f7df8bce6, type: 2}
+  - commandName: JH
+    directionSequence: 
+    holdDirections: 
+    usableState: 1
+    buttons: 4
+    requireAllButtons: 0
+    comboWindowFrames: 0
+    windowFrames: 0
+    stepWindowFrames: 
+    priority: 0
+    attack: {fileID: 11400000, guid: ebf56da6047609d43971db44b67a5aba, type: 2}
+--- !u!114 &1389828394
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1389828391}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 472f4919eb3809c41a342428a3417623, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Game.Character.CharacterFlip
+  _spriteRenderer: {fileID: 1389828399}
+  CF_characterMove: {fileID: 1389828396}
+  _opponentTag: Enemy
+--- !u!114 &1389828395
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1389828391}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fc39cb35496cec247a33a4539491d106, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CharactorState
+  standUp: 1
+  sitDown: 0
+  jump: 0
+  high: 0
+  middle: 0
+  low: 0
+  grap: 0
+  pos: 0
+  parry: 0
+  dash: 0
+  run: 0
+  bangeok: 0
+  powerCrash: 0
+  reversal: 0
+  ground: 1
+  air: 0
+  normalHit: 0
+  counterHit: 0
+  punishCounter: 0
+--- !u!114 &1389828396
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1389828391}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a957ad8723a883e4dbccd2286411c1ac, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CharacterMove
+  inputReader: {fileID: 1896591971}
+  characterState: {fileID: 1389828395}
+  characterAttack: {fileID: 1389828392}
+  playerTag: Player
+  enemyTag: Enemy
+  forwardWalkSpeed: 3
+  backWalkSpeed: 2
+  jumpVelocity: 15
+  forwardJumpSpeed: 4
+  backJumpSpeed: 4
+  gravity: 25
+  jumpDirectionBufferFrames: 4
+  dashInputWindowFrames: 20
+  forwardDashSpeed: 7
+  forwardDashDuration: 0.2
+  backDashSpeed: 6
+  backDashDuration: 0.25
+  runSpeedMultiplier: 1.5
+  runStopDelayAfterOverlap: 1
+  overlapDistance: 1
+  useStartYAsGround: 1
+  groundY: 0
+  searchInterval: 0.25
+--- !u!65 &1389828397
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1389828391}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 5, y: 9, z: 0.2}
+  m_Center: {x: 0, y: 0, z: 0}
+--- !u!54 &1389828398
+Rigidbody:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1389828391}
+  serializedVersion: 5
+  m_Mass: 1
+  m_LinearDamping: 0
+  m_AngularDamping: 0.05
+  m_CenterOfMass: {x: 0, y: 0, z: 0}
+  m_InertiaTensor: {x: 1, y: 1, z: 1}
+  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ImplicitCom: 1
+  m_ImplicitTensor: 1
+  m_UseGravity: 1
+  m_IsKinematic: 0
+  m_Interpolate: 0
+  m_Constraints: 120
+  m_CollisionDetection: 0
+--- !u!212 &1389828399
+SpriteRenderer:
+  serializedVersion: 2
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1389828391}
+  m_Enabled: 1
+  m_CastShadows: 0
+  m_ReceiveShadows: 0
+  m_DynamicOccludee: 1
+  m_StaticShadowCaster: 0
+  m_MotionVectors: 1
+  m_LightProbeUsage: 1
+  m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 0
+  m_RayTraceProcedural: 0
+  m_RayTracingAccelStructBuildFlagsOverride: 0
+  m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
+  m_ForceMeshLod: -1
+  m_MeshLodSelectionBias: 0
+  m_RenderingLayerMask: 1
+  m_RendererPriority: 0
+  m_Materials:
+  - {fileID: 2100000, guid: 9dfc825aed78fcd4ba02077103263b40, type: 2}
+  m_StaticBatchInfo:
+    firstSubMesh: 0
+    subMeshCount: 0
+  m_StaticBatchRoot: {fileID: 0}
+  m_ProbeAnchor: {fileID: 0}
+  m_LightProbeVolumeOverride: {fileID: 0}
+  m_ScaleInLightmap: 1
+  m_ReceiveGI: 1
+  m_PreserveUVs: 0
+  m_IgnoreNormalsForChartDetection: 0
+  m_ImportantGI: 0
+  m_StitchLightmapSeams: 1
+  m_SelectedEditorRenderState: 0
+  m_MinimumChartSize: 4
+  m_AutoUVMaxDistance: 0.5
+  m_AutoUVMaxAngle: 89
+  m_LightmapParameters: {fileID: 0}
+  m_GlobalIlluminationMeshLod: 0
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 0
+  m_MaskInteraction: 0
+  m_Sprite: {fileID: 559179770, guid: 5e7da3b31562dd3489c972c6f5dcb4ab, type: 3}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_FlipX: 0
+  m_FlipY: 0
+  m_DrawMode: 0
+  m_Size: {x: 1, y: 1}
+  m_AdaptiveModeThreshold: 0.5
+  m_SpriteTileMode: 0
+  m_WasSpriteAssigned: 1
+  m_SpriteSortPoint: 0
+--- !u!4 &1389828400
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1389828391}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 1.7, z: 0}
+  m_LocalScale: {x: 0.25, y: 0.25, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1389828401
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1389828391}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d3571f86751cca64dbe92a53293a1eee, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Game.Character.CharacterAnimationPlayer
+  _animator: {fileID: 0}
+  CAP_characterMove: {fileID: 0}
+  CAP_characterAttack: {fileID: 0}
+  _idleState: Idle
+  _sitState: Sit
+  _jumpState: Jump
+  _walkForwardState: WalkForward
+  _walkBackState: WalkBack
+--- !u!95 &1389828402
+Animator:
+  serializedVersion: 7
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1389828391}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: 0b635ea9a9957ff49bfa295002d140f8, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_AnimatePhysics: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0
 --- !u!1 &1397161733
 GameObject:
   m_ObjectHideFlags: 0
@@ -34987,7 +35038,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 078c1bc7109aa0449ba51b5863a1cb80, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::StateUI
-  stateReader: {fileID: 938055906}
+  stateReader: {fileID: 0}
   characterMove: {fileID: 1136779412}
   standUp: "\uC11C\uAE30"
   sitDwon: "\uC549\uAE30"
@@ -41854,7 +41905,7 @@ SceneRoots:
   - {fileID: 410087041}
   - {fileID: 832575519}
   - {fileID: 2079804637}
-  - {fileID: 938055902}
+  - {fileID: 1389828400}
   - {fileID: 7577980166741924174}
   - {fileID: 1111025288}
   - {fileID: 1288332251}

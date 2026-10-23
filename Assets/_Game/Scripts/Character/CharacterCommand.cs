@@ -22,25 +22,55 @@ namespace Game.Character
             EX = 1 << 3
         }
 
+        // 기술을 쓸 수 있는 상태
+        public enum UsableState
+        {
+            Ground, // 땅에서만
+            Air,    // 점프 중에만
+            Both    // 어디서나
+        }
+
         [Serializable]
         public class CommandData
         {
+            [Tooltip("커맨드 이름 (로그에 표시됨)")]
             public string commandName;
+
+            [Tooltip("순서대로 입력해야 하는 레버 방향. 예) 236. 비워두면 레버 입력 순서는 보지 않음")]
             public int[] directionSequence;
+
+            [Tooltip("버튼을 누르는 순간 레버가 이 방향 중 하나여야 함. 예) 앉아서 쓰는 기술은 1, 2, 3. 비워두면 상관없음")]
+            public int[] holdDirections;
+
+            [Tooltip("기술을 쓸 수 있는 상태 (땅 / 점프 중 / 어디서나)")]
+            public UsableState usableState = UsableState.Ground;
+
+            [Tooltip("눌러야 인식되는 버튼. 여러 개를 고르면 그중 아무거나 눌러도 됨")]
             public AttackButtonType buttons;
+
+            [Tooltip("체크하면 고른 버튼을 전부 (comboWindowFrames 이내에) 같이 눌러야 함")]
             public bool requireAllButtons = false;
-            public int comboWindowFrames = 2;
-            public bool requireNeutralDirection = false;
+
+            [Tooltip("동시입력 유예 프레임. 0이면 기본값 사용")]
+            public int comboWindowFrames = 0;
+
+            [Tooltip("레버 방향 사이, 마지막 방향과 버튼 사이의 유예 프레임. 0이면 기본값 사용 (클수록 널널한 판정)")]
             public int windowFrames = 0;
+
+            [Tooltip("방향마다 따로 정하는 유예 프레임 (directionSequence와 개수가 같아야 적용, 0인 칸은 windowFrames 사용)")]
             public int[] stepWindowFrames;
+
+            [Tooltip("여러 커맨드가 동시에 맞으면 이 값이 큰 것이 나감")]
             public int priority = 0;
+
+            [Tooltip("커맨드가 성공하면 나갈 공격")]
             public AttackData attack;
         }
 
         [Header("입력")]
         [Tooltip("방향, 버튼 입력을 읽어올 InputReader. 비워두면 같은 오브젝트에서 찾음")]
         [SerializeField] private InputReader CC_inputReader;
-        [Tooltip("바라보는 방향을 알려줄 CharacterMove. 비워두면 같은 오브젝트에서 찾음")]
+        [Tooltip("바라보는 방향, 땅/공중 상태를 알려줄 CharacterMove. 비워두면 같은 오브젝트에서 찾음")]
         [SerializeField] private CharacterMove CC_characterMove;
 
         [Header("입력 버퍼")]
@@ -62,166 +92,7 @@ namespace Game.Character
         [SerializeField] private bool _useRelativeDirection = true;
 
         [Header("등록된 커맨드 목록")]
-        [Tooltip("commandName은 커맨드 이름, " +
-            "directionSequence은 레버 커맨드 숫자, " +
-            "buttons은 눌러야 인식되는 버튼, " +
-            "requireAllButtons은 버튼에서 선택한 버튼들을 전부 눌러야 기술이 나가도록 하는 기능, " +
-            "comboWindowFrames은 버튼을 물리적으로 완벽하게 동시에 누를 수 없으니, 동시에 누를 수 있는 유예 프레임 시간, " +
-            "requireNeutralDirection은 레버 입력 없이 버튼만 눌러도 나가는 기술들일 때 사용, " +
-            "windowFrames은 각 버튼이나 레버 사이에 연속적으로 이어 질 수 있도록 유예 프레임 시간을 뜻함(숫자가 높을수록 널널한판정, 숫자가 낮을수록 빡빡한판정, " +
-            "stepWindowFrames은 레버 방향 입력 시 다음 입력이 몇프레임 이내에 이어져야 커맨드가 성공인지, " +
-            "priority는 기술을 읽을때의 우선도, " +
-            "attack은 커맨드가 성공하면 나갈 공격(AttackData)")]
-        [SerializeField]
-        private List<CommandData> CC_commandList = new List<CommandData>
-        {
-            new CommandData
-            {
-                commandName = "전인파동권",
-                directionSequence = new int[] { 2, 3, 6, 2, 3, 6 },
-                buttons = AttackButtonType.L | AttackButtonType.M | AttackButtonType.H | AttackButtonType.EX,
-                windowFrames = 5,
-                stepWindowFrames = new int[] { 0, 0, 12, 0, 0, 0 },
-                priority = 20
-            },
-            new CommandData
-            {
-                commandName = "전인파장격",
-                directionSequence = new int[] { 2, 1, 4, 2, 1, 4 },
-                buttons = AttackButtonType.L | AttackButtonType.M | AttackButtonType.H | AttackButtonType.EX,
-                windowFrames = 5,
-                stepWindowFrames = new int[] { 0, 0, 12, 0, 0, 0 },
-                priority = 20
-            },
-            new CommandData
-            {
-                commandName = "약승룡권",
-                directionSequence = new int[] { 6, 2, 3 },
-                buttons = AttackButtonType.L,
-                windowFrames = 4,
-                stepWindowFrames = new int[] { 10, 8, 8 },
-                priority = 10
-            },
-            new CommandData
-            {
-                commandName = "중승룡권",
-                directionSequence = new int[] { 6, 2, 3 },
-                buttons = AttackButtonType.M,
-                windowFrames = 4,
-                stepWindowFrames = new int[] { 10, 8, 8 },
-                priority = 10
-            },
-            new CommandData
-            {
-                commandName = "강승룡권",
-                directionSequence = new int[] { 6, 2, 3 },
-                buttons = AttackButtonType.H,
-                windowFrames = 5,
-                stepWindowFrames = new int[] { 10, 8, 8 },
-                priority = 10
-            },
-            new CommandData
-            {
-                commandName = "EX승룡권",
-                directionSequence = new int[] { 6, 2, 3 },
-                buttons = AttackButtonType.EX,
-                windowFrames = 5,
-                stepWindowFrames = new int[] { 10, 8, 8 },
-                priority = 10
-            },
-            new CommandData
-            {
-                commandName = "약파동권",
-                directionSequence = new int[] { 2, 3, 6 },
-                buttons = AttackButtonType.L,
-                windowFrames = 5,
-                priority = 0
-            },
-            new CommandData
-            {
-                commandName = "중파동권",
-                directionSequence = new int[] { 2, 3, 6 },
-                buttons = AttackButtonType.M,
-                windowFrames = 5,
-                priority = 0
-            },
-            new CommandData
-            {
-                commandName = "강파동권",
-                directionSequence = new int[] { 2, 3, 6 },
-                buttons = AttackButtonType.H,
-                windowFrames = 5,
-                priority = 0
-            },
-            new CommandData
-            {
-                commandName = "EX파동권",
-                directionSequence = new int[] { 2, 3, 6 },
-                buttons = AttackButtonType.EX,
-                windowFrames = 5,
-                priority = 0
-            },
-            new CommandData
-            {
-                commandName = "약파장격",
-                directionSequence = new int[] { 2, 1, 4 },
-                buttons = AttackButtonType.L,
-                windowFrames = 5,
-                priority = 0
-            },
-            new CommandData
-            {
-                commandName = "중파장격",
-                directionSequence = new int[] { 2, 1, 4 },
-                buttons = AttackButtonType.M,
-                windowFrames = 5,
-                priority = 0
-            },
-            new CommandData
-            {
-                commandName = "강파장격",
-                directionSequence = new int[] { 2, 1, 4 },
-                buttons = AttackButtonType.H,
-                windowFrames = 5,
-                priority = 0
-            },
-            new CommandData
-            {
-                commandName = "EX파장격",
-                directionSequence = new int[] { 2, 1, 4 },
-                buttons = AttackButtonType.EX,
-                windowFrames = 5,
-                priority = 0
-            },
-            new CommandData
-            {
-                commandName = "전인스택",
-                directionSequence = new int[] { 2, 2 },
-                buttons = AttackButtonType.L | AttackButtonType.M | AttackButtonType.H | AttackButtonType.EX,
-                windowFrames = 10,
-                priority = 5
-            },
-            new CommandData
-            {
-                commandName = "잡기",
-                directionSequence = new int[0],
-                buttons = AttackButtonType.L | AttackButtonType.M,
-                requireAllButtons = true,
-                comboWindowFrames = 2,
-                requireNeutralDirection = true,
-                priority = 5
-            },
-            new CommandData
-            {
-                commandName = "도발",
-                directionSequence = new int[0],
-                buttons = AttackButtonType.L | AttackButtonType.M | AttackButtonType.H | AttackButtonType.EX,
-                requireAllButtons = true,
-                comboWindowFrames = 2,
-                requireNeutralDirection = true,
-                priority = 10
-            }
-        };
+        [SerializeField] private List<CommandData> CC_commandList = new List<CommandData>();
 
         /// <summary>가장 최근에 성공한 커맨드</summary>
         public CommandData LastCommand { get; private set; }
@@ -322,6 +193,7 @@ namespace Game.Character
         private void CheckCommands(AttackButtonType pressedButtons)
         {
             int currentDirection = _inputBuffer[_inputBuffer.Count - 1].direction;
+            bool isGrounded = CC_characterMove == null || CC_characterMove.IsGrounded;
 
             // 한 프레임에 여러 버튼이 동시에 눌리는 경우(예: L, M이 정확히 같은 프레임에 눌림),
             // 같은 콤보 커맨드가 버튼별로 중복 출력되지 않도록 이번 프레임에 이미 채택된 커맨드를 기록해둔다.
@@ -341,8 +213,13 @@ namespace Game.Character
                     // 동시입력(콤보) 커맨드는 buttons에 포함된 버튼이 전부, 서로 comboWindowFrames 이내에 눌려 있어야 한다.
                     if (command.requireAllButtons && !IsButtonComboSatisfied(command)) continue;
 
-                    // 방향이 중립일 때만 발동하는 커맨드(예: 중립 잡기) 조건 체크
-                    if (command.requireNeutralDirection && currentDirection != 5) continue;
+                    // 땅 / 점프 중 조건
+                    if (command.usableState == UsableState.Ground && !isGrounded) continue;
+                    if (command.usableState == UsableState.Air && isGrounded) continue;
+
+                    // 버튼을 누르는 순간의 레버 방향 조건 (예: 2L은 1, 2, 3 중 하나)
+                    if (command.holdDirections != null && command.holdDirections.Length > 0 &&
+                        Array.IndexOf(command.holdDirections, currentDirection) < 0) continue;
 
                     // directionSequence가 비어 있으면 방향 조건 없이(버튼 조건만으로) 통과시킨다.
                     bool isMotionMatched = command.directionSequence == null || command.directionSequence.Length == 0

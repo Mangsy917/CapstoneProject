@@ -1,0 +1,29 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b4b9c1d4c3d10c14f84abff9bce7a30b, type: 3}
+  m_Name: D_TestRyu623
+  m_EditorClassIdentifier: Assembly-CSharp::Game.Character.AttackData
+  _attackName: 623
+  _height: 0
+  _startupFrames: 3
+  _activeFrames: 10
+  _recoveryFrames: 25
+  _traitWindows:
+  - _trait: 3
+    _startFrame: 1
+    _endFrame: 5
+    _armorHeights: 0
+    _armorHitCount: 0
+  _animationState: 623
+  _projectilePrefab: {fileID: 0}
+  _projectileSpawnFrame: 1
+  _projectileSpawnOffset: {x: 1, y: 0.3}

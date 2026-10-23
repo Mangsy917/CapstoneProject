@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b4b9c1d4c3d10c14f84abff9bce7a30b, type: 3}
+  m_Name: D_TestRyu236
+  m_EditorClassIdentifier: Assembly-CSharp::Game.Character.AttackData
+  _attackName: 236
+  _height: 0
+  _startupFrames: 13
+  _activeFrames: 2
+  _recoveryFrames: 30
+  _traitWindows: []
+  _animationState: 236
+  _projectilePrefab: {fileID: 5406294107860528325, guid: 782b275b08e685e4bbccf1bd5f5faf3b, type: 3}
+  _projectileSpawnFrame: 13
+  _projectileSpawnOffset: {x: 1, y: 0.4}

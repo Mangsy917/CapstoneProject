@@ -91,7 +91,23 @@ namespace Game.Character
         [Tooltip("예) 슈퍼아머 / 시작 1 / 끝 8 / 상단 / 2회 → 1~8프레임 동안 상단 공격을 2번까지 버팀")]
         [SerializeField] private TraitWindow[] _traitWindows = new TraitWindow[0];
 
+        [Header("애니메이션")]
+        [Tooltip("공격 중 재생할 Animator 상태 이름")]
+        [SerializeField] private string _animationState;
+
+        [Header("투사체")]
+        [Tooltip("공격 중 생성할 투사체 프리팹. 없으면 비워둠")]
+        [SerializeField] private Projectile _projectilePrefab;
+        [Tooltip("투사체를 생성할 프레임 (공격 시작 프레임 = 1)")]
+        [SerializeField] private int _projectileSpawnFrame = 1;
+        [Tooltip("투사체 생성 위치 (캐릭터 위치 기준, x는 바라보는 쪽이 +)")]
+        [SerializeField] private Vector2 _projectileSpawnOffset = new Vector2(1f, 0.3f);
+
         public string AttackName => _attackName;
+        public string AnimationState => _animationState;
+        public Projectile ProjectilePrefab => _projectilePrefab;
+        public int ProjectileSpawnFrame => _projectileSpawnFrame;
+        public Vector2 ProjectileSpawnOffset => _projectileSpawnOffset;
         public AttackHeight Height => _height;
         public int StartupFrames => _startupFrames;
         public int ActiveFrames => _activeFrames;
@@ -119,6 +135,7 @@ namespace Game.Character
             if (_startupFrames < 1) _startupFrames = 1;
             if (_activeFrames < 1) _activeFrames = 1;
             if (_recoveryFrames < 0) _recoveryFrames = 0;
+            if (_projectileSpawnFrame < 1) _projectileSpawnFrame = 1;
 
             if (_traitWindows == null) return;
             foreach (var window in _traitWindows)

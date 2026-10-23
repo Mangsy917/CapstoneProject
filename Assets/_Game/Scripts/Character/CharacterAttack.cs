@@ -25,6 +25,9 @@ namespace Game.Character
         [Tooltip("공격 중 상단/중단/하단/잡기 값을 넣을 CharactorState. 비워두면 같은 오브젝트에서 찾음")]
         [SerializeField] private CharactorState CA_characterState;
 
+        [Tooltip("바라보는 방향, 땅/공중 상태를 알려줄 CharacterMove. 비워두면 같은 오브젝트에서 찾음")]
+        [SerializeField] private CharacterMove CA_characterMove;
+
         /// <summary>지금 진행 중인 공격 (공격 중이 아니면 null)</summary>
         public AttackData CurrentAttack { get; private set; }
 
@@ -42,10 +45,13 @@ namespace Game.Character
         // 슈퍼아머 구간마다 남은 횟수 (CurrentAttack.TraitWindows와 같은 순서)
         private int[] _remainingArmorHits = new int[0];
 
+        private bool _isAirAttack; // 점프 중에 시작한 공격인지 (착지하면 끝남)
+
         private void Awake()
         {
             if (_characterCommand == null) _characterCommand = GetComponent<CharacterCommand>();
             if (CA_characterState == null) CA_characterState = GetComponent<CharactorState>();
+            if (CA_characterMove == null) CA_characterMove = GetComponent<CharacterMove>();
 
             if (_characterCommand == null)
                 Debug.LogError("[CharacterAttack] CharacterCommand를 찾을 수 없습니다. Character Command 칸에 지정해 주세요.", this);
@@ -66,13 +72,36 @@ namespace Game.Character
             if (!IsAttacking) return;
 
             AttackFrame++;
-            if (AttackFrame > CurrentAttack.TotalFrames)
+            if (AttackFrame > CurrentAttack.TotalFrames || (_isAirAttack && IsGrounded()))
             {
                 EndAttack();
                 return;
             }
 
             SetPhase(GetPhaseAt(AttackFrame));
+
+            if (CurrentAttack.ProjectilePrefab != null && AttackFrame == CurrentAttack.ProjectileSpawnFrame)
+                SpawnProjectile(CurrentAttack);
+        }
+
+        private bool IsGrounded()
+        {
+            return CA_characterMove == null || CA_characterMove.IsGrounded;
+        }
+
+        private bool IsFacingRight()
+        {
+            return CA_characterMove == null || CA_characterMove.IsFacingRight;
+        }
+
+        private void SpawnProjectile(AttackData attack)
+        {
+            bool isFacingRight = IsFacingRight();
+            Vector2 offset = attack.ProjectileSpawnOffset;
+            Vector3 position = transform.position + new Vector3(isFacingRight ? offset.x : -offset.x, offset.y, 0f);
+
+            Projectile projectile = Instantiate(attack.ProjectilePrefab, position, Quaternion.identity);
+            projectile.Launch(isFacingRight);
         }
 
         // 공격 중에 들어온 커맨드는 무시함 (캔슬은 아직 없음)
@@ -86,6 +115,7 @@ namespace Game.Character
         {
             CurrentAttack = attack;
             AttackFrame = 0; // 이번 프레임 Update에서 1이 됨
+            _isAirAttack = !IsGrounded();
 
             var windows = attack.TraitWindows;
             _remainingArmorHits = new int[windows.Length];
