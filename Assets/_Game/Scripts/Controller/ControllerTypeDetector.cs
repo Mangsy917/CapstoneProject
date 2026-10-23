@@ -39,13 +39,13 @@ public static class ControllerTypeDetector
     }
 
     /// <summary>
-    /// 플레이스테이션 패드의 메뉴(Options) 버튼인지.
-    /// 메뉴 열기 / 닫기는 플레이스테이션에서 홈(PS) 버튼만 쓰므로, 이 버튼으로 들어온 입력은 무시할 때 사용
-    /// (Xbox 패드의 홈 버튼은 Windows가 쓰기 때문에 그 외 패드는 메뉴 버튼을 그대로 씀)
+    /// 플레이스테이션 패드의 Share(Create) 버튼인지.
+    /// 재시작은 플레이스테이션에서 터치패드만 쓰므로, 이 버튼으로 들어온 입력은 무시할 때 사용
+    /// (그 외 패드는 Back(View) 버튼으로 재시작)
     /// </summary>
-    public static bool IsPlayStationMenuButton(InputControl control)
+    public static bool IsPlayStationShareButton(InputControl control)
     {
-        return control != null && control.device is UnityEngine.InputSystem.DualShock.DualShockGamepad gamepad && control == gamepad.startButton;
+        return control != null && control.device is UnityEngine.InputSystem.DualShock.DualShockGamepad gamepad && control == gamepad.selectButton;
     }
 
     private static void OnInputEvent(InputEventPtr eventPtr, InputDevice device)

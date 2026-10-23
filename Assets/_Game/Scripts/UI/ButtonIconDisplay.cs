@@ -70,6 +70,10 @@ namespace Game.UI
             {
                 if (string.IsNullOrEmpty(binding.groups) || !binding.groups.Contains(group)) continue;
 
+                // 플레이스테이션 전용 바인딩(터치패드 등)은 다른 패드에서 건너뜀
+                bool isPlayStationOnly = binding.effectivePath.StartsWith("<DualShockGamepad>");
+                if (isPlayStationOnly && type != ControllerTypeDetector.ControllerType.PlayStation) continue;
+
                 if (firstPath == null) firstPath = binding.effectivePath;
                 Sprite bindingSprite = BID_buttonIcons != null ? BID_buttonIcons.GetSprite(type, binding.effectivePath) : null;
                 if (bindingSprite != null)

@@ -341,17 +341,6 @@
                 },
                 {
                     "name": "",
-                    "id": "ec688881-cd38-42c4-9bd9-a80776e69326",
-                    "path": "<DualShockGamepad>/systemButton",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": ";GamePad",
-                    "action": "OpenUI",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
                     "id": "884fafb4-43af-476a-915f-58cd015757a9",
                     "path": "<Gamepad>/start",
                     "interactions": "",
@@ -368,6 +357,17 @@
                     "interactions": "",
                     "processors": "",
                     "groups": ";PC",
+                    "action": "Restart",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "ec688881-cd38-42c4-9bd9-a80776e69326",
+                    "path": "<DualShockGamepad>/touchpadButton",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": ";GamePad",
                     "action": "Restart",
                     "isComposite": false,
                     "isPartOfComposite": false
@@ -652,17 +652,6 @@
                     "interactions": "",
                     "processors": "",
                     "groups": ";PC",
-                    "action": "BackToGame",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
-                    "id": "bfeef4a4-65b9-45cf-93d4-eb15f33208cd",
-                    "path": "<DualShockGamepad>/systemButton",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": ";GamePad",
                     "action": "BackToGame",
                     "isComposite": false,
                     "isPartOfComposite": false

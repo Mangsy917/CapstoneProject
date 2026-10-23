@@ -115,14 +115,14 @@ public class InputReader : MonoBehaviour
         bool hDown = attackH != null && attackH.WasPressedThisFrame();
         bool exDown = attackEX != null && attackEX.WasPressedThisFrame();
 
-        // 플레이스테이션 패드는 홈(PS) 버튼으로만 메뉴를 엶 (Options 버튼은 무시)
-        bool open = openUI != null && openUI.WasPressedThisFrame() &&
-                    !ControllerTypeDetector.IsPlayStationMenuButton(openUI.activeControl);
+        bool open = openUI != null && openUI.WasPressedThisFrame();
 
         UpdateDirectionState(up, down, left, right);
         UpdateAttackButtonStates(l, m, h, ex, lDown, mDown, hDown, exDown, open);
 
-        restartDown = restart != null && restart.WasPressedThisFrame();
+        // 플레이스테이션 패드는 터치패드로만 재시작 (Share 버튼은 무시)
+        restartDown = restart != null && restart.WasPressedThisFrame() &&
+                      !ControllerTypeDetector.IsPlayStationShareButton(restart.activeControl);
     }
 
     private void UpdateDirectionState(bool up, bool down, bool left, bool right)
