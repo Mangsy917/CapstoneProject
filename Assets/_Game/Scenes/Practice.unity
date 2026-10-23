@@ -27145,6 +27145,7 @@ GameObject:
   - component: {fileID: 1389828392}
   - component: {fileID: 1389828402}
   - component: {fileID: 1389828401}
+  - component: {fileID: 1389828403}
   m_Layer: 0
   m_Name: Test_Ryu
   m_TagString: Player
@@ -27607,6 +27608,23 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
+--- !u!114 &1389828403
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1389828391}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7ea6ce6e9b1aaba45a4eeee0c0b1c428, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Game.Character.Pushbox
+  _canBePushed: 1
+  _ignoreHeight: 0
+  _boxCollider: {fileID: 1389828397}
+  _size: {x: 1, y: 2}
+  _offset: {x: 0, y: 0}
 --- !u!1 &1397161733
 GameObject:
   m_ObjectHideFlags: 0
@@ -28012,6 +28030,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1408087529}
   - component: {fileID: 1408087530}
+  - component: {fileID: 1408087531}
   m_Layer: 0
   m_Name: Left
   m_TagString: Untagged
@@ -28055,6 +28074,23 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 1, y: 1, z: 1}
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &1408087531
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1408087528}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7ea6ce6e9b1aaba45a4eeee0c0b1c428, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Game.Character.Pushbox
+  _canBePushed: 0
+  _ignoreHeight: 1
+  _boxCollider: {fileID: 1408087530}
+  _size: {x: 1, y: 2}
+  _offset: {x: 0, y: 0}
 --- !u!1 &1408137888
 GameObject:
   m_ObjectHideFlags: 0
@@ -28065,6 +28101,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1408137889}
   - component: {fileID: 1408137890}
+  - component: {fileID: 1408137891}
   m_Layer: 0
   m_Name: StageLeftWall
   m_TagString: Untagged
@@ -28108,6 +28145,23 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 1, y: 50, z: 10}
   m_Center: {x: 0, y: 25, z: 0}
+--- !u!114 &1408137891
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1408137888}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7ea6ce6e9b1aaba45a4eeee0c0b1c428, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Game.Character.Pushbox
+  _canBePushed: 0
+  _ignoreHeight: 1
+  _boxCollider: {fileID: 1408137890}
+  _size: {x: 1, y: 2}
+  _offset: {x: 0, y: 0}
 --- !u!1 &1411327312
 GameObject:
   m_ObjectHideFlags: 0
@@ -30255,6 +30309,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1508979136}
   - component: {fileID: 1508979137}
+  - component: {fileID: 1508979138}
   m_Layer: 0
   m_Name: Right
   m_TagString: Untagged
@@ -30298,6 +30353,23 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 1, y: 1, z: 1}
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &1508979138
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1508979135}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7ea6ce6e9b1aaba45a4eeee0c0b1c428, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Game.Character.Pushbox
+  _canBePushed: 0
+  _ignoreHeight: 1
+  _boxCollider: {fileID: 1508979137}
+  _size: {x: 1, y: 2}
+  _offset: {x: 0, y: 0}
 --- !u!1 &1512813112
 GameObject:
   m_ObjectHideFlags: 0
@@ -32407,6 +32479,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1655326380}
   - component: {fileID: 1655326381}
+  - component: {fileID: 1655326382}
   m_Layer: 0
   m_Name: StageRightWall
   m_TagString: Untagged
@@ -32450,6 +32523,23 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 1, y: 50, z: 10}
   m_Center: {x: 0, y: 25, z: 0}
+--- !u!114 &1655326382
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1655326379}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7ea6ce6e9b1aaba45a4eeee0c0b1c428, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Game.Character.Pushbox
+  _canBePushed: 0
+  _ignoreHeight: 1
+  _boxCollider: {fileID: 1655326381}
+  _size: {x: 1, y: 2}
+  _offset: {x: 0, y: 0}
 --- !u!1 &1656301896
 GameObject:
   m_ObjectHideFlags: 0

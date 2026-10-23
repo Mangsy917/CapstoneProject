@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 181234015578698149}
   - component: {fileID: 6632237161439568554}
   - component: {fileID: 2418515804855335712}
+  - component: {fileID: 1540581559021852066}
   m_Layer: 0
   m_Name: Enemy
   m_TagString: Enemy
@@ -157,3 +158,20 @@ MonoBehaviour:
   _spriteRenderer: {fileID: 647039610034533481}
   CF_characterMove: {fileID: 0}
   _opponentTag: Player
+--- !u!114 &1540581559021852066
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2347769319118467310}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7ea6ce6e9b1aaba45a4eeee0c0b1c428, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Game.Character.Pushbox
+  _canBePushed: 1
+  _ignoreHeight: 0
+  _boxCollider: {fileID: 6632237161439568554}
+  _size: {x: 1, y: 2}
+  _offset: {x: 0, y: 0}
