@@ -8,8 +8,9 @@ namespace Game.Field
     // 연습 씬에서 재시작 키(키보드 스페이스바, 플레이스테이션 터치패드, 그 외 패드 Back)를 누르면 처음 상태로 되돌림
     // - 화면이 순간 검게 변하는 동안 연습 설정의 시작 사이드 / 시작 위치대로 두 캐릭터를 다시 세움
     // - 재시작 키를 누를 때 레버를 같이 누르고 있으면 그 방향으로 시작 위치를 바꿈 (화면 기준 방향)
-    //   왼쪽: 왼쪽 벽, 오른쪽: 오른쪽 벽, 아래: 중앙, 위: 2P 자리(Player가 오른쪽), 레버 없음: 설정해 둔 위치
-    //   대각선은 좌우가 위치, 위가 사이드를 정함 (예: 왼쪽 위 = 2P 자리 + 왼쪽 벽)
+    //   왼쪽: 왼쪽 벽, 오른쪽: 오른쪽 벽, 아래: 1P 자리(Player가 왼쪽) + 중앙, 위: 2P 자리(Player가 오른쪽),
+    //   레버 없음: 설정해 둔 위치
+    //   대각선은 좌우가 위치, 위아래가 사이드를 정함 (예: 왼쪽 위 = 2P 자리 + 왼쪽 벽, 오른쪽 아래 = 1P 자리 + 오른쪽 벽)
     //   바꾼 값은 설정창의 시작 위치 / 시작 사이드에도 그대로 반영됨
     // - 하던 점프, 대쉬, 달리기, 공격, 착지 경직, 입력 버퍼를 모두 취소하고 날아가던 투사체를 지움
     // - 설정창이 열려 있을 때는 캐릭터 조작 입력(InputReader)이 꺼져 있으므로 재시작되지 않음
@@ -64,6 +65,7 @@ namespace Game.Field
             if (_startSideSetting != null)
             {
                 if (isUp) _startSideSetting.SetSideAndApply(isPlayerLeft: false);
+                else if (isDown) _startSideSetting.SetSideAndApply(isPlayerLeft: true);
                 else _startSideSetting.ApplyCurrent();
             }
 

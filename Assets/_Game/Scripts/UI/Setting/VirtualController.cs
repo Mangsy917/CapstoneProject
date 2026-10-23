@@ -2,8 +2,6 @@ using System;
 using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using UnityEngine.InputSystem.Controls;
-using UnityEngine.InputSystem.DualShock;
 using UnityEngine.UI;
 
 namespace Game.UI.Setting
@@ -13,8 +11,7 @@ namespace Game.UI.Setting
     // - 버튼 확인 중(StartTest ~ StopTest)에만 또렷해지고, 실제로 누른 레버 방향과 공격 버튼이 밝게 켜짐
     //   설정창이 열린 동안 꺼져 있는 캐릭터 조작 입력(Char 액션 맵)을 잠깐 켜서 읽음
     // - 버튼 확인 중에는 아래에 "뒤로 돌아가려면 (키)를 누르세요"를 보여줌
-    //   나가는 키: 키보드 ESC, 플레이스테이션 홈(PS) 버튼, 그 외 패드 메뉴(Start) 버튼
-    //   (Xbox 패드의 홈 버튼은 Windows가 쓰기 때문에 게임에서 읽을 수 없음)
+    //   나가는 키: 키보드 ESC, 패드 메뉴 버튼 (플레이스테이션 Options, Xbox 메뉴)
     public class VirtualController : MonoBehaviour
     {
         [Serializable]
@@ -53,7 +50,6 @@ namespace Game.UI.Setting
 
         // 컨트롤러 종류별 나가는 키 (스프라이트를 찾을 때 쓰는 바인딩 경로)
         private const string KeyboardExitPath = "<Keyboard>/escape";
-        private const string PlayStationExitPath = "<DualShockGamepad>/systemButton";
         private const string GamepadExitPath = "<Gamepad>/start";
 
         // 눌렀을 때 / 뗐을 때 밝기 (게임 화면의 입력 표시와 같은 값)
@@ -120,23 +116,14 @@ namespace Game.UI.Setting
             ShowTestState();
         }
 
-        /// <summary>이번 프레임에 나가는 키(ESC / PS 홈 버튼 / 그 외 패드 메뉴 버튼)를 눌렀는지</summary>
+        /// <summary>이번 프레임에 나가는 키(ESC / 패드 메뉴 버튼, 플레이스테이션은 Options)를 눌렀는지</summary>
         public bool WasExitPressedThisFrame()
         {
             if (Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame) return true;
 
             foreach (Gamepad gamepad in Gamepad.all)
             {
-                if (gamepad is DualShockGamepad)
-                {
-                    // 플레이스테이션 패드는 홈(PS) 버튼. 메뉴(Options) 버튼으로는 나가지 않음
-                    var homeButton = gamepad.TryGetChildControl<ButtonControl>("systemButton");
-                    if (homeButton != null && homeButton.wasPressedThisFrame) return true;
-                }
-                else if (gamepad.startButton.wasPressedThisFrame)
-                {
-                    return true;
-                }
+                if (gamepad.startButton.wasPressedThisFrame) return true;
             }
             return false;
         }
@@ -208,7 +195,7 @@ namespace Game.UI.Setting
             string keyName;
             switch (type)
             {
-                case ControllerTypeDetector.ControllerType.PlayStation: path = PlayStationExitPath; keyName = "PS"; break;
+                case ControllerTypeDetector.ControllerType.PlayStation: path = GamepadExitPath; keyName = "Options"; break;
                 case ControllerTypeDetector.ControllerType.Xbox: path = GamepadExitPath; keyName = "Menu"; break;
                 default: path = KeyboardExitPath; keyName = "ESC"; break;
             }
