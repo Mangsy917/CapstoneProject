@@ -211,6 +211,8 @@ public class CharacterMove : MonoBehaviour
         RawDirection = inputReader.Direction;
         RelativeDirection = ToRelativeDirection(RawDirection, IsFacingRight);
 
+        CancelDashTapOnOtherDirection();
+
         bool isAttacking = characterAttack != null && characterAttack.IsAttacking;
 
         // 이동 (공격 중에는 땅에서 멈추고, 공중 공격은 점프 궤도를 그대로 따라감)
@@ -352,9 +354,23 @@ public class CharacterMove : MonoBehaviour
     // =====================================================================
 
     /// <summary>
+    /// 66 / 44 사이에는 중립(5)만 거쳐야 대쉬로 인정되도록,
+    /// 레버가 6(또는 4)도 5도 아닌 방향으로 바뀌면 기다리던 대쉬 입력을 취소.
+    /// 예) 656은 대쉬, 636 / 6363636 / 414141은 대쉬가 아님
+    /// 대쉬, 점프, 공격 중에도 놓치지 않도록 매 프레임 확인
+    /// </summary>
+    private void CancelDashTapOnOtherDirection()
+    {
+        if (RelativeDirection == previousRelativeDirection || RelativeDirection == 5) return;
+
+        if (RelativeDirection != 6) lastForwardTapFrame = int.MinValue / 2;
+        if (RelativeDirection != 4) lastBackTapFrame = int.MinValue / 2;
+    }
+
+    /// <summary>
     /// 6(또는 4)을 새로 누른 순간을 기록하고, dashInputWindowFrames 이내에 한 번 더 새로 누르면 대쉬 시작.
     /// "새로 누름" = 직전 프레임에는 그 방향이 아니었다가 이번 프레임에 그 방향이 된 것
-    /// (그래서 66 사이에 레버를 한 번 놓아야 인정됨)
+    /// (그래서 66 사이에 레버를 한 번 놓아야 인정됨. 놓는 동안 중립 말고 다른 방향을 거치면 취소됨)
     /// </summary>
     private bool TryStartDash()
     {
