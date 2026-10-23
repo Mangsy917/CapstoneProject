@@ -6,6 +6,8 @@ public class ControlReaderSwitch : MonoBehaviour
     [SerializeField] private GameObject settingUI;
     [SerializeField] private InputReader charC;
     [SerializeField] private UIControl UIC;
+    [Tooltip("게임 중에만 보이는 메뉴 / 재시작 키 안내. 설정창이 열리면 숨김")]
+    [SerializeField] private GameObject gameGuide;
 
     [Header("세팅 UI가 열려 있는 동안 멈출 스크립트")]
     [Tooltip("프레임 수로 동작하는 스크립트(CharacterMove, InputHistoryDisplay 등)를 넣어주세요.")]
@@ -61,6 +63,8 @@ public class ControlReaderSwitch : MonoBehaviour
     {
         // Time.deltaTime을 쓰는 이동, 물리, 애니메이션, WaitForSeconds를 멈춤
         Time.timeScale = paused ? 0f : 1f;
+
+        if (gameGuide != null) gameGuide.SetActive(!paused);
 
         // 프레임 수로 동작하는 스크립트는 timeScale로 멈추지 않으므로 직접 끔
         foreach (var target in pauseTargets)

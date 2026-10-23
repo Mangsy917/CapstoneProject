@@ -108,6 +108,18 @@ namespace Game.Character
         // 다른 스크립트에서 쓰는 기능
         // =====================================================================
 
+        /// <summary>
+        /// 캐릭터를 순간이동시킨 뒤(시작 위치로 되돌리기, 좌우 바꾸기 등) 호출.
+        /// 지금 위치를 이전 위치로 기억해서, 벽을 넘어간 것으로 보고 원래 쪽으로 되돌리지 않도록 함
+        /// </summary>
+        public static void SyncAfterTeleport()
+        {
+            foreach (var box in _allPushboxes)
+            {
+                box._previousX = box.CenterX;
+            }
+        }
+
         /// <summary>두 상자가 맞닿아 있거나 겹쳐 있는지 (예: 달리다가 상대에게 붙었는지)</summary>
         public static bool IsTouching(Pushbox a, Pushbox b)
         {

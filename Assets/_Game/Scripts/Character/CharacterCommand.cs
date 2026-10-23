@@ -176,6 +176,12 @@ namespace Game.Character
             return pressedButtons;
         }
 
+        /// <summary>재시작할 때 호출. 버퍼에 쌓인 입력을 지워서 재시작 전 입력으로 기술이 나가지 않게 함</summary>
+        public void ClearBuffer()
+        {
+            _inputBuffer.Clear();
+        }
+
         private void AddToBuffer(BufferedInput input)
         {
             _inputBuffer.Add(input);

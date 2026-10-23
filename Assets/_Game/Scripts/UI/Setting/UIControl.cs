@@ -85,7 +85,9 @@ public class UIControl : MonoBehaviour
         bool cancel = Cancel != null && Cancel.IsPressed();
         bool cancelDown = Cancel != null && Cancel.WasPressedThisFrame();
 
-        bool close = Close != null && Close.WasPressedThisFrame();
+        // 플레이스테이션 패드는 홈(PS) 버튼으로만 설정창을 닫음 (Options 버튼은 무시)
+        bool close = Close != null && Close.WasPressedThisFrame() &&
+                     !ControllerTypeDetector.IsPlayStationMenuButton(Close.activeControl);
 
         UpdateButton(up, down, left, right, leftPage, rightPage, select, cancel, cancelDown, close);
     }

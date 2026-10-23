@@ -124,6 +124,19 @@ public class CharStageBoundary : MonoBehaviour
         UpdateBoundary();
     }
 
+    /// <summary>
+    /// 캐릭터를 순간이동시킨 뒤 호출. Boundary 벽을 바로 두 캐릭터 중심으로 옮기고,
+    /// Pushbox가 벽을 넘어간 것으로 보고 캐릭터를 되돌리지 않도록 지금 위치를 기억시킴
+    /// </summary>
+    public static void SyncAfterTeleport()
+    {
+        foreach (var stageBoundary in FindObjectsByType<CharStageBoundary>(FindObjectsSortMode.None))
+        {
+            stageBoundary.UpdateBoundary();
+        }
+        Game.Character.Pushbox.SyncAfterTeleport();
+    }
+
     private void UpdateBoundary()
     {
         // Player가 없으면 마지막 위치에 그대로 둠

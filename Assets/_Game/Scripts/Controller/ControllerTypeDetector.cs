@@ -38,6 +38,16 @@ public static class ControllerTypeDetector
         return type == ControllerType.Keyboard ? KeyboardGroup : GamepadGroup;
     }
 
+    /// <summary>
+    /// 플레이스테이션 패드의 메뉴(Options) 버튼인지.
+    /// 메뉴 열기 / 닫기는 플레이스테이션에서 홈(PS) 버튼만 쓰므로, 이 버튼으로 들어온 입력은 무시할 때 사용
+    /// (Xbox 패드의 홈 버튼은 Windows가 쓰기 때문에 그 외 패드는 메뉴 버튼을 그대로 씀)
+    /// </summary>
+    public static bool IsPlayStationMenuButton(InputControl control)
+    {
+        return control != null && control.device is UnityEngine.InputSystem.DualShock.DualShockGamepad gamepad && control == gamepad.startButton;
+    }
+
     private static void OnInputEvent(InputEventPtr eventPtr, InputDevice device)
     {
         // 상태 변화 이벤트가 아니면 무시 (연결/해제 이벤트 등 제외)

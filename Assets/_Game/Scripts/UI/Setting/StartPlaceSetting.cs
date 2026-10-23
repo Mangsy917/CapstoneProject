@@ -62,6 +62,15 @@ namespace Game.UI.Setting
             else ApplyPlace(index);
         }
 
+        /// <summary>지금 고른 시작 위치에 두 캐릭터를 바로 다시 세움 (재시작에서 사용)</summary>
+        public void ApplyCurrent()
+        {
+            if (_placeStepper == null) return;
+
+            SPS_appliedIndex = _placeStepper.Index;
+            ApplyPlace(SPS_appliedIndex);
+        }
+
         // 고른 위치에 두 캐릭터를 다시 세움
         private void ApplyPlace(int index)
         {
@@ -82,6 +91,9 @@ namespace Game.UI.Setting
 
             SetPositionX(leftCharacter, leftX);
             SetPositionX(rightCharacter, leftX + _characterGap);
+
+            // 순간이동한 것을 Boundary 벽과 Pushbox에 알림 (벽을 넘어간 것으로 보고 되돌리지 않도록)
+            CharStageBoundary.SyncAfterTeleport();
         }
 
         private float GetStageCenterX()

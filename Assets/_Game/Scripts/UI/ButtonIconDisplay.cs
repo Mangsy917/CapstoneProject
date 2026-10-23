@@ -1,3 +1,4 @@
+using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
@@ -18,6 +19,9 @@ namespace Game.UI
 
         [Tooltip("스프라이트를 넣을 Image. 비워두면 같은 오브젝트에서 찾음")]
         [SerializeField] private Image _iconImage;
+
+        [Tooltip("스프라이트가 없는 키일 때 대신 키 이름을 보여줄 글자 (없으면 비워둠)")]
+        [SerializeField] private TMP_Text _fallbackText;
 
         private void Awake()
         {
@@ -40,24 +44,54 @@ namespace Game.UI
         {
             if (_iconImage == null) return;
 
-            Sprite sprite = BID_buttonIcons != null ? BID_buttonIcons.GetSprite(type, FindBindingPath(type)) : null;
+            string path = FindBindingPath(type, out Sprite sprite);
             _iconImage.sprite = sprite;
             _iconImage.enabled = sprite != null;
+
+            if (_fallbackText != null)
+            {
+                _fallbackText.text = sprite == null ? GetKeyName(type, path) : "";
+                _fallbackText.gameObject.SetActive(sprite == null);
+            }
         }
 
-        // 액션에서 지금 컨트롤러 종류의 그룹(PC / GamePad)에 속한 첫 번째 바인딩 경로
-        private string FindBindingPath(ControllerTypeDetector.ControllerType type)
+        // 액션에서 지금 컨트롤러 종류의 그룹(PC / GamePad)에 속한 바인딩 중 스프라이트가 있는 첫 번째 경로
+        // 예) 메뉴: 플레이스테이션이면 홈 버튼, Xbox면 메뉴 버튼 (둘 다 GamePad 그룹이라 그림이 있는 쪽을 고름)
+        // 스프라이트가 있는 바인딩이 없으면 첫 번째 바인딩 경로를 돌려줌
+        private string FindBindingPath(ControllerTypeDetector.ControllerType type, out Sprite sprite)
         {
+            sprite = null;
             InputAction action = BID_inputActions != null ? BID_inputActions.FindActionMap(BID_actionMapName)?.FindAction(BID_actionName) : null;
             if (action == null) return null;
 
             string group = ControllerTypeDetector.GetBindingGroup(type);
+            string firstPath = null;
             foreach (InputBinding binding in action.bindings)
             {
-                if (!string.IsNullOrEmpty(binding.groups) && binding.groups.Contains(group))
+                if (string.IsNullOrEmpty(binding.groups) || !binding.groups.Contains(group)) continue;
+
+                if (firstPath == null) firstPath = binding.effectivePath;
+                Sprite bindingSprite = BID_buttonIcons != null ? BID_buttonIcons.GetSprite(type, binding.effectivePath) : null;
+                if (bindingSprite != null)
+                {
+                    sprite = bindingSprite;
                     return binding.effectivePath;
+                }
             }
-            return null;
+            return firstPath;
+        }
+
+        // 스프라이트가 없을 때 보여줄 키 이름 (Xbox는 패드에 적힌 이름으로)
+        private static string GetKeyName(ControllerTypeDetector.ControllerType type, string path)
+        {
+            if (string.IsNullOrEmpty(path)) return "-";
+
+            if (type == ControllerTypeDetector.ControllerType.Xbox)
+            {
+                if (path == "<Gamepad>/select") return "View";
+                if (path == "<Gamepad>/start") return "Menu";
+            }
+            return InputControlPath.ToHumanReadableString(path, InputControlPath.HumanReadableStringOptions.OmitDevice);
         }
     }
 }

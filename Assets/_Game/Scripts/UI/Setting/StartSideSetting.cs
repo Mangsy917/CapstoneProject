@@ -52,6 +52,15 @@ namespace Game.UI.Setting
             else ApplySide(index);
         }
 
+        /// <summary>지금 고른 사이드대로 두 캐릭터를 바로 바꿔 세움 (재시작에서 사용)</summary>
+        public void ApplyCurrent()
+        {
+            if (_sideStepper == null) return;
+
+            _appliedIndex = _sideStepper.Index;
+            ApplySide(_appliedIndex);
+        }
+
         // Player가 고른 쪽에 서도록 Player와 Enemy의 x 위치를 맞바꿈 (이미 그쪽에 있으면 그대로 둠)
         private void ApplySide(int index)
         {
@@ -72,6 +81,9 @@ namespace Game.UI.Setting
 
             player.transform.position = playerPosition;
             enemy.position = enemyPosition;
+
+            // 서로 지나쳐 자리를 바꾼 것을 Pushbox에 알림 (겹쳤다고 보고 원래 자리로 밀어내지 않도록)
+            CharStageBoundary.SyncAfterTeleport();
         }
 
         // Enemy가 여러 개면 Player와 가장 가까운 것을 사용

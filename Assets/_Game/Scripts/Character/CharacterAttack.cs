@@ -172,6 +172,14 @@ namespace Game.Character
             OnAttackStarted?.Invoke(attack);
         }
 
+        /// <summary>재시작할 때 호출. 진행 중인 공격과 기다리던 착지 경직을 모두 취소</summary>
+        public void CancelAttack()
+        {
+            _pendingLandingAttack = null;
+            if (!IsAttacking) return;
+            EndAttack();
+        }
+
         // 착지 경직 시작. 이 동안은 공격 중으로 취급해서 움직일 수 없음
         private void StartLanding(AttackData attack)
         {

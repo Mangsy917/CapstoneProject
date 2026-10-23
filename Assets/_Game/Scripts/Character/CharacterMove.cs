@@ -335,6 +335,23 @@ public class CharacterMove : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// 재시작할 때 호출. 점프, 대쉬, 달리기, 대쉬 입력 대기를 모두 취소하고 바닥에 선 중립 상태로 되돌림
+    /// </summary>
+    public void ResetMovement()
+    {
+        StopForAttack();
+        IsGrounded = true;
+        airVelocity = Vector2.zero;
+        lastForwardTapFrame = int.MinValue / 2;
+        lastBackTapFrame = int.MinValue / 2;
+        appliedPosture = StatePosture.None; // 다음 프레임에 서기 자세를 다시 넣음
+
+        Vector3 position = transform.position;
+        position.y = groundY;
+        transform.position = position;
+    }
+
     // 공격이 시작되면 하던 점프 준비, 대쉬, 달리기를 취소하고 제자리에 멈춤
     private void StopForAttack()
     {

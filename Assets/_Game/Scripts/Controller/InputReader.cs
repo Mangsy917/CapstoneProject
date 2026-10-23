@@ -17,7 +17,7 @@ public class InputReader : MonoBehaviour
     [SerializeField] private string actionMapName = "Char";
 
     private InputAction moveUp, moveDown, moveLeft, moveRight;
-    private InputAction attackL, attackM, attackH, attackEX, openUI;
+    private InputAction attackL, attackM, attackH, attackEX, openUI, restart;
 
     [Header("컨트롤러 방향 상태")]
     public bool controllerDL = false;
@@ -43,6 +43,9 @@ public class InputReader : MonoBehaviour
     public bool buttonEXDown = false;
 
     public bool uiOpen = false;
+
+    [Header("재시작 키 (누른 순간 1프레임만 true)")]
+    public bool restartDown = false;
 
     /// <summary>현재 방향을 넘버패드 숫자(1~9)로 표현한 값. 5 = 중립</summary>
     public int Direction { get; private set; } = 5;
@@ -72,6 +75,7 @@ public class InputReader : MonoBehaviour
         attackEX = map.FindAction("AttackEX");
 
         openUI = map.FindAction("OpenUI");
+        restart = map.FindAction("Restart");
     }
 
     private void Start()
@@ -111,10 +115,14 @@ public class InputReader : MonoBehaviour
         bool hDown = attackH != null && attackH.WasPressedThisFrame();
         bool exDown = attackEX != null && attackEX.WasPressedThisFrame();
 
-        bool open = openUI != null && openUI.WasPressedThisFrame();
+        // 플레이스테이션 패드는 홈(PS) 버튼으로만 메뉴를 엶 (Options 버튼은 무시)
+        bool open = openUI != null && openUI.WasPressedThisFrame() &&
+                    !ControllerTypeDetector.IsPlayStationMenuButton(openUI.activeControl);
 
         UpdateDirectionState(up, down, left, right);
         UpdateAttackButtonStates(l, m, h, ex, lDown, mDown, hDown, exDown, open);
+
+        restartDown = restart != null && restart.WasPressedThisFrame();
     }
 
     private void UpdateDirectionState(bool up, bool down, bool left, bool right)
