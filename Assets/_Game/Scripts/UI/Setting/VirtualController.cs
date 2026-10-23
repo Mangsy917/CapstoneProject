@@ -2,14 +2,19 @@ using System;
 using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.InputSystem.Controls;
+using UnityEngine.InputSystem.DualShock;
 using UnityEngine.UI;
 
 namespace Game.UI.Setting
 {
     // 컨트롤러 설정 팝업 오른쪽의 가상 컨트롤러 (레버 + 공격 버튼 4개)
-    // - 공격 버튼마다 지금 쓰는 컨트롤러(키보드 / 플레이스테이션 / Xbox)에 연결된 키를 스프라이트로 보여줌
-    // - 버튼 확인 중(StartTest ~ StopTest)에는 실제로 누른 레버 방향과 공격 버튼이 밝게 켜짐
+    // - 평소에는 반투명하게 보이고 입력을 받지 않음
+    // - 버튼 확인 중(StartTest ~ StopTest)에만 또렷해지고, 실제로 누른 레버 방향과 공격 버튼이 밝게 켜짐
     //   설정창이 열린 동안 꺼져 있는 캐릭터 조작 입력(Char 액션 맵)을 잠깐 켜서 읽음
+    // - 버튼 확인 중에는 아래에 "뒤로 돌아가려면 (키)를 누르세요"를 보여줌
+    //   나가는 키: 키보드 ESC, 플레이스테이션 홈(PS) 버튼, 그 외 패드 메뉴(Start) 버튼
+    //   (Xbox 패드의 홈 버튼은 Windows가 쓰기 때문에 게임에서 읽을 수 없음)
     public class VirtualController : MonoBehaviour
     {
         [Serializable]
@@ -18,20 +23,38 @@ namespace Game.UI.Setting
             // Input Actions 에셋의 액션 이름 (AttackL, AttackM ...)
             public string VC_actionName;
             public Image buttonImage;
-            public Image keyIcon;
-            public TMP_Text keyText;
         }
 
         [SerializeField] private InputActionAsset VC_inputActions;
         [SerializeField] private string VC_actionMapName = "Char";
 
-        [Tooltip("키별 버튼 스프라이트 목록")]
+        [Tooltip("키별 버튼 스프라이트 목록 (나가는 키 표시에 사용)")]
         [SerializeField] private Game.UI.ButtonIconSet VC_buttonIcons;
 
         [Tooltip("레버 방향 이미지 9개. 넘버패드 순서 (1 = 왼쪽 아래, 5 = 중립, 9 = 오른쪽 위)")]
         [SerializeField] private Image[] _directionImages = new Image[9];
 
         [SerializeField] private AttackButtonView[] _attackButtons;
+
+        [Header("반투명")]
+        [Tooltip("가상 컨트롤러 전체의 투명도를 바꿀 CanvasGroup. 비워두면 같은 오브젝트에서 찾음")]
+        [SerializeField] private CanvasGroup _canvasGroup;
+        [Tooltip("버튼 확인 중이 아닐 때의 불투명도 (0 = 안 보임, 1 = 또렷함)")]
+        [Range(0f, 1f)]
+        [SerializeField] private float _idleAlpha = 0.35f;
+
+        [Header("나가기 안내")]
+        [Tooltip("버튼 확인 중에만 보이는 '뒤로 돌아가려면 (키)를 누르세요' 묶음")]
+        [SerializeField] private GameObject _exitGuide;
+        [Tooltip("괄호 자리에 들어갈 나가는 키 스프라이트")]
+        [SerializeField] private Image _exitKeyIcon;
+        [Tooltip("스프라이트가 없을 때 대신 보여줄 키 이름")]
+        [SerializeField] private TMP_Text _exitKeyText;
+
+        // 컨트롤러 종류별 나가는 키 (스프라이트를 찾을 때 쓰는 바인딩 경로)
+        private const string KeyboardExitPath = "<Keyboard>/escape";
+        private const string PlayStationExitPath = "<DualShockGamepad>/systemButton";
+        private const string GamepadExitPath = "<Gamepad>/start";
 
         // 눌렀을 때 / 뗐을 때 밝기 (게임 화면의 입력 표시와 같은 값)
         private const float PressedBrightness = 255f / 255f;
@@ -45,6 +68,9 @@ namespace Game.UI.Setting
 
         private void Awake()
         {
+            if (_canvasGroup == null) _canvasGroup = GetComponent<CanvasGroup>();
+            if (_exitKeyIcon != null) _exitKeyIcon.preserveAspect = true;
+
             _actionMap = VC_inputActions != null ? VC_inputActions.FindActionMap(VC_actionMapName) : null;
             if (_actionMap != null)
             {
@@ -58,8 +84,8 @@ namespace Game.UI.Setting
         private void OnEnable()
         {
             ControllerTypeDetector.OnControllerTypeChanged += HandleControllerTypeChanged;
-            RefreshKeys();
-            ShowPressed(direction: 5, isTesting: false);
+            RefreshExitKey();
+            ShowTestState();
         }
 
         private void OnDisable()
@@ -70,7 +96,7 @@ namespace Game.UI.Setting
 
         private void HandleControllerTypeChanged(ControllerTypeDetector.ControllerType type)
         {
-            RefreshKeys();
+            RefreshExitKey();
         }
 
         // ===== 버튼 확인 =====
@@ -82,6 +108,7 @@ namespace Game.UI.Setting
             IsTesting = true;
             _wasMapEnabled = _actionMap.enabled;
             if (!_wasMapEnabled) _actionMap.Enable();
+            ShowTestState();
         }
 
         public void StopTest()
@@ -90,13 +117,42 @@ namespace Game.UI.Setting
 
             IsTesting = false;
             if (!_wasMapEnabled && _actionMap != null) _actionMap.Disable();
-            ShowPressed(direction: 5, isTesting: false);
+            ShowTestState();
+        }
+
+        /// <summary>이번 프레임에 나가는 키(ESC / PS 홈 버튼 / 그 외 패드 메뉴 버튼)를 눌렀는지</summary>
+        public bool WasExitPressedThisFrame()
+        {
+            if (Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame) return true;
+
+            foreach (Gamepad gamepad in Gamepad.all)
+            {
+                if (gamepad is DualShockGamepad)
+                {
+                    // 플레이스테이션 패드는 홈(PS) 버튼. 메뉴(Options) 버튼으로는 나가지 않음
+                    var homeButton = gamepad.TryGetChildControl<ButtonControl>("systemButton");
+                    if (homeButton != null && homeButton.wasPressedThisFrame) return true;
+                }
+                else if (gamepad.startButton.wasPressedThisFrame)
+                {
+                    return true;
+                }
+            }
+            return false;
         }
 
         private void Update()
         {
             if (!IsTesting) return;
             ShowPressed(ReadDirection(), isTesting: true);
+        }
+
+        // 버튼 확인 중인지에 따라 투명도, 나가기 안내, 켜진 버튼을 맞춤
+        private void ShowTestState()
+        {
+            if (_canvasGroup != null) _canvasGroup.alpha = IsTesting ? 1f : _idleAlpha;
+            if (_exitGuide != null) _exitGuide.SetActive(IsTesting);
+            ShowPressed(direction: 5, isTesting: false);
         }
 
         // 위아래, 좌우를 동시에 누르면 서로 지움 (InputReader와 같은 규칙)
@@ -143,45 +199,31 @@ namespace Game.UI.Setting
             image.color = color;
         }
 
-        // ===== 버튼에 연결된 키 표시 =====
+        // ===== 나가는 키 표시 =====
 
-        /// <summary>공격 버튼마다 연결된 키를 다시 그림 (키를 바꾼 뒤에 호출)</summary>
-        public void RefreshKeys()
+        private void RefreshExitKey()
         {
-            if (_attackButtons == null || _actionMap == null) return;
-
             var type = ControllerTypeDetector.CurrentType;
-            string group = ControllerTypeDetector.GetBindingGroup(type);
-
-            foreach (AttackButtonView view in _attackButtons)
+            string path;
+            string keyName;
+            switch (type)
             {
-                string path = FindBindingPath(_actionMap.FindAction(view.VC_actionName), group);
-                Sprite sprite = VC_buttonIcons != null ? VC_buttonIcons.GetSprite(type, path) : null;
-
-                if (view.keyIcon != null)
-                {
-                    view.keyIcon.sprite = sprite;
-                    view.keyIcon.enabled = sprite != null;
-                }
-                if (view.keyText != null)
-                {
-                    string keyName = string.IsNullOrEmpty(path) ? "-"
-                        : InputControlPath.ToHumanReadableString(path, InputControlPath.HumanReadableStringOptions.OmitDevice);
-                    view.keyText.text = sprite != null ? "" : keyName;
-                }
+                case ControllerTypeDetector.ControllerType.PlayStation: path = PlayStationExitPath; keyName = "PS"; break;
+                case ControllerTypeDetector.ControllerType.Xbox: path = GamepadExitPath; keyName = "Menu"; break;
+                default: path = KeyboardExitPath; keyName = "ESC"; break;
             }
-        }
 
-        private static string FindBindingPath(InputAction action, string group)
-        {
-            if (action == null) return null;
-
-            foreach (InputBinding binding in action.bindings)
+            Sprite sprite = VC_buttonIcons != null ? VC_buttonIcons.GetSprite(type, path) : null;
+            if (_exitKeyIcon != null)
             {
-                if (!string.IsNullOrEmpty(binding.groups) && binding.groups.Contains(group))
-                    return binding.effectivePath;
+                _exitKeyIcon.sprite = sprite;
+                _exitKeyIcon.gameObject.SetActive(sprite != null);
             }
-            return null;
+            if (_exitKeyText != null)
+            {
+                _exitKeyText.text = keyName;
+                _exitKeyText.gameObject.SetActive(sprite == null);
+            }
         }
     }
 }

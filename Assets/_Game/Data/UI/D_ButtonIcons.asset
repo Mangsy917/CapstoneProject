@@ -210,6 +210,8 @@ MonoBehaviour:
     _sprite: {fileID: 21300000, guid: 1fee350b48e3995498ba0e1dc982e452, type: 3}
   - _controlPath: <Gamepad>/dpad/right
     _sprite: {fileID: 21300000, guid: a489f66d2331b22499f058f174d13436, type: 3}
+  - _controlPath: <DualShockGamepad>/systemButton
+    _sprite: {fileID: 21300000, guid: 0badc3b90f51a49418c62c2ebacb263f, type: 3}
   _xboxEntries:
   - _controlPath: <Gamepad>/buttonSouth
     _sprite: {fileID: 21300000, guid: 544c75bce2ced634e8e26be190969639, type: 3}

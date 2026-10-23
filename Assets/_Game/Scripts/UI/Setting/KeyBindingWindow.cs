@@ -67,7 +67,7 @@ namespace Game.UI.Setting
 
         [SerializeField] private string _guideMessage = "바꿀 버튼을 고르고 선택 키를 누르세요";
         [SerializeField] private string _waitingMessage = "새 키를 누르세요  (ESC: 취소)";
-        [SerializeField] private string _testingMessage = "버튼을 눌러 확인하세요  (ESC: 끝내기)";
+        [SerializeField] private string _testingMessage = "버튼을 눌러 확인하세요";
         [SerializeField] private string _reservedMessage = "이동 키와 설정창 열기 키는 사용할 수 없습니다";
         [SerializeField] private string _waitingKeyText = "...";
 
@@ -204,13 +204,12 @@ namespace Game.UI.Setting
             if (KBW_uiControl == null) return;
 
             // 버튼 확인 중에는 메뉴를 움직이지 않음 (공격 버튼과 결정 / 취소 키가 겹치므로)
-            // ESC(게임패드 Start)로만 끝냄
+            // 나가는 키(ESC / PS 홈 버튼 / 그 외 패드 메뉴 버튼)로만 끝내고, 취소 / 닫기 입력은 지워서 창이 닫히지 않게 함
             if (IsButtonTesting)
             {
-                bool isStopPressed = KBW_uiControl.uiClose;
                 KBW_uiControl.uiCancelDown = false;
                 KBW_uiControl.uiClose = false;
-                if (isStopPressed) StopButtonTest();
+                if (_virtualController.WasExitPressedThisFrame()) StopButtonTest();
                 RememberInput();
                 return;
             }
@@ -452,15 +451,13 @@ namespace Game.UI.Setting
 
         // ===== 화면 =====
 
-        // 각 줄의 키를 지금 컨트롤러 종류에 맞춰 다시 그림 (가상 컨트롤러의 키 표시도 같이)
+        // 각 줄의 키를 지금 컨트롤러 종류에 맞춰 다시 그림
         private void RefreshKeyTexts()
         {
             for (int i = 0; i < _bindingRows.Length; i++)
             {
                 RefreshRow(_bindingRows[i], isWaiting: _isWaitingForKey && i == _waitingRowIndex);
             }
-
-            if (_virtualController != null) _virtualController.RefreshKeys();
         }
 
         // 한 줄의 키 표시. 스프라이트가 있으면 스프라이트, 없으면 글자, 키 입력 대기 중이면 "..."
