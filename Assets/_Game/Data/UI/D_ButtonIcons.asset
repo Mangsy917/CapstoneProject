@@ -235,3 +235,7 @@ MonoBehaviour:
     _sprite: {fileID: 21300000, guid: 5942a511bfe951541863f6fe14431c3f, type: 3}
   - _controlPath: <Gamepad>/dpad/right
     _sprite: {fileID: 21300000, guid: 68af3fed4cf357648988cf7a7f559228, type: 3}
+  - _controlPath: <Gamepad>/buttonWest
+    _sprite: {fileID: 21300000, guid: 54b227b7c5f8046438b6669450296bd1, type: 3}
+  - _controlPath: <Gamepad>/buttonNorth
+    _sprite: {fileID: 21300000, guid: 51666e276d262e0439052f406bf49faf, type: 3}

@@ -54,21 +54,20 @@ namespace Game.UI.Setting
         [SerializeField] private string KBW_actionMapName = "Char";
 
         [SerializeField] private BindingRow[] _bindingRows;
+        [Tooltip("고르면 버튼 확인을 시작하는 줄 (누른 버튼이 오른쪽 가상 컨트롤러에 켜짐)")]
+        [SerializeField] private Button _buttonTestButton;
         [SerializeField] private Button _resetButton;
         [SerializeField] private Button _closeButton;
         [SerializeField] private TMP_Text _guideText;
 
         [Tooltip("키별 버튼 스프라이트 목록")]
         [SerializeField] private Game.UI.ButtonIconSet _buttonIcons;
-        [Tooltip("키보드 열 제목. 키보드를 쓸 때만 보임")]
-        [SerializeField] private TMP_Text _keyboardHeader;
-        [Tooltip("게임패드 열 제목. 패드를 쓸 때만 보이고, 패드 종류에 맞춰 글자가 바뀜")]
-        [SerializeField] private TMP_Text _gamepadHeader;
-        [SerializeField] private string _playStationHeaderText = "플레이스테이션";
-        [SerializeField] private string _xboxHeaderText = "Xbox";
+        [Tooltip("오른쪽 가상 컨트롤러")]
+        [SerializeField] private VirtualController _virtualController;
 
         [SerializeField] private string _guideMessage = "바꿀 버튼을 고르고 선택 키를 누르세요";
         [SerializeField] private string _waitingMessage = "새 키를 누르세요  (ESC: 취소)";
+        [SerializeField] private string _testingMessage = "버튼을 눌러 확인하세요  (ESC: 끝내기)";
         [SerializeField] private string _reservedMessage = "이동 키와 설정창 열기 키는 사용할 수 없습니다";
         [SerializeField] private string _waitingKeyText = "...";
 
@@ -79,7 +78,7 @@ namespace Game.UI.Setting
         private const string KeyboardGroup = "PC";
         private const string GamepadGroup = "GamePad";
 
-        // 위에서 아래 순서: 공격 버튼 줄들, 기본값, 닫기
+        // 위에서 아래 순서: 공격 버튼 줄들, 버튼 확인, 기본값, 닫기
         private Button[] _menuButtons;
         private int _highlightIndex;
 
@@ -104,6 +103,11 @@ namespace Game.UI.Setting
                 int rowIndex = i;
                 menuButtons.Add(_bindingRows[i].rowButton);
                 _bindingRows[i].rowButton.onClick.AddListener(() => StartWaitingForKey(rowIndex));
+            }
+            if (_buttonTestButton != null)
+            {
+                menuButtons.Add(_buttonTestButton);
+                _buttonTestButton.onClick.AddListener(StartButtonTest);
             }
             if (_resetButton != null)
             {
@@ -152,6 +156,7 @@ namespace Game.UI.Setting
             KBW_openCount--;
             KBW_closedFrame = Time.frameCount;
             StopWaitingForKey();
+            StopButtonTest();
 
             ControllerTypeDetector.OnControllerTypeChanged -= HandleControllerTypeChanged;
         }
@@ -173,9 +178,42 @@ namespace Game.UI.Setting
             gameObject.SetActive(false);
         }
 
+        // ===== 버튼 확인 =====
+
+        private bool IsButtonTesting => _virtualController != null && _virtualController.IsTesting;
+
+        private void StartButtonTest()
+        {
+            if (_virtualController == null || _isWaitingForKey) return;
+
+            _virtualController.StartTest();
+            SetGuide(_testingMessage);
+        }
+
+        private void StopButtonTest()
+        {
+            if (!IsButtonTesting) return;
+
+            _virtualController.StopTest();
+            _ignoreInputFrame = Time.frameCount;
+            SetGuide(_guideMessage);
+        }
+
         void Update()
         {
             if (KBW_uiControl == null) return;
+
+            // 버튼 확인 중에는 메뉴를 움직이지 않음 (공격 버튼과 결정 / 취소 키가 겹치므로)
+            // ESC(게임패드 Start)로만 끝냄
+            if (IsButtonTesting)
+            {
+                bool isStopPressed = KBW_uiControl.uiClose;
+                KBW_uiControl.uiCancelDown = false;
+                KBW_uiControl.uiClose = false;
+                if (isStopPressed) StopButtonTest();
+                RememberInput();
+                return;
+            }
 
             // 키 입력 대기 중이거나 방금 키를 바꾼 프레임이면 메뉴는 움직이지 않음
             // (같은 프레임의 취소 / 닫기 입력도 여기서 지워서 설정창까지 닫히지 않게 함)
@@ -236,7 +274,7 @@ namespace Game.UI.Setting
 
         private void StartWaitingForKey(int rowIndex)
         {
-            if (_isWaitingForKey) return;
+            if (_isWaitingForKey || IsButtonTesting) return;
 
             _isWaitingForKey = true;
             _waitingRowIndex = rowIndex;
@@ -414,23 +452,15 @@ namespace Game.UI.Setting
 
         // ===== 화면 =====
 
-        // 지금 컨트롤러 종류의 열만 보이게 하고, 각 줄의 키를 다시 그림
+        // 각 줄의 키를 지금 컨트롤러 종류에 맞춰 다시 그림 (가상 컨트롤러의 키 표시도 같이)
         private void RefreshKeyTexts()
         {
-            var type = ControllerTypeDetector.CurrentType;
-            bool isKeyboard = type == ControllerTypeDetector.ControllerType.Keyboard;
-
-            if (_keyboardHeader != null) _keyboardHeader.gameObject.SetActive(isKeyboard);
-            if (_gamepadHeader != null)
-            {
-                _gamepadHeader.gameObject.SetActive(!isKeyboard);
-                _gamepadHeader.text = type == ControllerTypeDetector.ControllerType.PlayStation ? _playStationHeaderText : _xboxHeaderText;
-            }
-
             for (int i = 0; i < _bindingRows.Length; i++)
             {
                 RefreshRow(_bindingRows[i], isWaiting: _isWaitingForKey && i == _waitingRowIndex);
             }
+
+            if (_virtualController != null) _virtualController.RefreshKeys();
         }
 
         // 한 줄의 키 표시. 스프라이트가 있으면 스프라이트, 없으면 글자, 키 입력 대기 중이면 "..."
