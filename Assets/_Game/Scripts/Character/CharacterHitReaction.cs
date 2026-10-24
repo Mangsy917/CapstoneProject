@@ -56,6 +56,9 @@ namespace Game.Character
         [Tooltip("더미의 가드 설정. 비워두면 같은 오브젝트에서 찾음 (없어도 됨)")]
         [SerializeField] private DummyGuard _dummyGuard;
 
+        [Tooltip("더미가 점프 중(공중)인지 알려줄 DummyAction. 비워두면 같은 오브젝트에서 찾음 (없어도 됨)")]
+        [SerializeField] private DummyAction _dummyAction;
+
         [Tooltip("맞은 피격 상자로 피격 / 가드 모션을 정할 CharacterHitboxes. 비워두면 같은 오브젝트에서 찾음")]
         [SerializeField] private CharacterHitboxes _characterHitboxes;
 
@@ -116,6 +119,7 @@ namespace Game.Character
             if (CHR_characterAttack == null) CHR_characterAttack = GetComponent<CharacterAttack>();
             if (CHR_characterMove == null) CHR_characterMove = GetComponent<CharacterMove>();
             if (_dummyGuard == null) _dummyGuard = GetComponent<DummyGuard>();
+            if (_dummyAction == null) _dummyAction = GetComponent<DummyAction>();
             if (_characterHitboxes == null) _characterHitboxes = GetComponent<CharacterHitboxes>();
             if (_pushbox == null) _pushbox = GetComponent<Pushbox>();
         }
@@ -186,9 +190,11 @@ namespace Game.Character
             return CHR_characterMove.IsGuarding;
         }
 
+        // 더미: 설정창의 가드 설정대로. 점프 중(공중)에는 가드하지 못함
         private bool TryGetDummyGuard(AttackHeight height, out bool isCrouching)
         {
             isCrouching = false;
+            if (_dummyAction != null && !_dummyAction.DA_IsGrounded) return false;
             return _dummyGuard != null && _dummyGuard.TryGetGuard(height, out isCrouching);
         }
 

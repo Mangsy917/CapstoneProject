@@ -18,6 +18,8 @@ namespace Game.Character
         [SerializeField] private CharacterAttack CAP_characterAttack;
         [Tooltip("비워두면 같은 오브젝트에서 찾음")]
         [SerializeField] private CharacterHitReaction CAP_hitReaction;
+        [Tooltip("더미의 서기 / 앉기 / 점프. 비워두면 같은 오브젝트에서 찾음 (CharacterMove가 없을 때 사용)")]
+        [SerializeField] private DummyAction CAP_dummyAction;
 
         [Header("Animator 상태 이름")]
         [SerializeField] private string _idleState = "Idle";
@@ -47,6 +49,7 @@ namespace Game.Character
             if (CAP_characterMove == null) CAP_characterMove = GetComponent<CharacterMove>();
             if (CAP_characterAttack == null) CAP_characterAttack = GetComponent<CharacterAttack>();
             if (CAP_hitReaction == null) CAP_hitReaction = GetComponent<CharacterHitReaction>();
+            if (CAP_dummyAction == null) CAP_dummyAction = GetComponent<DummyAction>();
         }
 
         private void LateUpdate()
@@ -82,7 +85,13 @@ namespace Game.Character
                     return attack.AnimationState;
             }
 
-            if (CAP_characterMove == null) return _idleState;
+            if (CAP_characterMove == null)
+            {
+                // 더미: 설정창의 더미 행동에 따라
+                if (CAP_dummyAction == null) return _idleState;
+                if (!CAP_dummyAction.DA_IsGrounded) return _jumpState;
+                return CAP_dummyAction.DA_IsCrouching ? _sitState : _idleState;
+            }
             if (!CAP_characterMove.IsGrounded) return _jumpState;
             if (CAP_characterMove.IsCrouching) return _sitState;
 

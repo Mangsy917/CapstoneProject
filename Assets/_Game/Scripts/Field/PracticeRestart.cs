@@ -50,6 +50,7 @@ namespace Game.Field
             foreach (var move in FindObjectsByType<CharacterMove>(FindObjectsSortMode.None)) move.ResetMovement();
             foreach (var attack in FindObjectsByType<CharacterAttack>(FindObjectsSortMode.None)) attack.CancelAttack();
             foreach (var reaction in FindObjectsByType<CharacterHitReaction>(FindObjectsSortMode.None)) reaction.ResetReaction();
+            foreach (var dummyAction in FindObjectsByType<DummyAction>(FindObjectsSortMode.None)) dummyAction.ResetAction();
             foreach (var command in FindObjectsByType<CharacterCommand>(FindObjectsSortMode.None)) command.ClearBuffer();
             foreach (var projectile in FindObjectsByType<Projectile>(FindObjectsSortMode.None)) Destroy(projectile.gameObject);
             foreach (var health in FindObjectsByType<CharacterHealth>(FindObjectsSortMode.None)) health.ResetHealth();

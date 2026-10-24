@@ -13902,6 +13902,7 @@ GameObject:
   - component: {fileID: 606131663}
   - component: {fileID: 606131664}
   - component: {fileID: 606131665}
+  - component: {fileID: 606131666}
   m_Layer: 5
   m_Name: DummySetting
   m_TagString: Untagged
@@ -13983,6 +13984,19 @@ MonoBehaviour:
   GS_guardStepper: {fileID: 152108021}
   _guardTypeStepper: {fileID: 621116500}
   _countGuardStepper: {fileID: 1967105571}
+--- !u!114 &606131666
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 606131662}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2245602f6fc24c44e859b70edac61ffc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Game.UI.Setting.DummyActionSetting
+  _dummyActionStepper: {fileID: 1602769022}
 --- !u!1 &614550844
 GameObject:
   m_ObjectHideFlags: 0
@@ -29174,6 +29188,7 @@ MonoBehaviour:
   CAP_characterMove: {fileID: 1389828396}
   CAP_characterAttack: {fileID: 1389828392}
   CAP_hitReaction: {fileID: 0}
+  CAP_dummyAction: {fileID: 0}
   _idleState: Idle
   _sitState: Sit
   _jumpState: Jump
@@ -29260,6 +29275,7 @@ MonoBehaviour:
   _extraHitboxParent: {fileID: 435584487}
   CH_characterMove: {fileID: 0}
   CH_characterAttack: {fileID: 0}
+  CH_dummyAction: {fileID: 0}
 --- !u!114 &1389828406
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -29275,6 +29291,7 @@ MonoBehaviour:
   CHR_characterAttack: {fileID: 0}
   CHR_characterMove: {fileID: 0}
   _dummyGuard: {fileID: 0}
+  _dummyAction: {fileID: 0}
   _characterHitboxes: {fileID: 0}
   _pushbox: {fileID: 0}
 --- !u!1 &1397161733
