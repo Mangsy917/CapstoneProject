@@ -339,8 +339,8 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1381286396}
-        m_TargetAssemblyTypeName: TitleBTUI, Assembly-CSharp
+      - m_Target: {fileID: 1381286397}
+        m_TargetAssemblyTypeName: TitleMenu, Assembly-CSharp
         m_MethodName: PressStartBT
         m_Mode: 1
         m_Arguments:
@@ -603,8 +603,8 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1381286396}
-        m_TargetAssemblyTypeName: TitleBTUI, Assembly-CSharp
+      - m_Target: {fileID: 1381286397}
+        m_TargetAssemblyTypeName: TitleMenu, Assembly-CSharp
         m_MethodName: PressSettingBT
         m_Mode: 1
         m_Arguments:
@@ -736,8 +736,8 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1381286396}
-        m_TargetAssemblyTypeName: TitleBTUI, Assembly-CSharp
+      - m_Target: {fileID: 1381286397}
+        m_TargetAssemblyTypeName: TitleMenu, Assembly-CSharp
         m_MethodName: PressSettingBackBT
         m_Mode: 1
         m_Arguments:
@@ -1349,8 +1349,8 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1381286396}
-        m_TargetAssemblyTypeName: TitleBTUI, Assembly-CSharp
+      - m_Target: {fileID: 1381286397}
+        m_TargetAssemblyTypeName: TitleMenu, Assembly-CSharp
         m_MethodName: PressExitBT
         m_Mode: 1
         m_Arguments:
@@ -1993,7 +1993,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1381286395}
-  - component: {fileID: 1381286396}
   - component: {fileID: 1381286397}
   m_Layer: 0
   m_Name: UIManager
@@ -2017,20 +2016,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1381286396
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1381286394}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 96637917a3dc395478e6ef9459bc4adf, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::TitleBTUI
-  settingUI: {fileID: 1052605822}
-  sceneName: Practice
 --- !u!114 &1381286397
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2044,8 +2029,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TitleMenu
   uiControl: {fileID: 299426511}
-  titleBTUI: {fileID: 1381286396}
   settingUI: {fileID: 1052605822}
+  sceneName: Practice
   mainButtons:
   - {fileID: 224039522}
   - {fileID: 441315445}

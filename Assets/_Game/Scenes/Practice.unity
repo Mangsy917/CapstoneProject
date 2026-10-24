@@ -441,6 +441,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 16417732}
+  - component: {fileID: 16417733}
   m_Layer: 5
   m_Name: PracticeSetting
   m_TagString: Untagged
@@ -478,6 +479,29 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &16417733
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 16417731}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0f5761f5efa15bb4fb4e17cc3d5f0c7f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Game.UI.Setting.StartPositionSetting
+  SPS_screenFade: {fileID: 561717928}
+  _sideStepper: {fileID: 1225280759}
+  _leftIndex: 0
+  _placeStepper: {fileID: 858530112}
+  _stageBoundary: {fileID: 351704330}
+  _characterGap: 1.9
+  _centerIndex: 0
+  _leftEndIndex: 1
+  _rightEndIndex: 2
+  SPS_playerTag: Player
+  SPS_enemyTag: Enemy
 --- !u!1 &20321923
 GameObject:
   m_ObjectHideFlags: 0
@@ -17573,7 +17597,6 @@ GameObject:
   - component: {fileID: 858530110}
   - component: {fileID: 858530109}
   - component: {fileID: 858530112}
-  - component: {fileID: 858530113}
   m_Layer: 5
   m_Name: BTN_StartPlace
   m_TagString: Untagged
@@ -17708,27 +17731,6 @@ MonoBehaviour:
   onValueChanged:
     m_PersistentCalls:
       m_Calls: []
---- !u!114 &858530113
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 858530107}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6dde618e4213ad84183998086a53f9f0, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Game.UI.Setting.StartPlaceSetting
-  _placeStepper: {fileID: 858530112}
-  SPS_screenFade: {fileID: 561717928}
-  _stageBoundary: {fileID: 351704330}
-  _characterGap: 1.9
-  _centerIndex: 0
-  _leftEndIndex: 1
-  _rightEndIndex: 2
-  SPS_playerTag: Player
-  SPS_enemyTag: Enemy
 --- !u!1 &864704057
 GameObject:
   m_ObjectHideFlags: 0
@@ -19225,8 +19227,8 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 963688964}
-        m_TargetAssemblyTypeName: PracticeSetting, Assembly-CSharp
+      - m_Target: {fileID: 963688963}
+        m_TargetAssemblyTypeName: WhatIsSetting, Assembly-CSharp
         m_MethodName: PressGoTitleBT
         m_Mode: 0
         m_Arguments:
@@ -19959,7 +19961,6 @@ GameObject:
   m_Component:
   - component: {fileID: 963688962}
   - component: {fileID: 963688963}
-  - component: {fileID: 963688964}
   m_Layer: 0
   m_Name: SettingUI
   m_TagString: Untagged
@@ -20013,18 +20014,6 @@ MonoBehaviour:
   dummySettingWindow: {fileID: 606131662}
   commandListWindow: {fileID: 688080923}
   displaySettingWindow: {fileID: 2076829632}
---- !u!114 &963688964
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 963688961}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7a9709196dc48704ebff75c0bf45c1fc, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::PracticeSetting
   titleSceneName: Title
   goTitlePopup: {fileID: 1415293894}
 --- !u!1 &969994832
@@ -24997,7 +24986,6 @@ GameObject:
   - component: {fileID: 1225280757}
   - component: {fileID: 1225280756}
   - component: {fileID: 1225280759}
-  - component: {fileID: 1225280760}
   m_Layer: 5
   m_Name: BTN_ChooseSite
   m_TagString: Untagged
@@ -25131,23 +25119,6 @@ MonoBehaviour:
   onValueChanged:
     m_PersistentCalls:
       m_Calls: []
---- !u!114 &1225280760
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1225280754}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 25da319976d88b543842d2d8a194af31, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Game.UI.Setting.StartSideSetting
-  _sideStepper: {fileID: 1225280759}
-  _screenFade: {fileID: 561717928}
-  _leftIndex: 0
-  SSS_playerTag: Player
-  SSS_enemyTag: Enemy
 --- !u!1 &1232348704
 GameObject:
   m_ObjectHideFlags: 0
@@ -27017,8 +26988,8 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 963688964}
-        m_TargetAssemblyTypeName: PracticeSetting, Assembly-CSharp
+      - m_Target: {fileID: 963688963}
+        m_TargetAssemblyTypeName: WhatIsSetting, Assembly-CSharp
         m_MethodName: PressGoTitleNoBT
         m_Mode: 0
         m_Arguments:
@@ -35605,8 +35576,8 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 963688964}
-        m_TargetAssemblyTypeName: PracticeSetting, Assembly-CSharp
+      - m_Target: {fileID: 963688963}
+        m_TargetAssemblyTypeName: WhatIsSetting, Assembly-CSharp
         m_MethodName: PressGoTitleYesBT
         m_Mode: 0
         m_Arguments:
@@ -41027,8 +40998,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Game.Field.PracticeRestart
   PR_inputReader: {fileID: 1896591971}
   PR_screenFade: {fileID: 561717928}
-  _startSideSetting: {fileID: 1225280760}
-  _startPlaceSetting: {fileID: 858530113}
+  _startPositionSetting: {fileID: 16417733}
 --- !u!1 &2092465985
 GameObject:
   m_ObjectHideFlags: 0
