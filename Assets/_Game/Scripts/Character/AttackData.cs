@@ -130,6 +130,40 @@ namespace Game.Character
             }
         }
 
+        // 지속 프레임 중 일부 구간에만 쓰는 공격 상자 (예: 2H는 앞쪽에서 머리 위로 올라감)
+        [Serializable]
+        public class AttackBoxWindow
+        {
+            [Tooltip("공격 상자 크기 (월드 단위)")]
+            [SerializeField] private Vector2 AD_size = new Vector2(0.6f, 0.4f);
+
+            [Tooltip("공격 상자 중심 위치 (캐릭터 위치 기준, x는 바라보는 쪽이 +)")]
+            [SerializeField] private Vector2 AD_offset = new Vector2(0.8f, 0.3f);
+
+            [Tooltip("지속 프레임 중 몇 번째 프레임부터 쓸지 (지속 첫 프레임 = 1)")]
+            [SerializeField] private int _firstActiveFrame = 1;
+
+            [Tooltip("지속 프레임 중 몇 번째 프레임까지 쓸지 (이 프레임까지 포함). 0이면 지속이 끝날 때까지")]
+            [SerializeField] private int _lastActiveFrame = 0;
+
+            public Vector2 Size => AD_size;
+            public Vector2 Offset => AD_offset;
+
+            /// <summary>지속 activeFrame번째 프레임에 이 공격 상자를 쓰는지</summary>
+            public bool IsActiveAt(int activeFrame)
+            {
+                return activeFrame >= _firstActiveFrame && (_lastActiveFrame <= 0 || activeFrame <= _lastActiveFrame);
+            }
+
+            public void Validate()
+            {
+                if (AD_size.x < 0f) AD_size.x = 0f;
+                if (AD_size.y < 0f) AD_size.y = 0f;
+                if (_firstActiveFrame < 1) _firstActiveFrame = 1;
+                if (_lastActiveFrame < 0) _lastActiveFrame = 0;
+            }
+        }
+
         // 누른 버튼마다 따로 정하는 프레임 (예: 236L, 236M, 236H)
         [Serializable]
         public class ButtonFrames
@@ -199,6 +233,9 @@ namespace Game.Character
         [FormerlySerializedAs("AD_hitboxOffset")]
         [SerializeField] private Vector2 AD_attackBoxOffset = new Vector2(0.8f, 0.3f);
 
+        [Tooltip("지속 프레임 구간마다 다른 공격 상자 (공격 동작에 따라 상자가 움직이는 기술).\n비워두면 위의 공격 상자 하나를 지속 내내 씀 (버튼별 공격 상자보다 먼저 적용)")]
+        [SerializeField] private AttackBoxWindow[] _attackBoxWindows = new AttackBoxWindow[0];
+
         [Header("공격 중 피격 상자")]
         [Tooltip("체크하면 공격하는 동안 Top 피격 상자를 끔 (앉아서 쓰는 공격 등)")]
         [SerializeField] private bool _shouldHideTopHitbox = false;
@@ -259,7 +296,6 @@ namespace Game.Character
         public int Damage => AD_damage;
         public Vector2 AttackBoxSize => AD_attackBoxSize;
         public Vector2 AttackBoxOffset => AD_attackBoxOffset;
-        public bool HasAttackBox => AD_attackBoxSize.x > 0f && AD_attackBoxSize.y > 0f;
         public bool ShouldHideTopHitbox => _shouldHideTopHitbox;
         public ExtraHitbox[] ExtraHitboxes => _extraHitboxes;
         public float LaunchForwardDistance => _launchForwardDistance;
@@ -312,10 +348,31 @@ namespace Game.Character
             return buttonFrames != null ? buttonFrames.InvincibleFrames : 0;
         }
 
-        /// <summary>이 버튼으로 나갔을 때 공격 상자가 있는지 (장풍만 쓰는 기술 등은 없음)</summary>
-        public bool HasAttackBoxFor(CharacterCommand.AttackButtonType button)
+        /// <summary>
+        /// 공격 시작부터 attackFrame번째 프레임의 공격 상자 (지속 프레임이 아니거나 공격 상자가 없으면 false)
+        /// 지속 구간별 공격 상자가 있으면 그것을, 없으면 버튼별 / 기본 공격 상자를 씀
+        /// </summary>
+        public bool TryGetAttackBox(CharacterCommand.AttackButtonType button, int attackFrame, AttackFrames frames, out Vector2 offset, out Vector2 size)
         {
-            Vector2 size = GetAttackBoxSize(button);
+            offset = Vector2.zero;
+            size = Vector2.zero;
+            if (attackFrame < frames.FirstActiveFrame || attackFrame > frames.LastActiveFrame) return false;
+
+            if (_attackBoxWindows != null && _attackBoxWindows.Length > 0)
+            {
+                int activeFrame = attackFrame - frames.FirstActiveFrame + 1;
+                foreach (var window in _attackBoxWindows)
+                {
+                    if (window == null || !window.IsActiveAt(activeFrame)) continue;
+                    offset = window.Offset;
+                    size = window.Size;
+                    return size.x > 0f && size.y > 0f;
+                }
+                return false;
+            }
+
+            offset = GetAttackBoxOffset(button);
+            size = GetAttackBoxSize(button);
             return size.x > 0f && size.y > 0f;
         }
 
@@ -379,6 +436,14 @@ namespace Game.Character
                 foreach (var extraHitbox in _extraHitboxes)
                 {
                     extraHitbox?.Validate();
+                }
+            }
+
+            if (_attackBoxWindows != null)
+            {
+                foreach (var attackBoxWindow in _attackBoxWindows)
+                {
+                    attackBoxWindow?.Validate();
                 }
             }
             if (_launchFrame < 0) _launchFrame = 0;

@@ -13,10 +13,11 @@ MonoBehaviour:
   m_Name: D_TestRyu2M
   m_EditorClassIdentifier: Assembly-CSharp::Game.Character.AttackData
   _attackName: 2M
-  _height: 2
+  _height: 0
   AD_damage: 600
   AD_attackBoxSize: {x: 0.829, y: 0.43}
   AD_attackBoxOffset: {x: 1.111, y: 0.124}
+  _attackBoxWindows: []
   _shouldHideTopHitbox: 1
   _extraHitboxes:
   - AD_size: {x: 0.553, y: 0.594}
