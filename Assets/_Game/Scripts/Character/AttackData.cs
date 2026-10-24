@@ -206,7 +206,19 @@ namespace Game.Character
             [Tooltip("이 버튼으로 나갔을 때 공격 시작부터 이 프레임까지 완전 무적 (피격 상자가 모두 꺼짐). 0이면 무적 없음.\n예) 8이면 1~8프레임 무적")]
             [SerializeField] private int _invincibleFrames = 0;
 
+            [Tooltip("체크하면 이 버튼으로 나갔을 때 아래의 히트 / 가드 시 유리 프레임을 씀 (끄면 기술의 기본 값)")]
+            [SerializeField] private bool _shouldOverrideAdvantage = false;
+
+            [Tooltip("이 버튼으로 나갔을 때의 히트 시 유리 프레임 (위키의 Hit 값)")]
+            [SerializeField] private int _hitAdvantage = 0;
+
+            [Tooltip("이 버튼으로 나갔을 때의 가드 시 유리 프레임 (위키의 Block 값)")]
+            [SerializeField] private int _blockAdvantage = 0;
+
             public CharacterCommand.AttackButtonType Button => _button;
+            public bool ShouldOverrideAdvantage => _shouldOverrideAdvantage;
+            public int HitAdvantage => _hitAdvantage;
+            public int BlockAdvantage => _blockAdvantage;
             public AttackFrames Frames => new AttackFrames(_startupFrames, _activeFrames, _recoveryFrames);
             public int Damage => AD_damage;
             public float ProjectileDistancePerFrame => _projectileDistancePerFrame;
@@ -351,25 +363,31 @@ namespace Game.Character
         public float GuardBackDistance => _guardBackDistance;
         public int GuardBackFrames => _guardBackFrames;
 
-        /// <summary>이 버튼으로 나갔을 때 맞은 상대의 피격 경직 프레임 수 (히트 시 유리 프레임 기준)</summary>
+        /// <summary>이 버튼으로 나갔을 때 맞은 상대의 피격 경직 프레임 수 (히트 시 유리 프레임 기준, 버튼별 값이 있으면 그 값)</summary>
         public int GetHitStunFrames(CharacterCommand.AttackButtonType button)
         {
-            return GetStunFrames(button, _hitAdvantage);
+            ButtonFrames buttonFrames = FindButtonFrames(button);
+            int advantage = buttonFrames != null && buttonFrames.ShouldOverrideAdvantage ? buttonFrames.HitAdvantage : _hitAdvantage;
+            return GetStunFrames(button, advantage);
         }
 
-        /// <summary>이 버튼으로 나갔을 때 가드한 상대의 가드 경직 프레임 수 (가드 시 유리 프레임 기준)</summary>
+        /// <summary>이 버튼으로 나갔을 때 가드한 상대의 가드 경직 프레임 수 (가드 시 유리 프레임 기준, 버튼별 값이 있으면 그 값)</summary>
         public int GetBlockStunFrames(CharacterCommand.AttackButtonType button)
         {
-            return GetStunFrames(button, _blockAdvantage);
+            ButtonFrames buttonFrames = FindButtonFrames(button);
+            int advantage = buttonFrames != null && buttonFrames.ShouldOverrideAdvantage ? buttonFrames.BlockAdvantage : _blockAdvantage;
+            return GetStunFrames(button, advantage);
         }
 
-        // 지속 첫 프레임(투사체 공격이면 투사체가 나오는 프레임)에 맞았을 때 "남은 공격 프레임 + 유리 프레임"이 되는 경직 프레임 수
-        // 공격은 전체 프레임이 지난 다음 프레임에 끝나서(CharacterAttack) 그 프레임까지 움직일 수 없으므로 1프레임을 더함
+        // 지속 첫 프레임(투사체 공격이면 투사체가 가장 빨리 맞힐 수 있는 프레임)에 맞았을 때 "남은 공격 프레임 + 유리 프레임"이 되는 경직 프레임 수
+        // - 공격은 전체 프레임이 지난 다음 프레임에 끝나서(CharacterAttack) 그 프레임까지 움직일 수 없으므로 1프레임을 더함
+        // - 착지 경직이 있는 공격(승룡권, 점프 공격)은 위키 값이 착지 경직까지 포함한 값이므로 착지 경직도 더함
+        // - 투사체는 나온 다음 프레임부터 날아가며 맞히므로, 바로 앞에서 맞으면 나온 프레임 + 1에 맞음 (위키 값은 바로 앞 기준)
         private int GetStunFrames(CharacterCommand.AttackButtonType button, int advantage)
         {
             AttackFrames frames = GetFrames(button);
-            int hitFrame = _projectilePrefab != null ? GetProjectileSpawnFrame(frames) : frames.FirstActiveFrame;
-            return Mathf.Max(1, frames.TotalFrames - hitFrame + 1 + advantage);
+            int hitFrame = _projectilePrefab != null ? GetProjectileSpawnFrame(frames) + 1 : frames.FirstActiveFrame;
+            return Mathf.Max(1, frames.TotalFrames - hitFrame + 1 + _landingRecoveryFrames + advantage);
         }
 
         /// <summary>이 버튼으로 나간 공격이 맞았을 때(또는 가드됐을 때) 상대에게 줄 정보</summary>

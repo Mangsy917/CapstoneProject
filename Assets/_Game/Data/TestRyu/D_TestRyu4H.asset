@@ -26,6 +26,13 @@ MonoBehaviour:
     AD_offset: {x: 0.773, y: 1.253}
     _firstActiveFrame: 3
     _lastActiveFrame: 0
+  _hitAdvantage: 1
+  _hitBackDistance: 0.5
+  _hitBackFrames: 8
+  _hitMotion: 0
+  _blockAdvantage: -7
+  _guardBackDistance: 0.4
+  _guardBackFrames: 8
   _shouldHideTopHitbox: 0
   _extraHitboxes: []
   _startupFrames: 9
