@@ -16,6 +16,7 @@ GameObject:
   - component: {fileID: 5711244374391894561}
   - component: {fileID: 3271997685772264477}
   - component: {fileID: 5656190444093950423}
+  - component: {fileID: 2024175151764231273}
   m_Layer: 0
   m_Name: Enemy
   m_TagString: Enemy
@@ -186,6 +187,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Game.Character.CharacterHealth
   _maxHealth: 10000
+  _healthMode: 0
+  _recoveryDelayFrames: 60
+  _refillFrames: 30
 --- !u!114 &5656190444093950423
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -204,6 +208,35 @@ MonoBehaviour:
   _extraHitboxParent: {fileID: 6379980765863514740}
   CH_characterMove: {fileID: 0}
   CH_characterAttack: {fileID: 0}
+--- !u!114 &2024175151764231273
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2347769319118467310}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fc39cb35496cec247a33a4539491d106, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CharactorState
+  standUp: 1
+  sitDown: 0
+  jump: 0
+  high: 0
+  middle: 0
+  low: 0
+  projectile: 0
+  grap: 0
+  superArmor: 0
+  ground: 1
+  air: 0
+  normalHit: 0
+  counterHit: 0
+  punishCounter: 0
+  comboDamage: 0
+  singleDamage: 0
+  _comboGapFrames: 15
 --- !u!1 &7336444245606331161
 GameObject:
   m_ObjectHideFlags: 0

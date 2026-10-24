@@ -23,7 +23,7 @@ namespace Game.Character
         [Tooltip("커맨드 성공을 받아올 CharacterCommand. 비워두면 같은 오브젝트에서 찾음")]
         [SerializeField] private CharacterCommand _characterCommand;
 
-        [Tooltip("공격 중 상단/중단/하단/잡기 값을 넣을 CharactorState. 비워두면 같은 오브젝트에서 찾음")]
+        [Tooltip("공격 중 상단/중단/하단, 장풍/잡기/슈퍼아머 값과 준 데미지를 넣을 CharactorState. 비워두면 같은 오브젝트에서 찾음")]
         [SerializeField] private CharactorState CA_characterState;
 
         [Tooltip("바라보는 방향, 땅/공중 상태를 알려줄 CharacterMove. 비워두면 같은 오브젝트에서 찾음")]
@@ -264,6 +264,7 @@ namespace Game.Character
             AttackFrame = 0;
             _landingFrame = 0;
             SetPhase(AttackPhase.None);
+            if (CA_characterState != null) CA_characterState.ClearAttack();
             OnAttackEnded?.Invoke(endedAttack);
         }
 
@@ -281,16 +282,17 @@ namespace Game.Character
             OnPhaseChanged?.Invoke(phase);
         }
 
-        // 잡기 특성이 있으면 잡기, 없으면 판정 높이를 CharactorState에 넣음
+        // 이 공격의 판정 높이와 특성(장풍, 잡기, 슈퍼아머)을 CharactorState에 넣음 (공격이 끝나면 EndAttack에서 지움)
+        // 잡기는 판정 높이가 없음. 장풍은 투사체를 쏘는 공격이거나 장풍 특성이 있는 공격
         private void ApplyCharacterState(AttackData attack)
         {
             if (CA_characterState == null) return;
 
-            if (attack.HasTrait(AttackTrait.Throw))
-            {
-                CA_characterState.Grap = true;
-                return;
-            }
+            CA_characterState.ClearAttack();
+            CA_characterState.Grap = attack.HasTrait(AttackTrait.Throw);
+            CA_characterState.Projectile = attack.ProjectilePrefab != null || attack.HasTrait(AttackTrait.Projectile);
+            CA_characterState.SuperArmor = attack.HasTrait(AttackTrait.SuperArmor);
+            if (CA_characterState.Grap) return;
 
             switch (attack.Height)
             {
@@ -303,6 +305,12 @@ namespace Game.Character
         // =====================================================================
         // 다른 스크립트(피격 판정 등)에서 쓰는 기능
         // =====================================================================
+
+        /// <summary>이 캐릭터의 공격(투사체 포함)이 target에게 damage를 줬을 때 CharacterHealth에서 호출 (콤보 / 단일 데미지 기록)</summary>
+        public void NotifyDamageDealt(int damage, CharacterHealth target)
+        {
+            if (CA_characterState != null) CA_characterState.AddDealtDamage(damage, target);
+        }
 
         /// <summary>지금 프레임에 이 특성이 켜져 있는지 (예: HasTrait(AttackTrait.Invincible))</summary>
         public bool HasTrait(AttackTrait trait)

@@ -125,6 +125,8 @@ namespace Game.Character
 
             _framesSinceDamage = 0;
             _lastAttacker = attacker;
+            // 판정 표시(콤보 / 단일 데미지)에는 체력 방식과 상관없이 기술의 데미지를 그대로 알려줌
+            if (attacker != null) attacker.NotifyDamageDealt(damage, target: this);
             if (_healthMode == HealthMode.Fixed)
             {
                 Debug.Log($"[Health] {name} {damage} 데미지 (항상 고정이라 체력 그대로 {CurrentHealth} / {_maxHealth})");

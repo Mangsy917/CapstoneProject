@@ -163,9 +163,8 @@ public class CharacterMove : MonoBehaviour
     private int frameCounter = 0; // 대쉬, 점프 준비 판정에 쓰는 프레임 수
 
     // ===== 캐릭터 상태(CharactorState) 연결 =====
-    // 이동으로 정해지는 자세. 바뀐 순간에만 CharactorState에 넣어서,
-    // 다른 스크립트(공격 등)가 넣은 상단/중단/하단 같은 값을 매 프레임 덮어쓰지 않도록 함
-    private enum StatePosture { None, Stand, Crouch, Jump, Dash, Run }
+    // 이동으로 정해지는 자세. 바뀐 순간에만 CharactorState에 넣음
+    private enum StatePosture { None, Stand, Crouch, Jump }
     private StatePosture appliedPosture = StatePosture.None;
 
     private void Awake()
@@ -238,12 +237,7 @@ public class CharacterMove : MonoBehaviour
         else
             UpdateGrounded();
 
-        // 공격 중에는 CharacterAttack이 넣은 상단/중단/하단/잡기 값을 덮어쓰지 않음.
-        // 공격이 끝나면 이동 자세를 다시 넣도록 기록을 지워둠
-        if (isAttacking)
-            appliedPosture = StatePosture.None;
-        else
-            UpdateCharacterState();
+        UpdateCharacterState(isAttacking);
 
         previousRelativeDirection = RelativeDirection;
     }
@@ -255,19 +249,17 @@ public class CharacterMove : MonoBehaviour
     // 이동 상태 -> CharactorState
     // - 공중(점프 중)                         : 점프 + 공중
     // - 앉기, 앉기 + 가드                      : 앉기 + 지상
-    // - 앞대쉬, 백대쉬                         : 대쉬 + 지상
-    // - 달리기                                 : 달리기 + 지상
-    // - 그 외 땅 위 (중립, 걷기, 점프 준비)       : 서기 + 지상
-    // 상단/중단/하단, 잡기, 자세, 패리는 대응하는 동작이 아직 없어서 건드리지 않음
-    private void UpdateCharacterState()
+    // - 그 외 땅 위 (중립, 걷기, 대쉬, 달리기, 점프 준비) : 서기 + 지상
+    // 공격 중에는 이동 상태가 중립으로 바뀌므로 공격을 시작한 자세(예: 2L은 앉기)를 그대로 두고,
+    // 땅/공중이 바뀔 때만 넣음 (승룡권처럼 뛰어오르면 점프 + 공중, 공중 공격이 착지하면 서기 + 지상)
+    private void UpdateCharacterState(bool isAttacking)
     {
         if (characterState == null) return;
 
         StatePosture posture;
         if (!IsGrounded) posture = StatePosture.Jump;
+        else if (isAttacking) posture = appliedPosture == StatePosture.Jump ? StatePosture.Stand : appliedPosture;
         else if (IsCrouching) posture = StatePosture.Crouch;
-        else if (IsDashing || IsBackDashing) posture = StatePosture.Dash;
-        else if (IsRunning) posture = StatePosture.Run;
         else posture = StatePosture.Stand;
 
         if (posture == appliedPosture) return;
@@ -286,14 +278,6 @@ public class CharacterMove : MonoBehaviour
             case StatePosture.Jump:
                 characterState.Jump = true;
                 characterState.Air = true;
-                break;
-            case StatePosture.Dash:
-                characterState.Dash = true;
-                characterState.Ground = true;
-                break;
-            case StatePosture.Run:
-                characterState.Run = true;
-                characterState.Ground = true;
                 break;
         }
     }
