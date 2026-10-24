@@ -97,10 +97,10 @@ public class CharacterMove : MonoBehaviour
     [SerializeField] private float backDashDistance = 1f;
     [Tooltip("백대쉬 전체 프레임 수")]
     [SerializeField] private int backDashFrames = 23;
-    [Tooltip("달리기 속도 = 앞으로 걷는 속도 × 이 배율")]
-    [SerializeField] private float runSpeedMultiplier = 1.5f;
-    [Tooltip("달리는 중 Enemy와 겹치면, 이 시간(초) 뒤 자동으로 달리기를 멈춤")]
-    [SerializeField] private float runStopDelayAfterOverlap = 1f;
+    [Tooltip("달리는 동안 1프레임에 움직이는 거리 (예: 0.075면 60프레임에 4.5)")]
+    [SerializeField] private float runDistancePerFrame = 0.075f;
+    [Tooltip("달리는 중 Enemy와 겹치면, 겹친 프레임부터 이 프레임 수 뒤 자동으로 달리기를 멈춤")]
+    [SerializeField] private int runStopFramesAfterOverlap = 60;
     [Tooltip("Collider가 없을 때 사용할 겹침 판정 거리. Player와 Enemy의 x축 거리가 이 값 이하이면 겹친 것으로 봄")]
     [SerializeField] private float overlapDistance = 1f;
 
@@ -156,7 +156,7 @@ public class CharacterMove : MonoBehaviour
     private int lastBackTapFrame = int.MinValue / 2;    // 마지막으로 4를 새로 누른 프레임
     private int dashFramesLeft;                         // 남은 대쉬 프레임 (0보다 크면 대쉬 중)
     private bool isRunning;
-    private float runOverlapTimer = -1f;                // 달리는 중 Enemy와 겹친 뒤 지난 시간 (-1이면 아직 안 겹침)
+    private int runOverlapFrames = -1;                  // 달리는 중 Enemy와 겹친 뒤 지난 프레임 (-1이면 아직 안 겹침)
     private Collider selfCollider;
     private Collider enemyCollider;
     private Game.Character.Pushbox selfPushbox;
@@ -479,14 +479,14 @@ public class CharacterMove : MonoBehaviour
     private void StartRun()
     {
         isRunning = true;
-        runOverlapTimer = -1f;
+        runOverlapFrames = -1;
         CurrentState = MoveState.Run;
     }
 
     private void StopRun()
     {
         isRunning = false;
-        runOverlapTimer = -1f;
+        runOverlapFrames = -1;
     }
 
     /// <summary>
@@ -501,16 +501,16 @@ public class CharacterMove : MonoBehaviour
             return false;
         }
 
-        // Enemy와 겹치면 그때부터 시간을 재기 시작
-        if (runOverlapTimer < 0f && IsOverlappingEnemy())
-            runOverlapTimer = 0f;
+        // Enemy와 겹치면 그때부터 프레임을 세기 시작
+        if (runOverlapFrames < 0 && IsOverlappingEnemy())
+            runOverlapFrames = 0;
 
-        if (runOverlapTimer >= 0f)
+        if (runOverlapFrames >= 0)
         {
-            runOverlapTimer += Time.deltaTime;
-            if (runOverlapTimer >= runStopDelayAfterOverlap)
+            runOverlapFrames++;
+            if (runOverlapFrames >= runStopFramesAfterOverlap)
             {
-                // 겹친 지 1초가 지나면 자동으로 달리기 종료 (6을 계속 누르고 있으면 걷기로 바뀜)
+                // 겹친 뒤 runStopFramesAfterOverlap 프레임이 지나면 자동으로 달리기 종료 (6을 계속 누르고 있으면 걷기로 바뀜)
                 StopRun();
                 return false;
             }
@@ -518,7 +518,7 @@ public class CharacterMove : MonoBehaviour
 
         float facingSign = IsFacingRight ? 1f : -1f;
         CurrentState = MoveState.Run;
-        Move(facingSign * forwardWalkSpeed * runSpeedMultiplier);
+        MoveBy(facingSign * runDistancePerFrame);
         return true;
     }
 
@@ -737,8 +737,8 @@ public class CharacterMove : MonoBehaviour
         if (backDashDistance < 0f) backDashDistance = 0f;
         if (forwardDashFrames < 1) forwardDashFrames = 1;
         if (backDashFrames < 1) backDashFrames = 1;
-        if (runSpeedMultiplier < 0f) runSpeedMultiplier = 0f;
-        if (runStopDelayAfterOverlap < 0f) runStopDelayAfterOverlap = 0f;
+        if (runDistancePerFrame < 0f) runDistancePerFrame = 0f;
+        if (runStopFramesAfterOverlap < 0) runStopFramesAfterOverlap = 0;
         if (overlapDistance < 0f) overlapDistance = 0f;
     }
 }

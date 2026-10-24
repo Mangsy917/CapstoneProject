@@ -176,8 +176,8 @@ MonoBehaviour:
   forwardDashFrames: 19
   backDashDistance: 1
   backDashFrames: 23
-  runSpeedMultiplier: 1.5
-  runStopDelayAfterOverlap: 1
+  runDistancePerFrame: 0.075
+  runStopFramesAfterOverlap: 60
   overlapDistance: 1
   useStartYAsGround: 1
   groundY: 0
