@@ -15,17 +15,17 @@ MonoBehaviour:
   _attackName: 2L
   _height: 2
   AD_damage: 300
-  AD_attackBoxSize: {x: 0.6, y: 0.3}
-  AD_attackBoxOffset: {x: 0.75, y: -0.6}
+  AD_attackBoxSize: {x: 0.829, y: 0.292}
+  AD_attackBoxOffset: {x: 0.845, y: 0.101}
   _shouldHideTopHitbox: 1
   _extraHitboxes:
-  - AD_size: {x: 0.6, y: 0.4}
-    AD_offset: {x: 0.7, y: -0.6}
+  - AD_size: {x: 0.691, y: 0.809}
+    AD_offset: {x: 0.929, y: 0.083}
     _framesBeforeActive: 2
-    _framesAfterActive: 4
+    _framesAfterActive: 9
   _startupFrames: 4
-  _activeFrames: 3
-  _recoveryFrames: 8
+  _activeFrames: 2
+  _recoveryFrames: 9
   _buttonFrames: []
   _traitWindows: []
   _launchFrame: 0

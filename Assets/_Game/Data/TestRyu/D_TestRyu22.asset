@@ -14,35 +14,19 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Game.Character.AttackData
   _attackName: 22
   _height: 0
-  AD_damage: 800
-  AD_attackBoxSize: {x: 1, y: 0.8}
-  AD_attackBoxOffset: {x: 0.9, y: -0.2}
-  _shouldHideTopHitbox: 1
+  AD_damage: 0
+  AD_attackBoxSize: {x: 0, y: 0}
+  AD_attackBoxOffset: {x: 0, y: 0}
+  _shouldHideTopHitbox: 0
   _extraHitboxes:
-  - AD_size: {x: 0.95000005, y: 0.90000004}
-    AD_offset: {x: 0.875, y: -0.2}
-    _framesBeforeActive: 2
-    _framesAfterActive: 8
-  _startupFrames: 12
-  _activeFrames: 3
-  _recoveryFrames: 25
-  _buttonFrames:
-  - _button: 1
-    _startupFrames: 10
-    _activeFrames: 2
-    _recoveryFrames: 21
-  - _button: 2
-    _startupFrames: 12
-    _activeFrames: 3
-    _recoveryFrames: 25
-  - _button: 4
-    _startupFrames: 14
-    _activeFrames: 4
-    _recoveryFrames: 29
-  - _button: 8
-    _startupFrames: 11
-    _activeFrames: 4
-    _recoveryFrames: 23
+  - AD_size: {x: 0.476, y: 0.911}
+    AD_offset: {x: 0.722, y: -0.644}
+    _framesBeforeActive: 49
+    _framesAfterActive: 1
+  _startupFrames: 50
+  _activeFrames: 1
+  _recoveryFrames: 1
+  _buttonFrames: []
   _traitWindows: []
   _launchFrame: 0
   _shouldLaunchAtStartup: 0

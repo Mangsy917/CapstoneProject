@@ -146,14 +146,24 @@ namespace Game.Character
             [Tooltip("회수 프레임: 공격 판정이 끝난 뒤 다시 움직일 수 있을 때까지의 프레임 수")]
             [SerializeField] private int _recoveryFrames = 10;
 
+            [Tooltip("이 버튼으로 나갔을 때의 데미지. 0이면 위의 기본 데미지 사용")]
+            [SerializeField] private int AD_damage = 0;
+
+            [Tooltip("이 버튼으로 나갔을 때 투사체가 1프레임에 날아가는 거리. 0이면 투사체 프리팹의 값 사용")]
+            [SerializeField] private float _projectileDistancePerFrame = 0f;
+
             public CharacterCommand.AttackButtonType Button => _button;
             public AttackFrames Frames => new AttackFrames(_startupFrames, _activeFrames, _recoveryFrames);
+            public int Damage => AD_damage;
+            public float ProjectileDistancePerFrame => _projectileDistancePerFrame;
 
             public void Validate()
             {
                 if (_startupFrames < 1) _startupFrames = 1;
                 if (_activeFrames < 1) _activeFrames = 1;
                 if (_recoveryFrames < 0) _recoveryFrames = 0;
+                if (AD_damage < 0) AD_damage = 0;
+                if (_projectileDistancePerFrame < 0f) _projectileDistancePerFrame = 0f;
             }
         }
 
@@ -206,7 +216,7 @@ namespace Game.Character
         [SerializeField] private float _launchForwardDistance = 1.44f;
         [Tooltip("가장 높은 곳까지의 높이 (바닥 기준)")]
         [SerializeField] private float _launchHeight = 1.62f;
-        [Tooltip("공중에 떠 있는 프레임 수. 뛰어오른 프레임이 공중 첫 프레임이고, 높이와 상관없이 항상 이 프레임 수만에 착지함")]
+        [Tooltip("공중에 떠 있는 프레임 수. 뛰어오른 프레임이 공중 첫 프레임이고, 높이와 상관없이 항상 이 프레임 수만에 착지함.\n0이면 지속 + 회수 프레임 (누른 버튼마다 프레임이 달라도 회수가 끝날 때 착지)")]
         [SerializeField] private int _launchAirFrames = 43;
         [Tooltip("체크하면 공중에 있는 동안은 프레임이 다 지나도 공격이 끝나지 않고, 착지할 때 끝남")]
         [SerializeField] private bool _holdUntilLanding = false;
@@ -238,7 +248,6 @@ namespace Game.Character
         public ExtraHitbox[] ExtraHitboxes => _extraHitboxes;
         public float LaunchForwardDistance => _launchForwardDistance;
         public float LaunchHeight => _launchHeight;
-        public int LaunchAirFrames => _launchAirFrames;
         public bool HoldUntilLanding => _holdUntilLanding;
         public int LandingRecoveryFrames => _landingRecoveryFrames;
         public string LandingAnimationState => _landingAnimationState;
@@ -255,14 +264,39 @@ namespace Game.Character
         /// <summary>이 버튼으로 나갔을 때의 프레임 (버튼별 프레임 목록에 없으면 기본 프레임)</summary>
         public AttackFrames GetFrames(CharacterCommand.AttackButtonType button)
         {
-            if (_buttonFrames != null)
+            ButtonFrames buttonFrames = FindButtonFrames(button);
+            return buttonFrames != null ? buttonFrames.Frames : DefaultFrames;
+        }
+
+        /// <summary>이 버튼으로 나갔을 때의 데미지 (버튼별 데미지가 0이거나 없으면 기본 데미지)</summary>
+        public int GetDamage(CharacterCommand.AttackButtonType button)
+        {
+            ButtonFrames buttonFrames = FindButtonFrames(button);
+            return buttonFrames != null && buttonFrames.Damage > 0 ? buttonFrames.Damage : AD_damage;
+        }
+
+        /// <summary>이 버튼으로 나갔을 때 투사체가 1프레임에 날아가는 거리 (0이면 투사체 프리팹의 값)</summary>
+        public float GetProjectileDistancePerFrame(CharacterCommand.AttackButtonType button)
+        {
+            ButtonFrames buttonFrames = FindButtonFrames(button);
+            return buttonFrames != null ? buttonFrames.ProjectileDistancePerFrame : 0f;
+        }
+
+        /// <summary>공중에 떠 있는 프레임 수 (0으로 두었으면 이번 공격의 지속 + 회수 프레임)</summary>
+        public int GetLaunchAirFrames(AttackFrames frames)
+        {
+            return _launchAirFrames > 0 ? _launchAirFrames : frames.Active + frames.Recovery;
+        }
+
+        private ButtonFrames FindButtonFrames(CharacterCommand.AttackButtonType button)
+        {
+            if (_buttonFrames == null) return null;
+
+            foreach (var buttonFrames in _buttonFrames)
             {
-                foreach (var buttonFrames in _buttonFrames)
-                {
-                    if (buttonFrames != null && buttonFrames.Button == button) return buttonFrames.Frames;
-                }
+                if (buttonFrames != null && buttonFrames.Button == button) return buttonFrames;
             }
-            return DefaultFrames;
+            return null;
         }
 
         /// <summary>뛰어오르는 프레임 (0이면 뛰어오르지 않음, 발생 프레임에 맞추게 했으면 이번 공격의 발생 프레임)</summary>
@@ -305,7 +339,7 @@ namespace Game.Character
             }
             if (_launchFrame < 0) _launchFrame = 0;
             if (_launchHeight < 0f) _launchHeight = 0f;
-            if (_launchAirFrames < 1) _launchAirFrames = 1;
+            if (_launchAirFrames < 0) _launchAirFrames = 0;
             if (_landingRecoveryFrames < 0) _landingRecoveryFrames = 0;
 
             if (_buttonFrames != null)

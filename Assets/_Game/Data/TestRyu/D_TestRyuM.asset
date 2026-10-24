@@ -15,17 +15,21 @@ MonoBehaviour:
   _attackName: M
   _height: 0
   AD_damage: 600
-  AD_attackBoxSize: {x: 0.8, y: 0.35}
-  AD_attackBoxOffset: {x: 0.85, y: 0.35}
+  AD_attackBoxSize: {x: 0.707, y: 0.379}
+  AD_attackBoxOffset: {x: 0.924, y: 0.308}
   _shouldHideTopHitbox: 0
   _extraHitboxes:
-  - AD_size: {x: 0.8000001, y: 0.45}
-    AD_offset: {x: 0.8, y: 0.35}
+  - AD_size: {x: 0.717, y: 0.763}
+    AD_offset: {x: 0.858, y: 0.418}
     _framesBeforeActive: 2
-    _framesAfterActive: 6
+    _framesAfterActive: 13
+  - AD_size: {x: 0.256, y: 1.142}
+    AD_offset: {x: 0.632, y: -0.529}
+    _framesBeforeActive: 2
+    _framesAfterActive: 13
   _startupFrames: 6
-  _activeFrames: 3
-  _recoveryFrames: 12
+  _activeFrames: 4
+  _recoveryFrames: 11
   _buttonFrames: []
   _traitWindows: []
   _launchFrame: 0

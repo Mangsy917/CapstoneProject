@@ -15,34 +15,38 @@ MonoBehaviour:
   _attackName: 623
   _height: 0
   AD_damage: 1200
-  AD_attackBoxSize: {x: 0.7, y: 1.4}
-  AD_attackBoxOffset: {x: 0.6, y: 0.8}
+  AD_attackBoxSize: {x: 0.84, y: 1.43}
+  AD_attackBoxOffset: {x: 0.47, y: 0.256}
   _shouldHideTopHitbox: 0
-  _extraHitboxes:
-  - AD_size: {x: 0.4, y: 0.9}
-    AD_offset: {x: 0.45, y: 1.1}
-    _framesBeforeActive: 0
-    _framesAfterActive: 10
-  _startupFrames: 3
+  _extraHitboxes: []
+  _startupFrames: 6
   _activeFrames: 10
-  _recoveryFrames: 25
+  _recoveryFrames: 30
   _buttonFrames:
   - _button: 1
-    _startupFrames: 3
-    _activeFrames: 8
-    _recoveryFrames: 21
-  - _button: 2
-    _startupFrames: 4
-    _activeFrames: 10
-    _recoveryFrames: 25
-  - _button: 4
     _startupFrames: 5
-    _activeFrames: 12
-    _recoveryFrames: 29
+    _activeFrames: 10
+    _recoveryFrames: 21
+    AD_damage: 1100
+    _projectileDistancePerFrame: 0
+  - _button: 2
+    _startupFrames: 6
+    _activeFrames: 10
+    _recoveryFrames: 30
+    AD_damage: 1200
+    _projectileDistancePerFrame: 0
+  - _button: 4
+    _startupFrames: 7
+    _activeFrames: 10
+    _recoveryFrames: 34
+    AD_damage: 1400
+    _projectileDistancePerFrame: 0
   - _button: 8
-    _startupFrames: 3
-    _activeFrames: 12
-    _recoveryFrames: 23
+    _startupFrames: 6
+    _activeFrames: 10
+    _recoveryFrames: 37
+    AD_damage: 1600
+    _projectileDistancePerFrame: 0
   _traitWindows:
   - _trait: 3
     _startFrame: 1
@@ -53,7 +57,7 @@ MonoBehaviour:
   _shouldLaunchAtStartup: 1
   _launchForwardDistance: 1.44
   _launchHeight: 1.62
-  _launchAirFrames: 43
+  _launchAirFrames: 0
   _holdUntilLanding: 1
   _landingRecoveryFrames: 12
   _landingAnimationState: Sit

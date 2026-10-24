@@ -57,6 +57,7 @@ namespace Game.Character
 
         private bool _isAirAttack; // 점프 중에 시작한 공격인지 (착지하면 끝남)
         private bool _hasHit;      // 이번 공격이 이미 상대를 맞혔는지 (한 번 맞히면 지속 프레임이 남아도 다시 맞히지 않음)
+        private CharacterCommand.AttackButtonType _currentButton; // 이번 공격을 낸 버튼 (버튼별 데미지, 투사체 속도에 사용)
         private int _landingFrame;  // 착지 경직이 시작된 뒤 지난 프레임 (착지한 프레임 = 1)
 
         // 공중에서 프레임이 다 끝난 공격. 착지하면 이 공격의 착지 경직을 시작함
@@ -141,7 +142,7 @@ namespace Game.Character
 
             if (AttackFrame == CurrentAttack.GetLaunchFrame(CurrentFrames) && CA_characterMove != null)
             {
-                CA_characterMove.LaunchIntoAir(forwardDistance: CurrentAttack.LaunchForwardDistance, height: CurrentAttack.LaunchHeight, airFrames: CurrentAttack.LaunchAirFrames);
+                CA_characterMove.LaunchIntoAir(forwardDistance: CurrentAttack.LaunchForwardDistance, height: CurrentAttack.LaunchHeight, airFrames: CurrentAttack.GetLaunchAirFrames(CurrentFrames));
                 _isAirAttack = true; // 뛰어오른 뒤 착지하면 공격이 끝남
             }
 
@@ -167,7 +168,7 @@ namespace Game.Character
             Vector3 position = transform.position + new Vector3(isFacingRight ? offset.x : -offset.x, offset.y, 0f);
 
             Projectile projectile = Instantiate(attack.ProjectilePrefab, position, Quaternion.identity);
-            projectile.Launch(isFacingRight, owner: gameObject, targetTag: CA_opponentTag, damage: attack.Damage);
+            projectile.Launch(isFacingRight, owner: gameObject, targetTag: CA_opponentTag, damage: attack.GetDamage(_currentButton), distancePerFrame: attack.GetProjectileDistancePerFrame(_currentButton));
         }
 
         // 공격 상자와 겹치는 상대(피격 상자)가 있으면 데미지를 줌
@@ -183,7 +184,7 @@ namespace Game.Character
 
                 _hasHit = true;
                 var health = opponent.GetComponent<CharacterHealth>();
-                if (health != null) health.TakeDamage(attack.Damage);
+                if (health != null) health.TakeDamage(attack.GetDamage(_currentButton));
                 return;
             }
         }
@@ -211,6 +212,7 @@ namespace Game.Character
         {
             CurrentAttack = attack;
             CurrentFrames = attack.GetFrames(button);
+            _currentButton = button;
             AttackFrame = 0; // 이번 프레임 Update에서 1이 됨
             _isAirAttack = !IsGrounded();
             _hasHit = false;

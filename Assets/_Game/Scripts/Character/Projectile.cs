@@ -12,8 +12,8 @@ namespace Game.Character
     // - 쏜 캐릭터의 투사체가 남아 있는 동안은 같은 캐릭터가 투사체 공격을 다시 쓸 수 없음 (HasActiveProjectile)
     public class Projectile : MonoBehaviour
     {
-        [Tooltip("날아가는 속도 (초당 거리)")]
-        [SerializeField] private float _speed = 6f;
+        [Tooltip("1프레임에 날아가는 거리. 공격(AttackData)의 버튼별 값이 있으면 그 값을 씀")]
+        [SerializeField] private float _distancePerFrame = 0.07f;
 
         [Tooltip("방향에 맞춰 좌우를 뒤집을 SpriteRenderer. 비워두면 같은 오브젝트에서 찾음")]
         [SerializeField] private SpriteRenderer P_spriteRenderer;
@@ -59,18 +59,23 @@ namespace Game.Character
             _activeProjectiles.Remove(this);
         }
 
-        public void Launch(bool isFacingRight, GameObject owner, string targetTag, int damage)
+        /// <summary>distancePerFrame: 1프레임에 날아가는 거리 (0이면 프리팹의 값)</summary>
+        public void Launch(bool isFacingRight, GameObject owner, string targetTag, int damage, float distancePerFrame = 0f)
         {
             P_direction = isFacingRight ? 1f : -1f;
             _owner = owner;
             _targetTag = targetTag;
             P_damage = damage;
+            if (distancePerFrame > 0f) _distancePerFrame = distancePerFrame;
             if (P_spriteRenderer != null) P_spriteRenderer.flipX = !isFacingRight;
         }
 
         private void Update()
         {
-            transform.position += new Vector3(P_direction * _speed * Time.deltaTime, 0f, 0f);
+            // 설정창이 열려 게임이 멈춰 있으면(timeScale 0) 날아가지 않음
+            if (Time.timeScale <= 0f) return;
+
+            transform.position += new Vector3(P_direction * _distancePerFrame, 0f, 0f);
 
             GameObject hitTarget = FindHitTarget();
             if (hitTarget != null)

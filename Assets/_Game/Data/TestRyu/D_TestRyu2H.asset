@@ -14,18 +14,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Game.Character.AttackData
   _attackName: 2H
   _height: 2
-  AD_damage: 900
-  AD_attackBoxSize: {x: 1.1, y: 0.3}
-  AD_attackBoxOffset: {x: 1, y: -0.9}
-  _shouldHideTopHitbox: 1
-  _extraHitboxes:
-  - AD_size: {x: 1.1, y: 0.4}
-    AD_offset: {x: 0.95, y: -0.9}
-    _framesBeforeActive: 2
-    _framesAfterActive: 8
-  _startupFrames: 8
-  _activeFrames: 4
-  _recoveryFrames: 20
+  AD_damage: 800
+  AD_attackBoxSize: {x: 0.55, y: 1.495}
+  AD_attackBoxOffset: {x: 0.78, y: 1.04}
+  _shouldHideTopHitbox: 0
+  _extraHitboxes: []
+  _startupFrames: 9
+  _activeFrames: 6
+  _recoveryFrames: 21
   _buttonFrames: []
   _traitWindows: []
   _launchFrame: 0

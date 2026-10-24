@@ -14,16 +14,16 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Game.Character.AttackData
   _attackName: JH
   _height: 1
-  AD_damage: 900
-  AD_attackBoxSize: {x: 0.9, y: 0.6}
-  AD_attackBoxOffset: {x: 0.75, y: -0.5}
+  AD_damage: 800
+  AD_attackBoxSize: {x: 0.829, y: 0.614}
+  AD_attackBoxOffset: {x: 1.011, y: -0.55}
   _shouldHideTopHitbox: 0
   _extraHitboxes:
-  - AD_size: {x: 0.75, y: 0.70000005}
-    AD_offset: {x: 0.775, y: -0.5}
+  - AD_size: {x: 0.758, y: 1.367}
+    AD_offset: {x: 0.878, y: -0.189}
     _framesBeforeActive: 2
-    _framesAfterActive: 8
-  _startupFrames: 8
+    _framesAfterActive: 0
+  _startupFrames: 9
   _activeFrames: 6
   _recoveryFrames: 0
   _buttonFrames: []
@@ -33,8 +33,8 @@ MonoBehaviour:
   _launchForwardDistance: 1.44
   _launchHeight: 1.62
   _launchAirFrames: 43
-  _holdUntilLanding: 0
-  _landingRecoveryFrames: 5
+  _holdUntilLanding: 1
+  _landingRecoveryFrames: 3
   _landingAnimationState: Sit
   _animationState: JH
   _projectilePrefab: {fileID: 0}

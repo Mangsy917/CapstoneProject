@@ -14,18 +14,18 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Game.Character.AttackData
   _attackName: 4H
   _height: 0
-  AD_damage: 900
-  AD_attackBoxSize: {x: 0.7, y: 0.8}
-  AD_attackBoxOffset: {x: 0.7, y: 0.9}
+  AD_damage: 800
+  AD_attackBoxSize: {x: 0.855, y: 1.526}
+  AD_attackBoxOffset: {x: 0.753, y: 0.984}
   _shouldHideTopHitbox: 0
   _extraHitboxes:
-  - AD_size: {x: 0.6, y: 0.90000004}
-    AD_offset: {x: 0.7, y: 0.9}
+  - AD_size: {x: 0.53, y: 0.92}
+    AD_offset: {x: 0.745, y: 0.858}
     _framesBeforeActive: 2
-    _framesAfterActive: 8
-  _startupFrames: 9
+    _framesAfterActive: 25
+  _startupFrames: 7
   _activeFrames: 4
-  _recoveryFrames: 16
+  _recoveryFrames: 25
   _buttonFrames: []
   _traitWindows: []
   _launchFrame: 0

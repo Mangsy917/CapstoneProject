@@ -15,14 +15,14 @@ MonoBehaviour:
   _attackName: L
   _height: 0
   AD_damage: 300
-  AD_attackBoxSize: {x: 0.6, y: 0.3}
-  AD_attackBoxOffset: {x: 0.75, y: 0.45}
+  AD_attackBoxSize: {x: 0.835, y: 0.374}
+  AD_attackBoxOffset: {x: 0.942, y: 0.608}
   _shouldHideTopHitbox: 0
   _extraHitboxes:
-  - AD_size: {x: 0.6, y: 0.4}
-    AD_offset: {x: 0.7, y: 0.45}
+  - AD_size: {x: 0.824, y: 0.916}
+    AD_offset: {x: 0.947, y: 0.674}
     _framesBeforeActive: 2
-    _framesAfterActive: 4
+    _framesAfterActive: 7
   _startupFrames: 4
   _activeFrames: 3
   _recoveryFrames: 7

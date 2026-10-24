@@ -14,43 +14,55 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Game.Character.AttackData
   _attackName: 214
   _height: 0
-  AD_damage: 900
-  AD_attackBoxSize: {x: 1.2, y: 0.4}
-  AD_attackBoxOffset: {x: 0.8, y: 0.5}
+  AD_damage: 1000
+  AD_attackBoxSize: {x: 1.09, y: 0.49}
+  AD_attackBoxOffset: {x: 1.057, y: 0.067}
   _shouldHideTopHitbox: 0
   _extraHitboxes:
-  - AD_size: {x: 1, y: 0.3}
-    AD_offset: {x: 0.7, y: 0.5}
-    _framesBeforeActive: 0
-    _framesAfterActive: 6
-  _startupFrames: 10
-  _activeFrames: 6
-  _recoveryFrames: 18
+  - AD_size: {x: 1.2, y: 0.717}
+    AD_offset: {x: 1.114, y: 0.138}
+    _framesBeforeActive: 2
+    _framesAfterActive: 11
+  - AD_size: {x: 1.075, y: 0.573}
+    AD_offset: {x: -0.96, y: 0.141}
+    _framesBeforeActive: 2
+    _framesAfterActive: 11
+  _startupFrames: 14
+  _activeFrames: 17
+  _recoveryFrames: 11
   _buttonFrames:
   - _button: 1
-    _startupFrames: 8
-    _activeFrames: 5
-    _recoveryFrames: 14
-  - _button: 2
-    _startupFrames: 10
-    _activeFrames: 6
-    _recoveryFrames: 18
-  - _button: 4
     _startupFrames: 12
-    _activeFrames: 7
-    _recoveryFrames: 22
+    _activeFrames: 3
+    _recoveryFrames: 14
+    AD_damage: 900
+    _projectileDistancePerFrame: 0
+  - _button: 2
+    _startupFrames: 14
+    _activeFrames: 17
+    _recoveryFrames: 11
+    AD_damage: 1000
+    _projectileDistancePerFrame: 0
+  - _button: 4
+    _startupFrames: 16
+    _activeFrames: 32
+    _recoveryFrames: 14
+    AD_damage: 1200
+    _projectileDistancePerFrame: 0
   - _button: 8
-    _startupFrames: 9
-    _activeFrames: 7
-    _recoveryFrames: 16
+    _startupFrames: 13
+    _activeFrames: 25
+    _recoveryFrames: 10
+    AD_damage: 1000
+    _projectileDistancePerFrame: 0
   _traitWindows: []
   _launchFrame: 0
-  _shouldLaunchAtStartup: 0
-  _launchForwardDistance: 1.44
-  _launchHeight: 1.62
-  _launchAirFrames: 43
-  _holdUntilLanding: 0
-  _landingRecoveryFrames: 0
+  _shouldLaunchAtStartup: 1
+  _launchForwardDistance: 1.8
+  _launchHeight: 0.3
+  _launchAirFrames: 0
+  _holdUntilLanding: 1
+  _landingRecoveryFrames: 18
   _landingAnimationState: 
   _animationState: 214
   _projectilePrefab: {fileID: 0}
