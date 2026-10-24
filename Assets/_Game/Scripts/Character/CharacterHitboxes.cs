@@ -39,6 +39,9 @@ namespace Game.Character
 
         private void Update()
         {
+            // 슬로우 모션 중에는 건너뛰는 프레임이 있음 (GameSpeed)
+            if (!Game.Field.GameSpeed.IsTickFrame) return;
+
             AttackData attack = GetCurrentAttack();
 
             // 완전 무적인 동안(예: EX 승룡권 1~8프레임)은 피격 상자를 모두 끔

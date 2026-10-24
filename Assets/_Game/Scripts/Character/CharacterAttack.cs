@@ -105,6 +105,9 @@ namespace Game.Character
 
         private void Update()
         {
+            // 슬로우 모션 중에는 건너뛰는 프레임이 있음 (GameSpeed)
+            if (!Game.Field.GameSpeed.IsTickFrame) return;
+
             if (!IsAttacking)
             {
                 if (_pendingLandingAttack != null && IsGrounded())

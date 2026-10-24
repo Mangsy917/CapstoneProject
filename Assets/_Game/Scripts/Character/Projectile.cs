@@ -72,8 +72,8 @@ namespace Game.Character
 
         private void Update()
         {
-            // 설정창이 열려 게임이 멈춰 있으면(timeScale 0) 날아가지 않음
-            if (Time.timeScale <= 0f) return;
+            // 설정창이 열려 게임이 멈춰 있으면(timeScale 0) 날아가지 않고, 슬로우 모션 중에는 건너뛰는 프레임이 있음
+            if (!Game.Field.GameSpeed.IsTickFrame) return;
 
             transform.position += new Vector3(P_direction * _distancePerFrame, 0f, 0f);
 

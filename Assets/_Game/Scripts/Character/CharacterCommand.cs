@@ -155,6 +155,9 @@ namespace Game.Character
         {
             if (CC_inputReader == null) return;
 
+            // 슬로우 모션 중에는 건너뛰는 프레임이 있음 (GameSpeed)
+            if (!Game.Field.GameSpeed.IsTickFrame) return;
+
             CC_frameCounter++;
 
             AttackButtonType pressedButtons = ReadPressedButtons();

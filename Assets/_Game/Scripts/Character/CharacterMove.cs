@@ -202,6 +202,9 @@ public class CharacterMove : MonoBehaviour
     {
         if (inputReader == null) return;
 
+        // 슬로우 모션 중에는 건너뛰는 프레임이 있음 (GameSpeed)
+        if (!Game.Field.GameSpeed.IsTickFrame) return;
+
         frameCounter++;
 
         // Enemy 주기적 검색

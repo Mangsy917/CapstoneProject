@@ -15,17 +15,22 @@ MonoBehaviour:
   _attackName: 4H
   _height: 0
   AD_damage: 800
-  AD_attackBoxSize: {x: 0.855, y: 1.526}
-  AD_attackBoxOffset: {x: 0.753, y: 0.984}
+  AD_attackBoxSize: {x: 0.532, y: 0.808}
+  AD_attackBoxOffset: {x: 0.781, y: 0.697}
+  _attackBoxWindows:
+  - AD_size: {x: 0.532, y: 0.808}
+    AD_offset: {x: 0.781, y: 0.697}
+    _firstActiveFrame: 1
+    _lastActiveFrame: 2
+  - AD_size: {x: 0.537, y: 1.069}
+    AD_offset: {x: 0.773, y: 1.253}
+    _firstActiveFrame: 3
+    _lastActiveFrame: 0
   _shouldHideTopHitbox: 0
-  _extraHitboxes:
-  - AD_size: {x: 0.53, y: 0.92}
-    AD_offset: {x: 0.745, y: 0.858}
-    _framesBeforeActive: 2
-    _framesAfterActive: 25
-  _startupFrames: 7
-  _activeFrames: 4
-  _recoveryFrames: 25
+  _extraHitboxes: []
+  _startupFrames: 9
+  _activeFrames: 6
+  _recoveryFrames: 21
   _buttonFrames: []
   _traitWindows: []
   _launchFrame: 0
