@@ -1921,8 +1921,8 @@ MonoBehaviour:
   rightButton: {fileID: 1738574526}
   options:
   - "\uC790\uB3D9 \uD68C\uBCF5"
-  - "\uC77C\uBC18"
   - "\uD56D\uC0C1 \uACE0\uC815"
+  - "\uC77C\uBC18"
   defaultIndex: 0
   loop: 1
   onValueChanged:
@@ -20047,8 +20047,8 @@ MonoBehaviour:
   rightButton: {fileID: 1631088780}
   options:
   - "\uC790\uB3D9 \uD68C\uBCF5"
-  - "\uC77C\uBC18"
   - "\uD56D\uC0C1 \uACE0\uC815"
+  - "\uC77C\uBC18"
   defaultIndex: 0
   loop: 1
   onValueChanged:
@@ -24035,8 +24035,8 @@ MonoBehaviour:
   rightButton: {fileID: 839525627}
   options:
   - "\uC790\uB3D9 \uD68C\uBCF5"
-  - "\uC77C\uBC18"
   - "\uD56D\uC0C1 \uACE0\uC815"
+  - "\uC77C\uBC18"
   defaultIndex: 0
   loop: 1
   onValueChanged:
@@ -33094,8 +33094,8 @@ MonoBehaviour:
   rightButton: {fileID: 1736927738}
   options:
   - "\uC790\uB3D9 \uD68C\uBCF5"
-  - "\uC77C\uBC18"
   - "\uD56D\uC0C1 \uACE0\uC815"
+  - "\uC77C\uBC18"
   defaultIndex: 0
   loop: 1
   onValueChanged:
@@ -40688,8 +40688,8 @@ MonoBehaviour:
   rightButton: {fileID: 119653972}
   options:
   - "\uC790\uB3D9 \uD68C\uBCF5"
-  - "\uC77C\uBC18"
   - "\uD56D\uC0C1 \uACE0\uC815"
+  - "\uC77C\uBC18"
   defaultIndex: 0
   loop: 1
   onValueChanged:
