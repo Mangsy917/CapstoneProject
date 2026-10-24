@@ -9,7 +9,7 @@ using UnityEngine.Serialization;
 // - 캐릭터 행동: 서기 / 앉기 / 점프
 // - 공격 속성: 상단 / 중단 / 하단과 장풍, 잡기, 슈퍼아머 (공격 중이 아니면 빈 표시)
 // - 캐릭터 판정: 지상 / 공중
-// - 콤보 데미지, 단일 데미지: 그 캐릭터가 상대에게 준 데미지
+// - 단일 데미지: 그 캐릭터가 상대에게 마지막으로 맞힌 기술의 데미지
 // - 카운터 종류
 public class StateUI : MonoBehaviour
 {
@@ -20,7 +20,6 @@ public class StateUI : MonoBehaviour
         public TextMeshProUGUI actionText;
         public TextMeshProUGUI attackText;
         public TextMeshProUGUI positionText;
-        public TextMeshProUGUI comboDamageText;
         public TextMeshProUGUI singleDamageText;
         public TextMeshProUGUI counterText;
     }
@@ -90,7 +89,6 @@ public class StateUI : MonoBehaviour
             SetText(texts.actionText, emptyText);
             SetText(texts.attackText, emptyText);
             SetText(texts.positionText, emptyText);
-            SetText(texts.comboDamageText, emptyText);
             SetText(texts.singleDamageText, emptyText);
             SetText(texts.counterText, emptyText);
             return;
@@ -99,7 +97,6 @@ public class StateUI : MonoBehaviour
         SetText(texts.actionText, GetActionText(state));
         SetText(texts.attackText, GetAttackText(state));
         SetText(texts.positionText, state.Air ? airText : groundText);
-        SetText(texts.comboDamageText, state.ComboDamage.ToString());
         SetText(texts.singleDamageText, state.SingleDamage.ToString());
         SetText(texts.counterText, GetCounterText(state));
     }
