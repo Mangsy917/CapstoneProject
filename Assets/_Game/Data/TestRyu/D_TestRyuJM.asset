@@ -15,8 +15,14 @@ MonoBehaviour:
   _attackName: JM
   _height: 1
   AD_damage: 700
-  AD_hitboxSize: {x: 0.7, y: 0.5}
-  AD_hitboxOffset: {x: 0.7, y: -0.4}
+  AD_attackBoxSize: {x: 0.7, y: 0.5}
+  AD_attackBoxOffset: {x: 0.7, y: -0.4}
+  _shouldHideTopHitbox: 0
+  _extraHitboxes:
+  - AD_size: {x: 0.6, y: 0.6}
+    AD_offset: {x: 0.7, y: -0.4}
+    _framesBeforeActive: 2
+    _framesAfterActive: 6
   _startupFrames: 6
   _activeFrames: 6
   _recoveryFrames: 0

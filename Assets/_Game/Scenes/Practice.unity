@@ -2614,7 +2614,7 @@ GameObject:
   - component: {fileID: 147221458}
   - component: {fileID: 147221457}
   m_Layer: 0
-  m_Name: HurtboxLegs
+  m_Name: Bottom
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -9132,7 +9132,7 @@ GameObject:
   - component: {fileID: 406630861}
   - component: {fileID: 406630860}
   m_Layer: 0
-  m_Name: HurtboxHead
+  m_Name: Top
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -10183,7 +10183,7 @@ GameObject:
   m_Component:
   - component: {fileID: 435584487}
   m_Layer: 0
-  m_Name: Hurtboxes
+  m_Name: Hitbox
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -11436,7 +11436,7 @@ GameObject:
   - component: {fileID: 495274339}
   - component: {fileID: 495274338}
   m_Layer: 0
-  m_Name: HurtboxBody
+  m_Name: Middle
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -28235,6 +28235,7 @@ GameObject:
   - component: {fileID: 1389828401}
   - component: {fileID: 1389828403}
   - component: {fileID: 1389828404}
+  - component: {fileID: 1389828405}
   m_Layer: 0
   m_Name: Test_Ryu
   m_TagString: Player
@@ -28702,6 +28703,24 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Game.Character.CharacterHealth
   _maxHealth: 10000
+--- !u!114 &1389828405
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1389828391}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7026ea371f17f9c4c88668caedca5189, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Game.Character.CharacterHitboxes
+  _topHitbox: {fileID: 406630860}
+  _middleHitbox: {fileID: 495274338}
+  _bottomHitbox: {fileID: 147221457}
+  _extraHitboxParent: {fileID: 435584487}
+  CH_characterMove: {fileID: 0}
+  CH_characterAttack: {fileID: 0}
 --- !u!1 &1397161733
 GameObject:
   m_ObjectHideFlags: 0

@@ -15,8 +15,14 @@ MonoBehaviour:
   _attackName: JH
   _height: 1
   AD_damage: 900
-  AD_hitboxSize: {x: 0.9, y: 0.6}
-  AD_hitboxOffset: {x: 0.75, y: -0.5}
+  AD_attackBoxSize: {x: 0.9, y: 0.6}
+  AD_attackBoxOffset: {x: 0.75, y: -0.5}
+  _shouldHideTopHitbox: 0
+  _extraHitboxes:
+  - AD_size: {x: 0.75, y: 0.70000005}
+    AD_offset: {x: 0.775, y: -0.5}
+    _framesBeforeActive: 2
+    _framesAfterActive: 8
   _startupFrames: 8
   _activeFrames: 6
   _recoveryFrames: 0

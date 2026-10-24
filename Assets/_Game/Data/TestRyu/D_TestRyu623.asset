@@ -15,8 +15,14 @@ MonoBehaviour:
   _attackName: 623
   _height: 0
   AD_damage: 1200
-  AD_hitboxSize: {x: 0.7, y: 1.4}
-  AD_hitboxOffset: {x: 0.6, y: 0.8}
+  AD_attackBoxSize: {x: 0.7, y: 1.4}
+  AD_attackBoxOffset: {x: 0.6, y: 0.8}
+  _shouldHideTopHitbox: 0
+  _extraHitboxes:
+  - AD_size: {x: 0.4, y: 0.9}
+    AD_offset: {x: 0.45, y: 1.1}
+    _framesBeforeActive: 0
+    _framesAfterActive: 10
   _startupFrames: 3
   _activeFrames: 10
   _recoveryFrames: 25

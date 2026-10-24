@@ -15,6 +15,7 @@ GameObject:
   - component: {fileID: 1540581559021852066}
   - component: {fileID: 5711244374391894561}
   - component: {fileID: 3271997685772264477}
+  - component: {fileID: 5656190444093950423}
   m_Layer: 0
   m_Name: Enemy
   m_TagString: Enemy
@@ -185,6 +186,24 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Game.Character.CharacterHealth
   _maxHealth: 10000
+--- !u!114 &5656190444093950423
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2347769319118467310}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7026ea371f17f9c4c88668caedca5189, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Game.Character.CharacterHitboxes
+  _topHitbox: {fileID: 8463201267565027833}
+  _middleHitbox: {fileID: 5563188428792329074}
+  _bottomHitbox: {fileID: 640982356138104014}
+  _extraHitboxParent: {fileID: 6379980765863514740}
+  CH_characterMove: {fileID: 0}
+  CH_characterAttack: {fileID: 0}
 --- !u!1 &7336444245606331161
 GameObject:
   m_ObjectHideFlags: 0
@@ -197,7 +216,7 @@ GameObject:
   - component: {fileID: 3456249786544382978}
   - component: {fileID: 640982356138104014}
   m_Layer: 0
-  m_Name: HurtboxLegs
+  m_Name: Bottom
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -264,7 +283,7 @@ GameObject:
   - component: {fileID: 5415793415332359267}
   - component: {fileID: 8463201267565027833}
   m_Layer: 0
-  m_Name: HurtboxHead
+  m_Name: Top
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -329,7 +348,7 @@ GameObject:
   m_Component:
   - component: {fileID: 6379980765863514740}
   m_Layer: 0
-  m_Name: Hurtboxes
+  m_Name: Hitbox
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -365,7 +384,7 @@ GameObject:
   - component: {fileID: 7729687461971256460}
   - component: {fileID: 5563188428792329074}
   m_Layer: 0
-  m_Name: HurtboxBody
+  m_Name: Middle
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

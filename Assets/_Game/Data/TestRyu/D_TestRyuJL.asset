@@ -15,8 +15,14 @@ MonoBehaviour:
   _attackName: JL
   _height: 1
   AD_damage: 400
-  AD_hitboxSize: {x: 0.6, y: 0.4}
-  AD_hitboxOffset: {x: 0.6, y: -0.3}
+  AD_attackBoxSize: {x: 0.6, y: 0.4}
+  AD_attackBoxOffset: {x: 0.6, y: -0.3}
+  _shouldHideTopHitbox: 0
+  _extraHitboxes:
+  - AD_size: {x: 0.45000002, y: 0.5}
+    AD_offset: {x: 0.625, y: -0.3}
+    _framesBeforeActive: 2
+    _framesAfterActive: 4
   _startupFrames: 4
   _activeFrames: 8
   _recoveryFrames: 0

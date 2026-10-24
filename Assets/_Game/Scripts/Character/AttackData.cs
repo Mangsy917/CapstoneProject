@@ -1,5 +1,6 @@
 using System;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace Game.Character
 {
@@ -94,6 +95,41 @@ namespace Game.Character
             }
         }
 
+        // 공격하는 동안 더 생기는 피격 상자 (뻗은 팔, 다리 등)
+        // 켜지는 구간은 발생 / 지속 프레임 기준이라서, 누른 버튼마다 프레임이 달라도 같은 모습에 맞춰짐
+        [Serializable]
+        public class ExtraHitbox
+        {
+            [Tooltip("피격 상자 크기 (월드 단위)")]
+            [SerializeField] private Vector2 AD_size = new Vector2(0.6f, 0.3f);
+
+            [Tooltip("피격 상자 중심 위치 (캐릭터 위치 기준, x는 바라보는 쪽이 +)")]
+            [SerializeField] private Vector2 AD_offset = new Vector2(0.6f, 0.4f);
+
+            [Tooltip("발생 프레임 몇 프레임 전부터 켤지 (0이면 발생 프레임부터)")]
+            [SerializeField] private int _framesBeforeActive = 2;
+
+            [Tooltip("지속 프레임이 끝난 뒤 몇 프레임까지 켜 둘지 (회수 중에도 팔다리가 뻗어 있는 동안)")]
+            [SerializeField] private int _framesAfterActive = 6;
+
+            public Vector2 Size => AD_size;
+            public Vector2 Offset => AD_offset;
+
+            /// <summary>공격 시작부터 frame 프레임째에 켜져 있는지</summary>
+            public bool IsActiveAt(int frame, AttackFrames frames)
+            {
+                return frame >= frames.FirstActiveFrame - _framesBeforeActive && frame <= frames.LastActiveFrame + _framesAfterActive;
+            }
+
+            public void Validate()
+            {
+                if (AD_size.x < 0f) AD_size.x = 0f;
+                if (AD_size.y < 0f) AD_size.y = 0f;
+                if (_framesBeforeActive < 0) _framesBeforeActive = 0;
+                if (_framesAfterActive < 0) _framesAfterActive = 0;
+            }
+        }
+
         // 누른 버튼마다 따로 정하는 프레임 (예: 236L, 236M, 236H)
         [Serializable]
         public class ButtonFrames
@@ -129,11 +165,20 @@ namespace Game.Character
         [Tooltip("맞혔을 때 상대 체력을 줄이는 양 (투사체도 이 값을 씀)")]
         [SerializeField] private int AD_damage = 500;
 
-        [Tooltip("공격 판정 상자 크기 (월드 단위). 지속 프레임 동안 상대의 피격 상자(Hurtbox)와 겹치면 맞음.\n0이면 직접 맞히는 판정이 없음 (장풍만 쓰는 기술 등)")]
-        [SerializeField] private Vector2 AD_hitboxSize = new Vector2(0.8f, 0.4f);
+        [Tooltip("공격 상자 크기 (월드 단위). 지속 프레임 동안 상대의 피격 상자(Hitbox)와 겹치면 맞음.\n0이면 직접 맞히는 판정이 없음 (장풍만 쓰는 기술 등)")]
+        [FormerlySerializedAs("AD_hitboxSize")]
+        [SerializeField] private Vector2 AD_attackBoxSize = new Vector2(0.8f, 0.4f);
 
-        [Tooltip("공격 판정 상자 중심 위치 (캐릭터 위치 기준, x는 바라보는 쪽이 +)")]
-        [SerializeField] private Vector2 AD_hitboxOffset = new Vector2(0.8f, 0.3f);
+        [Tooltip("공격 상자 중심 위치 (캐릭터 위치 기준, x는 바라보는 쪽이 +)")]
+        [FormerlySerializedAs("AD_hitboxOffset")]
+        [SerializeField] private Vector2 AD_attackBoxOffset = new Vector2(0.8f, 0.3f);
+
+        [Header("공격 중 피격 상자")]
+        [Tooltip("체크하면 공격하는 동안 Top 피격 상자를 끔 (앉아서 쓰는 공격 등)")]
+        [SerializeField] private bool _shouldHideTopHitbox = false;
+
+        [Tooltip("공격하는 동안 더 생기는 피격 상자 (뻗은 팔, 다리 등). 정한 프레임 구간에만 켜짐")]
+        [SerializeField] private ExtraHitbox[] _extraHitboxes = new ExtraHitbox[0];
 
         [Header("프레임")]
         [Tooltip("발생 프레임: 공격 판정이 처음 나오는 프레임.\n예) 5면 1~4프레임은 준비, 5프레임부터 공격 판정")]
@@ -186,9 +231,11 @@ namespace Game.Character
 
         public string AttackName => _attackName;
         public int Damage => AD_damage;
-        public Vector2 HitboxSize => AD_hitboxSize;
-        public Vector2 HitboxOffset => AD_hitboxOffset;
-        public bool HasHitbox => AD_hitboxSize.x > 0f && AD_hitboxSize.y > 0f;
+        public Vector2 AttackBoxSize => AD_attackBoxSize;
+        public Vector2 AttackBoxOffset => AD_attackBoxOffset;
+        public bool HasAttackBox => AD_attackBoxSize.x > 0f && AD_attackBoxSize.y > 0f;
+        public bool ShouldHideTopHitbox => _shouldHideTopHitbox;
+        public ExtraHitbox[] ExtraHitboxes => _extraHitboxes;
         public float LaunchForwardDistance => _launchForwardDistance;
         public float LaunchHeight => _launchHeight;
         public int LaunchAirFrames => _launchAirFrames;
@@ -246,8 +293,16 @@ namespace Game.Character
             if (_recoveryFrames < 0) _recoveryFrames = 0;
             if (_projectileSpawnFrame < 0) _projectileSpawnFrame = 0;
             if (AD_damage < 0) AD_damage = 0;
-            if (AD_hitboxSize.x < 0f) AD_hitboxSize.x = 0f;
-            if (AD_hitboxSize.y < 0f) AD_hitboxSize.y = 0f;
+            if (AD_attackBoxSize.x < 0f) AD_attackBoxSize.x = 0f;
+            if (AD_attackBoxSize.y < 0f) AD_attackBoxSize.y = 0f;
+
+            if (_extraHitboxes != null)
+            {
+                foreach (var extraHitbox in _extraHitboxes)
+                {
+                    extraHitbox?.Validate();
+                }
+            }
             if (_launchFrame < 0) _launchFrame = 0;
             if (_launchHeight < 0f) _launchHeight = 0f;
             if (_launchAirFrames < 1) _launchAirFrames = 1;

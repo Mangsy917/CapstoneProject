@@ -15,8 +15,14 @@ MonoBehaviour:
   _attackName: 236
   _height: 0
   AD_damage: 600
-  AD_hitboxSize: {x: 0, y: 0}
-  AD_hitboxOffset: {x: 0, y: 0}
+  AD_attackBoxSize: {x: 0, y: 0}
+  AD_attackBoxOffset: {x: 0, y: 0}
+  _shouldHideTopHitbox: 0
+  _extraHitboxes:
+  - AD_size: {x: 0.7, y: 0.35}
+    AD_offset: {x: 0.6, y: 0.3}
+    _framesBeforeActive: 0
+    _framesAfterActive: 20
   _startupFrames: 13
   _activeFrames: 2
   _recoveryFrames: 30

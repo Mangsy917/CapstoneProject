@@ -1,12 +1,13 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace Game.Character
 {
     // 장풍 같은 투사체. CharacterAttack이 생성한 뒤 Launch로 날아갈 방향, 쏜 캐릭터, 맞힐 상대 태그를 정함
     // - 바라보는 쪽으로 일정한 속도로 날아감
     // - 화면(카메라에 보이는 범위) 밖으로 완전히 나가면 사라짐
-    // - 상대 캐릭터(맞힐 태그)의 피격 상자(Hurtbox)에 닿으면 데미지를 주고 사라짐
+    // - 상대 캐릭터(맞힐 태그)의 피격 상자(Hitbox)에 닿으면 데미지를 주고 사라짐
     //   (피격 상자가 없는 상대는 Pushbox, 없으면 Collider 범위로 판정)
     // - 쏜 캐릭터의 투사체가 남아 있는 동안은 같은 캐릭터가 투사체 공격을 다시 쓸 수 없음 (HasActiveProjectile)
     public class Projectile : MonoBehaviour
@@ -19,9 +20,11 @@ namespace Game.Character
 
         [Header("공격 판정")]
         [Tooltip("상대에게 닿았는지 볼 상자 크기 (월드 단위)")]
-        [SerializeField] private Vector2 _hitboxSize = new Vector2(0.6f, 0.6f);
+        [FormerlySerializedAs("_hitboxSize")]
+        [SerializeField] private Vector2 P_attackBoxSize = new Vector2(0.6f, 0.6f);
         [Tooltip("상자 중심 위치 (투사체 위치 기준, x는 날아가는 쪽이 +)")]
-        [SerializeField] private Vector2 _hitboxOffset = new Vector2(0.45f, 0f);
+        [FormerlySerializedAs("_hitboxOffset")]
+        [SerializeField] private Vector2 P_attackBoxOffset = new Vector2(0.45f, 0f);
 
         // 지금 화면에 있는 모든 투사체 (쏜 캐릭터별로 남아 있는지 확인할 때 사용)
         private static readonly List<Projectile> _activeProjectiles = new List<Projectile>();
@@ -102,19 +105,19 @@ namespace Game.Character
         }
 
         // 맞힐 태그의 캐릭터 중 공격 판정 상자와 겹치는 캐릭터 (없으면 null)
-        // 상대의 피격 상자(Hurtbox)로 판정하고, 피격 상자가 없으면 Pushbox, 그것도 없으면 Collider 범위로 판정
+        // 상대의 피격 상자(Hitbox)로 판정하고, 피격 상자가 없으면 Pushbox, 그것도 없으면 Collider 범위로 판정
         private GameObject FindHitTarget()
         {
-            Vector2 center = (Vector2)transform.position + new Vector2(_hitboxOffset.x * P_direction, _hitboxOffset.y);
-            Vector2 halfSize = new Vector2(Mathf.Abs(_hitboxSize.x), Mathf.Abs(_hitboxSize.y)) * 0.5f;
+            Vector2 center = (Vector2)transform.position + new Vector2(P_attackBoxOffset.x * P_direction, P_attackBoxOffset.y);
+            Vector2 halfSize = new Vector2(Mathf.Abs(P_attackBoxSize.x), Mathf.Abs(P_attackBoxSize.y)) * 0.5f;
 
             foreach (GameObject target in GameObject.FindGameObjectsWithTag(_targetTag))
             {
                 if (target == _owner) continue;
 
-                if (Hurtbox.HasHurtbox(target))
+                if (Hitbox.HasHitbox(target))
                 {
-                    if (Hurtbox.IsHitting(target, center, _hitboxSize)) return target;
+                    if (Hitbox.IsHitting(target, center, P_attackBoxSize)) return target;
                     continue;
                 }
 
@@ -150,8 +153,8 @@ namespace Game.Character
         {
             Gizmos.color = Color.red;
             float direction = Application.isPlaying ? P_direction : 1f;
-            Vector3 center = transform.position + new Vector3(_hitboxOffset.x * direction, _hitboxOffset.y, 0f);
-            Gizmos.DrawWireCube(center, new Vector3(_hitboxSize.x, _hitboxSize.y, 0.1f));
+            Vector3 center = transform.position + new Vector3(P_attackBoxOffset.x * direction, P_attackBoxOffset.y, 0f);
+            Gizmos.DrawWireCube(center, new Vector3(P_attackBoxSize.x, P_attackBoxSize.y, 0.1f));
         }
     }
 }
