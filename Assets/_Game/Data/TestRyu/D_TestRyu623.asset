@@ -24,8 +24,9 @@ MonoBehaviour:
     _armorHeights: 0
     _armorHitCount: 0
   _launchFrame: 3
-  _launchForwardSpeed: 2
-  _launchUpSpeed: 9
+  _launchForwardDistance: 1.44
+  _launchHeight: 1.62
+  _launchAirFrames: 43
   _holdUntilLanding: 1
   _landingRecoveryFrames: 12
   _landingAnimationState: Sit

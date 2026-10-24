@@ -137,7 +137,7 @@ namespace Game.Character
 
             if (AttackFrame == CurrentAttack.LaunchFrame && CA_characterMove != null)
             {
-                CA_characterMove.LaunchIntoAir(CurrentAttack.LaunchForwardSpeed, CurrentAttack.LaunchUpSpeed);
+                CA_characterMove.LaunchIntoAir(forwardDistance: CurrentAttack.LaunchForwardDistance, height: CurrentAttack.LaunchHeight, airFrames: CurrentAttack.LaunchAirFrames);
                 _isAirAttack = true; // 뛰어오른 뒤 착지하면 공격이 끝남
             }
         }

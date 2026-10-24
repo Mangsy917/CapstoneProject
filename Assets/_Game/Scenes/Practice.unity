@@ -28082,7 +28082,6 @@ MonoBehaviour:
   jumpAirFrames: 38
   forwardJumpSpeed: 4
   backJumpSpeed: 4
-  gravity: 25
   jumpDirectionBufferFrames: 4
   dashInputWindowFrames: 20
   forwardDashDistance: 1.2

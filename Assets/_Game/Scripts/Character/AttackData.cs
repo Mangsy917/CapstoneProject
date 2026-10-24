@@ -94,10 +94,12 @@ namespace Game.Character
         [Header("공중으로 뛰어오르기")]
         [Tooltip("이 프레임에 앞으로 뛰어오름 (공격 시작 프레임 = 1). 0이면 뛰어오르지 않음")]
         [SerializeField] private int _launchFrame = 0;
-        [Tooltip("뛰어오를 때 앞으로 가는 속도 (음수면 뒤로)")]
-        [SerializeField] private float _launchForwardSpeed = 2f;
-        [Tooltip("뛰어오를 때 위로 향하는 속도")]
-        [SerializeField] private float _launchUpSpeed = 9f;
+        [Tooltip("공중에 있는 동안 앞으로 가는 전체 거리 (음수면 뒤로)")]
+        [SerializeField] private float _launchForwardDistance = 1.44f;
+        [Tooltip("가장 높은 곳까지의 높이 (바닥 기준)")]
+        [SerializeField] private float _launchHeight = 1.62f;
+        [Tooltip("공중에 떠 있는 프레임 수. 뛰어오른 프레임이 공중 첫 프레임이고, 높이와 상관없이 항상 이 프레임 수만에 착지함")]
+        [SerializeField] private int _launchAirFrames = 43;
         [Tooltip("체크하면 공중에 있는 동안은 프레임이 다 지나도 공격이 끝나지 않고, 착지할 때 끝남")]
         [SerializeField] private bool _holdUntilLanding = false;
 
@@ -121,8 +123,9 @@ namespace Game.Character
 
         public string AttackName => _attackName;
         public int LaunchFrame => _launchFrame;
-        public float LaunchForwardSpeed => _launchForwardSpeed;
-        public float LaunchUpSpeed => _launchUpSpeed;
+        public float LaunchForwardDistance => _launchForwardDistance;
+        public float LaunchHeight => _launchHeight;
+        public int LaunchAirFrames => _launchAirFrames;
         public bool HoldUntilLanding => _holdUntilLanding;
         public int LandingRecoveryFrames => _landingRecoveryFrames;
         public string LandingAnimationState => _landingAnimationState;
@@ -159,7 +162,8 @@ namespace Game.Character
             if (_recoveryFrames < 0) _recoveryFrames = 0;
             if (_projectileSpawnFrame < 1) _projectileSpawnFrame = 1;
             if (_launchFrame < 0) _launchFrame = 0;
-            if (_launchUpSpeed < 0f) _launchUpSpeed = 0f;
+            if (_launchHeight < 0f) _launchHeight = 0f;
+            if (_launchAirFrames < 1) _launchAirFrames = 1;
             if (_landingRecoveryFrames < 0) _landingRecoveryFrames = 0;
 
             if (_traitWindows == null) return;
