@@ -37,7 +37,7 @@ namespace Game.Character
     //   더미: 설정창의 가드 설정대로 (DummyGuard)
     //   서서 가드는 하단을, 앉아 가드는 중단을 막지 못함. 잡기, 공중, 공격 중, 피격 경직 중에는 가드할 수 없음
     // - 맞으면: 하던 공격을 취소하고 피격 경직 + 히트백 + 피격 모션, 데미지는 CharacterHealth로
-    //   피격 모션은 공격(AttackData)에 정한 모션, 자동이면 중단 공격은 Top2Low, 그 외는 맞은 피격 상자 위치에 따라 정함
+    //   피격 모션은 공격(AttackData)에 정한 모션, 자동이면 상단 공격은 MiddleHit, 중단 공격은 Top2Low, 하단 공격은 맞은 피격 상자 위치에 따라 정함
     // - 가드하면: 가드 경직 + 가드백 + 가드 모션 (가드한 피격 상자 위치에 따라 Top / Middle / Bottom), 데미지 없음
     // - 히트백 / 가드백: 정해진 프레임 동안 뒤로 밀려남. 벽에 붙어 있으면 대신 때린 쪽이 밀려남 (장풍은 제외)
     // - 경직 중에는 움직이거나 공격할 수 없음 (CharacterMove, CharacterAttack이 IsInStun을 확인)
@@ -227,11 +227,13 @@ namespace Game.Character
             if (_dummyGuard != null) _dummyGuard.ResetRecord();
         }
 
+        // 자동: 상단 공격은 MiddleHit, 중단 공격은 Top2Low, 하단 공격은 맞은 피격 상자 위치에 따라 정함
         private HitMotion GetHitMotion(HitInfo info, Hitbox hitbox)
         {
             if (info.Motion != HitMotion.Auto) return info.Motion;
+            if (info.Height == AttackHeight.High) return HitMotion.Middle;
             if (info.Height == AttackHeight.Middle) return HitMotion.Top2Low;
-            return _characterHitboxes != null ? _characterHitboxes.GetMotionByHitbox(hitbox) : HitMotion.Middle;
+            return _characterHitboxes != null ? _characterHitboxes.GetMotionByHitbox(hitbox) : HitMotion.Low;
         }
     }
 }

@@ -24,7 +24,7 @@ namespace Game.Character
     // 맞은 쪽이 재생할 피격 모션
     public enum HitMotion
     {
-        Auto,    // 자동: 중단 공격이면 Top2Low, 아니면 맞은 피격 상자(Top / Middle / Bottom)에 따라 정함
+        Auto,    // 자동: 상단 공격은 Middle, 중단 공격은 Top2Low, 하단 공격은 맞은 피격 상자(Top / Middle / Bottom)에 따라 정함
         Top,     // 상단 피격 (TopHit)
         Middle,  // 중단 피격 (MiddleHit)
         Low,     // 하단 피격 (LowHit)
@@ -257,7 +257,7 @@ namespace Game.Character
         [Tooltip("히트백으로 밀려나는 데 걸리는 프레임 수")]
         [SerializeField] private int _hitBackFrames = 8;
 
-        [Tooltip("맞은 쪽이 재생할 피격 모션. 자동이면 중단 공격은 Top2Low, 그 외는 맞은 피격 상자 위치에 따라 정함")]
+        [Tooltip("맞은 쪽이 재생할 피격 모션. 자동이면 상단 공격은 MiddleHit, 중단 공격은 Top2Low, 하단 공격은 맞은 피격 상자 위치에 따라 정함")]
         [SerializeField] private HitMotion _hitMotion = HitMotion.Auto;
 
         [Header("가드")]
