@@ -35,6 +35,9 @@ namespace Game.Character
         /// <summary>지금 진행 중인 공격 (공격 중이 아니면 null)</summary>
         public AttackData CurrentAttack { get; private set; }
 
+        /// <summary>지금 진행 중인 공격의 발생 / 지속 / 회수 프레임 (누른 버튼에 맞춘 값)</summary>
+        public AttackFrames CurrentFrames { get; private set; }
+
         public AttackPhase CurrentPhase { get; private set; } = AttackPhase.None;
 
         /// <summary>공격 시작부터 지난 프레임 (공격 시작 프레임 = 1)</summary>
@@ -119,7 +122,7 @@ namespace Game.Character
             }
 
             // HoldUntilLanding이면 공중에 있는 동안은 프레임이 다 지나도 끝내지 않음
-            bool isFramesOver = AttackFrame > CurrentAttack.TotalFrames &&
+            bool isFramesOver = AttackFrame > CurrentFrames.TotalFrames &&
                                 !(CurrentAttack.HoldUntilLanding && !IsGrounded());
             if (isFramesOver)
             {
@@ -132,7 +135,7 @@ namespace Game.Character
 
             SetPhase(GetPhaseAt(AttackFrame));
 
-            if (CurrentAttack.ProjectilePrefab != null && AttackFrame == CurrentAttack.ProjectileSpawnFrame)
+            if (CurrentAttack.ProjectilePrefab != null && AttackFrame == CurrentAttack.GetProjectileSpawnFrame(CurrentFrames))
                 SpawnProjectile(CurrentAttack);
 
             if (AttackFrame == CurrentAttack.LaunchFrame && CA_characterMove != null)
@@ -163,15 +166,17 @@ namespace Game.Character
         }
 
         // 공격 중에 들어온 커맨드는 무시함 (캔슬은 아직 없음)
-        private void HandleCommandTriggered(CharacterCommand.CommandData command)
+        private void HandleCommandTriggered(CharacterCommand.CommandData command, CharacterCommand.AttackButtonType button)
         {
             if (command.attack == null || IsAttacking || !CanUseCommand(command)) return;
-            StartAttack(command.attack);
+            StartAttack(command.attack, button);
         }
 
-        public void StartAttack(AttackData attack)
+        /// <summary>attack을 시작함. 발생 / 지속 / 회수 프레임은 button에 맞춘 값을 씀 (AttackData의 버튼별 프레임)</summary>
+        public void StartAttack(AttackData attack, CharacterCommand.AttackButtonType button)
         {
             CurrentAttack = attack;
+            CurrentFrames = attack.GetFrames(button);
             AttackFrame = 0; // 이번 프레임 Update에서 1이 됨
             _isAirAttack = !IsGrounded();
             _pendingLandingAttack = null; // 공중에서 다시 공격하면 새 공격의 착지 경직을 따름
@@ -216,8 +221,8 @@ namespace Game.Character
 
         private AttackPhase GetPhaseAt(int frame)
         {
-            if (frame < CurrentAttack.FirstActiveFrame) return AttackPhase.Startup;
-            if (frame <= CurrentAttack.LastActiveFrame) return AttackPhase.Active;
+            if (frame < CurrentFrames.FirstActiveFrame) return AttackPhase.Startup;
+            if (frame <= CurrentFrames.LastActiveFrame) return AttackPhase.Active;
             return AttackPhase.Recovery;
         }
 

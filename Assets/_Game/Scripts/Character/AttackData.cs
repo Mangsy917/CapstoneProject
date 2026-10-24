@@ -29,6 +29,28 @@ namespace Game.Character
         Invincible  // 무적
     }
 
+    // 공격 한 번의 프레임 (발생 / 지속 / 회수)
+    public readonly struct AttackFrames
+    {
+        public int Startup { get; }
+        public int Active { get; }
+        public int Recovery { get; }
+
+        public AttackFrames(int startup, int active, int recovery)
+        {
+            Startup = startup;
+            Active = active;
+            Recovery = recovery;
+        }
+
+        // 공격 판정이 나오는 첫 프레임과 마지막 프레임
+        public int FirstActiveFrame => Startup;
+        public int LastActiveFrame => Startup + Active - 1;
+
+        // 공격 시작부터 회수가 끝날 때까지의 전체 프레임 수
+        public int TotalFrames => LastActiveFrame + Recovery;
+    }
+
     // 공격 하나의 속성. Project 창에서 Create > Game > Attack Data로 만들고,
     // CharacterCommand의 커맨드 목록에서 attack 칸에 넣어서 사용
     [CreateAssetMenu(fileName = "D_NewAttack", menuName = "Game/Attack Data")]
@@ -72,6 +94,33 @@ namespace Game.Character
             }
         }
 
+        // 누른 버튼마다 따로 정하는 프레임 (예: 236L, 236M, 236H)
+        [Serializable]
+        public class ButtonFrames
+        {
+            [Tooltip("이 버튼으로 기술이 나갔을 때 아래 프레임을 사용 (하나만 고름)")]
+            [SerializeField] private CharacterCommand.AttackButtonType _button = CharacterCommand.AttackButtonType.L;
+
+            [Tooltip("발생 프레임: 공격 판정이 처음 나오는 프레임")]
+            [SerializeField] private int _startupFrames = 5;
+
+            [Tooltip("지속 프레임: 공격 판정이 유지되는 프레임 수")]
+            [SerializeField] private int _activeFrames = 3;
+
+            [Tooltip("회수 프레임: 공격 판정이 끝난 뒤 다시 움직일 수 있을 때까지의 프레임 수")]
+            [SerializeField] private int _recoveryFrames = 10;
+
+            public CharacterCommand.AttackButtonType Button => _button;
+            public AttackFrames Frames => new AttackFrames(_startupFrames, _activeFrames, _recoveryFrames);
+
+            public void Validate()
+            {
+                if (_startupFrames < 1) _startupFrames = 1;
+                if (_activeFrames < 1) _activeFrames = 1;
+                if (_recoveryFrames < 0) _recoveryFrames = 0;
+            }
+        }
+
         [SerializeField] private string _attackName;
 
         [Header("판정")]
@@ -86,6 +135,9 @@ namespace Game.Character
 
         [Tooltip("회수 프레임: 공격 판정이 끝난 뒤 다시 움직일 수 있을 때까지의 프레임 수")]
         [SerializeField] private int _recoveryFrames = 10;
+
+        [Tooltip("누른 버튼마다 프레임을 다르게 할 때 사용 (예: 236을 L / M / H / EX로 썼을 때).\n목록에 없는 버튼으로 나가면 위의 발생 / 지속 / 회수 프레임을 사용")]
+        [SerializeField] private ButtonFrames[] _buttonFrames = new ButtonFrames[0];
 
         [Header("프레임 구간별 특성")]
         [Tooltip("예) 슈퍼아머 / 시작 1 / 끝 8 / 상단 / 2회 → 1~8프레임 동안 상단 공격을 2번까지 버팀")]
@@ -116,7 +168,7 @@ namespace Game.Character
         [Header("투사체")]
         [Tooltip("공격 중 생성할 투사체 프리팹. 없으면 비워둠")]
         [SerializeField] private Projectile _projectilePrefab;
-        [Tooltip("투사체를 생성할 프레임 (공격 시작 프레임 = 1)")]
+        [Tooltip("투사체를 생성할 프레임 (공격 시작 프레임 = 1). 0이면 발생 프레임에 생성 (누른 버튼마다 발생 프레임이 달라도 맞춰짐)")]
         [SerializeField] private int _projectileSpawnFrame = 1;
         [Tooltip("투사체 생성 위치 (캐릭터 위치 기준, x는 바라보는 쪽이 +)")]
         [SerializeField] private Vector2 _projectileSpawnOffset = new Vector2(1f, 0.3f);
@@ -134,17 +186,29 @@ namespace Game.Character
         public int ProjectileSpawnFrame => _projectileSpawnFrame;
         public Vector2 ProjectileSpawnOffset => _projectileSpawnOffset;
         public AttackHeight Height => _height;
-        public int StartupFrames => _startupFrames;
-        public int ActiveFrames => _activeFrames;
-        public int RecoveryFrames => _recoveryFrames;
         public TraitWindow[] TraitWindows => _traitWindows;
 
-        // 공격 판정이 나오는 첫 프레임과 마지막 프레임
-        public int FirstActiveFrame => _startupFrames;
-        public int LastActiveFrame => _startupFrames + _activeFrames - 1;
+        // 버튼별 프레임 목록에 없을 때 쓰는 기본 프레임
+        public AttackFrames DefaultFrames => new AttackFrames(_startupFrames, _activeFrames, _recoveryFrames);
 
-        // 공격 시작부터 회수가 끝날 때까지의 전체 프레임 수
-        public int TotalFrames => LastActiveFrame + _recoveryFrames;
+        /// <summary>이 버튼으로 나갔을 때의 프레임 (버튼별 프레임 목록에 없으면 기본 프레임)</summary>
+        public AttackFrames GetFrames(CharacterCommand.AttackButtonType button)
+        {
+            if (_buttonFrames != null)
+            {
+                foreach (var buttonFrames in _buttonFrames)
+                {
+                    if (buttonFrames != null && buttonFrames.Button == button) return buttonFrames.Frames;
+                }
+            }
+            return DefaultFrames;
+        }
+
+        /// <summary>투사체를 생성할 프레임 (0으로 두었으면 이번 공격의 발생 프레임)</summary>
+        public int GetProjectileSpawnFrame(AttackFrames frames)
+        {
+            return _projectileSpawnFrame > 0 ? _projectileSpawnFrame : frames.FirstActiveFrame;
+        }
 
         public bool HasTrait(AttackTrait trait)
         {
@@ -160,11 +224,19 @@ namespace Game.Character
             if (_startupFrames < 1) _startupFrames = 1;
             if (_activeFrames < 1) _activeFrames = 1;
             if (_recoveryFrames < 0) _recoveryFrames = 0;
-            if (_projectileSpawnFrame < 1) _projectileSpawnFrame = 1;
+            if (_projectileSpawnFrame < 0) _projectileSpawnFrame = 0;
             if (_launchFrame < 0) _launchFrame = 0;
             if (_launchHeight < 0f) _launchHeight = 0f;
             if (_launchAirFrames < 1) _launchAirFrames = 1;
             if (_landingRecoveryFrames < 0) _landingRecoveryFrames = 0;
+
+            if (_buttonFrames != null)
+            {
+                foreach (var buttonFrames in _buttonFrames)
+                {
+                    buttonFrames?.Validate();
+                }
+            }
 
             if (_traitWindows == null) return;
             foreach (var window in _traitWindows)

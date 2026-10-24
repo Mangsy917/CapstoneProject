@@ -17,8 +17,32 @@ MonoBehaviour:
   _startupFrames: 13
   _activeFrames: 2
   _recoveryFrames: 30
+  _buttonFrames:
+  - _button: 1
+    _startupFrames: 11
+    _activeFrames: 2
+    _recoveryFrames: 26
+  - _button: 2
+    _startupFrames: 13
+    _activeFrames: 2
+    _recoveryFrames: 30
+  - _button: 4
+    _startupFrames: 15
+    _activeFrames: 3
+    _recoveryFrames: 34
+  - _button: 8
+    _startupFrames: 12
+    _activeFrames: 3
+    _recoveryFrames: 28
   _traitWindows: []
+  _launchFrame: 0
+  _launchForwardDistance: 1.44
+  _launchHeight: 1.62
+  _launchAirFrames: 43
+  _holdUntilLanding: 0
+  _landingRecoveryFrames: 0
+  _landingAnimationState: 
   _animationState: 236
   _projectilePrefab: {fileID: 5406294107860528325, guid: 782b275b08e685e4bbccf1bd5f5faf3b, type: 3}
-  _projectileSpawnFrame: 13
+  _projectileSpawnFrame: 0
   _projectileSpawnOffset: {x: 1, y: 0.4}

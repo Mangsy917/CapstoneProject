@@ -17,6 +17,23 @@ MonoBehaviour:
   _startupFrames: 3
   _activeFrames: 10
   _recoveryFrames: 25
+  _buttonFrames:
+  - _button: 1
+    _startupFrames: 3
+    _activeFrames: 8
+    _recoveryFrames: 21
+  - _button: 2
+    _startupFrames: 4
+    _activeFrames: 10
+    _recoveryFrames: 25
+  - _button: 4
+    _startupFrames: 5
+    _activeFrames: 12
+    _recoveryFrames: 29
+  - _button: 8
+    _startupFrames: 3
+    _activeFrames: 12
+    _recoveryFrames: 23
   _traitWindows:
   - _trait: 3
     _startFrame: 1

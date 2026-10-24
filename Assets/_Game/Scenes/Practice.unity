@@ -28080,8 +28080,8 @@ MonoBehaviour:
   backWalkDistancePerFrame: 0.033333335
   jumpHeight: 2.88
   jumpAirFrames: 38
-  forwardJumpDistance: 2.5333333
-  backJumpDistance: 2.5333333
+  forwardJumpDistance: 2.5
+  backJumpDistance: 2.5
   jumpDirectionBufferFrames: 4
   dashInputWindowFrames: 20
   forwardDashDistance: 1.2
