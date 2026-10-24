@@ -1,126 +1,140 @@
+using System;
+using System.Collections.Generic;
 using TMPro;
-using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Serialization;
-using UnityEngine.UI;
 
+// 플레이어와 더미의 판정(CharactorState)을 한 줄에 나란히 보여줌
+// (플레이어의 판정) | (무슨 판정인지) | (더미의 판정)
+// - 캐릭터 행동: 서기 / 앉기 / 점프
+// - 공격 속성: 상단 / 중단 / 하단과 장풍, 잡기, 슈퍼아머 (공격 중이 아니면 빈 표시)
+// - 캐릭터 판정: 지상 / 공중
+// - 단일 데미지: 그 캐릭터가 상대에게 마지막으로 맞힌 기술의 데미지
+// - 카운터 종류
 public class StateUI : MonoBehaviour
 {
-    [Header("캐릭터 공격 속성을 읽어올 오브젝트")]
-    [SerializeField, FormerlySerializedAs("StateReader")] private CharactorState stateReader;
+    // 한 캐릭터의 판정을 보여줄 텍스트들 (한 열)
+    [Serializable]
+    private class SideTexts
+    {
+        public TextMeshProUGUI actionText;
+        public TextMeshProUGUI attackText;
+        public TextMeshProUGUI positionText;
+        public TextMeshProUGUI singleDamageText;
+        public TextMeshProUGUI counterText;
+    }
 
-    [Header("캐릭터 행동")]
-    [SerializeField, FormerlySerializedAs("CharacterMove")] private TextMeshProUGUI characterMove;
+    [Header("판정을 읽어올 캐릭터")]
+    [SerializeField, FormerlySerializedAs("stateReader")] private CharactorState playerState;
+    [Tooltip("비워두거나 더미가 다시 생성되면 더미 태그로 찾음")]
+    [SerializeField] private CharactorState dummyState;
+    [SerializeField] private string dummyTag = "Enemy";
+
+    [Header("플레이어 판정 텍스트 (왼쪽 열)")]
+    [SerializeField] private SideTexts playerTexts = new SideTexts();
+
+    [Header("더미 판정 텍스트 (오른쪽 열)")]
+    [SerializeField] private SideTexts dummyTexts = new SideTexts();
 
     [Header("캐릭터 행동 - 표시할 텍스트 (인스펙터에서 수정)")]
     [SerializeField] private string standUp = "서기";
     [SerializeField] private string sitDwon = "앉기";
     [SerializeField] private string jump = "점프";
+
+    [Header("공격 속성 - 표시할 텍스트 (인스펙터에서 수정)")]
     [SerializeField] private string high = "상단";
     [SerializeField] private string middle = "중단";
     [SerializeField] private string low = "하단";
-    [SerializeField] private string grap = "행동5";
-    [SerializeField] private string pos = "행동6";
-    [SerializeField] private string parry = "행동7";
-    [SerializeField] private string dash = "대쉬";
-    [SerializeField] private string run = "달리기";
-
-    [Header("캐릭터 공격 속성")]
-    [SerializeField] private Image bangeok;
-    [SerializeField] private Image powerCrash;
-    [SerializeField] private Image reversal;
-
-    [Header("캐릭터 지상판정")]
-    [SerializeField, FormerlySerializedAs("AirOrGround")] private TextMeshProUGUI airOrGround;
+    [SerializeField] private string projectileText = "장풍";
+    [SerializeField] private string grap = "잡기";
+    [SerializeField] private string superArmorText = "슈퍼아머";
+    [Tooltip("공격 속성이 여러 개일 때 사이에 넣을 글자")]
+    [SerializeField] private string traitSeparator = " · ";
 
     [Header("지상판정 - 표시할 텍스트 (인스펙터에서 수정)")]
     [SerializeField] private string groundText = "지상";
     [SerializeField] private string airText = "공중";
-
-    [Header("데미지")]
-    [SerializeField, FormerlySerializedAs("Damage")] private TextMeshProUGUI damage;
-
-    [Header("카운터 판정")]
-    [SerializeField, FormerlySerializedAs("Counter")] private TextMeshProUGUI counter;
 
     [Header("카운터 판정 - 표시할 텍스트 (인스펙터에서 수정)")]
     [SerializeField] private string normalHit = "노말히트";
     [SerializeField] private string counterHit = "카운터";
     [SerializeField] private string punishCounter = "퍼니쉬카운터";
 
-    void Start()
-    {
+    [Tooltip("값이 없을 때 표시할 텍스트 (공격 중이 아님, 카운터 없음 등)")]
+    [SerializeField] private string emptyText = "-";
 
-    }
+    private readonly List<string> _attackParts = new List<string>();
 
     void Update()
     {
-        if (stateReader == null) return;
+        if (dummyState == null) dummyState = FindDummyState();
 
-        UpdateCharacterMoveText();
-        UpdateAttackAttributeImages();
-        UpdateAirOrGroundText();
-        UpdateCounterText();
+        UpdateSide(playerState, playerTexts);
+        UpdateSide(dummyState, dummyTexts);
     }
 
-    private void UpdateCharacterMoveText()
+    private CharactorState FindDummyState()
     {
-        if (characterMove == null) return;
-
-        if (stateReader.StandUp) characterMove.text = standUp;
-        else if (stateReader.SitDown) characterMove.text = sitDwon;
-        else if (stateReader.Jump) characterMove.text = jump;
-        else if (stateReader.High) characterMove.text = high;
-        else if (stateReader.Middle) characterMove.text = middle;
-        else if (stateReader.Low) characterMove.text = low;
-        else if (stateReader.Grap) characterMove.text = grap;
-        else if (stateReader.pos) characterMove.text = pos;
-        else if (stateReader.Parry) characterMove.text = parry;
-        else if (stateReader.Dash) characterMove.text = dash;
-        else if (stateReader.Run) characterMove.text = run;
-        else characterMove.text = string.Empty;
+        GameObject dummy = GameObject.FindGameObjectWithTag(dummyTag);
+        return dummy != null ? dummy.GetComponent<CharactorState>() : null;
     }
 
-    private void UpdateAttackAttributeImages()
+    private void UpdateSide(CharactorState state, SideTexts texts)
     {
-        SetImageChannel(bangeok, stateReader.bangeok, 0);
-        SetImageChannel(powerCrash, stateReader.powerCrash, 1);
-        SetImageChannel(reversal, stateReader.reversal, 2);
-    }
+        if (texts == null) return;
 
-    private void SetImageChannel(Image image, bool isOn, int channelIndex)
-    {
-        if (image == null) return;
-
-        Color c = image.color;
-        float value = isOn ? 1f : 0f;
-
-        switch (channelIndex)
+        // 캐릭터가 없으면(더미가 다시 생성되기 전 등) 모두 빈 표시
+        if (state == null)
         {
-            case 0: c.r = value; break;
-            case 1: c.g = value; break;
-            case 2: c.b = value; break;
+            SetText(texts.actionText, emptyText);
+            SetText(texts.attackText, emptyText);
+            SetText(texts.positionText, emptyText);
+            SetText(texts.singleDamageText, emptyText);
+            SetText(texts.counterText, emptyText);
+            return;
         }
 
-        image.color = c;
+        SetText(texts.actionText, GetActionText(state));
+        SetText(texts.attackText, GetAttackText(state));
+        SetText(texts.positionText, state.Air ? airText : groundText);
+        SetText(texts.singleDamageText, state.SingleDamage.ToString());
+        SetText(texts.counterText, GetCounterText(state));
     }
 
-    private void UpdateAirOrGroundText()
+    private string GetActionText(CharactorState state)
     {
-        if (airOrGround == null) return;
-
-        if (stateReader.Ground) airOrGround.text = groundText;
-        else if (stateReader.Air) airOrGround.text = airText;
-        else airOrGround.text = string.Empty;
+        if (state.Jump) return jump;
+        if (state.SitDown) return sitDwon;
+        return standUp;
     }
 
-    private void UpdateCounterText()
+    // 예) "중단", "중단 · 장풍", "잡기", 공격 중이 아니면 "-"
+    private string GetAttackText(CharactorState state)
     {
-        if (counter == null) return;
+        _attackParts.Clear();
+        if (state.High) _attackParts.Add(high);
+        else if (state.Middle) _attackParts.Add(middle);
+        else if (state.Low) _attackParts.Add(low);
 
-        if (stateReader.NormalHit) counter.text = normalHit;
-        else if (stateReader.CounterHit) counter.text = counterHit;
-        else if (stateReader.PunishCounter) counter.text = punishCounter;
-        else counter.text = string.Empty;
+        if (state.Projectile) _attackParts.Add(projectileText);
+        if (state.Grap) _attackParts.Add(grap);
+        if (state.SuperArmor) _attackParts.Add(superArmorText);
+
+        return _attackParts.Count > 0 ? string.Join(traitSeparator, _attackParts) : emptyText;
+    }
+
+    private string GetCounterText(CharactorState state)
+    {
+        if (state.NormalHit) return normalHit;
+        if (state.CounterHit) return counterHit;
+        if (state.PunishCounter) return punishCounter;
+        return emptyText;
+    }
+
+    // 값이 바뀔 때만 넣음 (TextMeshPro가 매 프레임 다시 그리지 않도록)
+    private void SetText(TextMeshProUGUI text, string value)
+    {
+        if (text == null || text.text == value) return;
+        text.text = value;
     }
 }

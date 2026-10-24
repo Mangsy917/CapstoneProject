@@ -17,6 +17,14 @@ MonoBehaviour:
   AD_damage: 800
   AD_attackBoxSize: {x: 0.8, y: 0.85}
   AD_attackBoxOffset: {x: 0.738, y: 0.11}
+  _attackBoxWindows: []
+  _hitAdvantage: 2
+  _hitBackDistance: 0.5
+  _hitBackFrames: 8
+  _hitMotion: 0
+  _blockAdvantage: -6
+  _guardBackDistance: 0.4
+  _guardBackFrames: 8
   _shouldHideTopHitbox: 0
   _extraHitboxes:
   - AD_size: {x: 0.62, y: 0.72}
@@ -39,6 +47,10 @@ MonoBehaviour:
     _projectileDistancePerFrame: 0
     AD_attackBoxSize: {x: 0.575, y: 0.85}
     AD_attackBoxOffset: {x: 0.625, y: 0.12}
+    _invincibleFrames: 0
+    _shouldOverrideAdvantage: 1
+    _hitAdvantage: 2
+    _blockAdvantage: -3
   - _button: 2
     _startupFrames: 19
     _activeFrames: 6
@@ -47,6 +59,10 @@ MonoBehaviour:
     _projectileDistancePerFrame: 0
     AD_attackBoxSize: {x: 0.8, y: 0.85}
     AD_attackBoxOffset: {x: 0.738, y: 0.11}
+    _invincibleFrames: 0
+    _shouldOverrideAdvantage: 1
+    _hitAdvantage: 2
+    _blockAdvantage: -6
   - _button: 4
     _startupFrames: 30
     _activeFrames: 6
@@ -55,6 +71,10 @@ MonoBehaviour:
     _projectileDistancePerFrame: 0
     AD_attackBoxSize: {x: 0.8, y: 0.8}
     AD_attackBoxOffset: {x: 0.885, y: 0.09}
+    _invincibleFrames: 0
+    _shouldOverrideAdvantage: 1
+    _hitAdvantage: 61
+    _blockAdvantage: 2
   - _button: 8
     _startupFrames: 18
     _activeFrames: 6
@@ -63,6 +83,10 @@ MonoBehaviour:
     _projectileDistancePerFrame: 0
     AD_attackBoxSize: {x: 0.785, y: 0.8}
     AD_attackBoxOffset: {x: 0.823, y: 0.075}
+    _invincibleFrames: 0
+    _shouldOverrideAdvantage: 1
+    _hitAdvantage: 3
+    _blockAdvantage: 3
   _traitWindows: []
   _launchFrame: 0
   _shouldLaunchAtStartup: 0

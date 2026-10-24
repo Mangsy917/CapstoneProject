@@ -1,26 +1,25 @@
-using Unity.VisualScripting;
 using UnityEngine;
 
+// 캐릭터(Player, 더미)의 지금 판정 값. StateUI가 읽어서 화면에 보여줌
+// - 캐릭터 행동, 지상 판정: CharacterMove가 넣음 (CharacterMove가 없는 더미는 서기 + 지상 그대로)
+// - 공격 판정 높이, 공격 특성: 공격하는 동안 CharacterAttack이 넣고, 공격이 끝나면 지움
+// - 데미지: 이 캐릭터가 상대에게 준 데미지 (CharacterHealth가 맞을 때 때린 쪽에 알려줌)
 public class CharactorState : MonoBehaviour
 {
     [Header("캐릭터 행동")]
     public bool standUp = true; //서기
     public bool sitDown = false; //앉기
     public bool jump = false; //점프
+
+    [Header("공격 판정 높이 (공격 중일 때만, 잡기는 높이 없음)")]
     public bool high = false; //상단
     public bool middle = false; //중단
     public bool low = false; //하단
+
+    [Header("공격 특성 (공격 중일 때만)")]
+    public bool projectile = false; //장풍
     public bool grap = false; //잡기
-    public bool pos = false; //자세
-    public bool parry = false; //패리
-    public bool dash = false; //대쉬 (앞대쉬, 백대쉬)
-    public bool run = false; //달리기
-
-    [Header("공격 속성")]
-    public bool bangeok = false; //반격기
-    public bool powerCrash = false; //파워크래쉬
-    public bool reversal = false; //리버설(무적기)
-
+    public bool superArmor = false; //슈퍼아머
 
     [Header("캐릭터 지상 판정")]
     public bool ground = true; //지상
@@ -31,21 +30,25 @@ public class CharactorState : MonoBehaviour
     public bool counterHit = false; //카운터히트
     public bool punishCounter = false; //윕퍼니시
 
-    private enum ActionType { StandUp, SitDown, Jump, High, Middle, Low, Grap, Pos, Parry, Dash, Run }
+    [Header("데미지 (이 캐릭터가 준 데미지)")]
+    public int singleDamage = 0; //마지막으로 맞힌 기술 하나의 데미지
+
+    private enum ActionType { StandUp, SitDown, Jump }
+    private enum HeightType { None, High, Middle, Low }
     private enum GroundType { Ground, Air }
     private enum CounterType { NormalHit, CounterHit, PunishCounter }
 
     public bool StandUp { get => standUp; set => SetAction(ActionType.StandUp, value); }
     public bool SitDown { get => sitDown; set => SetAction(ActionType.SitDown, value); }
     public bool Jump { get => jump; set => SetAction(ActionType.Jump, value); }
-    public bool High { get => high; set => SetAction(ActionType.High, value); }
-    public bool Middle { get => middle; set => SetAction(ActionType.Middle, value); }
-    public bool Low { get => low; set => SetAction(ActionType.Low, value); }
-    public bool Grap { get => grap; set => SetAction(ActionType.Grap, value); }
-    public bool Pos { get => pos; set => SetAction(ActionType.Pos, value); }
-    public bool Parry { get => parry; set => SetAction(ActionType.Parry, value); }
-    public bool Dash { get => dash; set => SetAction(ActionType.Dash, value); }
-    public bool Run { get => run; set => SetAction(ActionType.Run, value); }
+
+    public bool High { get => high; set => SetHeight(value ? HeightType.High : HeightType.None); }
+    public bool Middle { get => middle; set => SetHeight(value ? HeightType.Middle : HeightType.None); }
+    public bool Low { get => low; set => SetHeight(value ? HeightType.Low : HeightType.None); }
+
+    public bool Projectile { get => projectile; set => projectile = value; }
+    public bool Grap { get => grap; set => grap = value; }
+    public bool SuperArmor { get => superArmor; set => superArmor = value; }
 
     public bool Ground { get => ground; set => SetGroundState(GroundType.Ground, value); }
     public bool Air { get => air; set => SetGroundState(GroundType.Air, value); }
@@ -54,6 +57,23 @@ public class CharactorState : MonoBehaviour
     public bool CounterHit { get => counterHit; set => SetCounterState(CounterType.CounterHit, value); }
     public bool PunishCounter { get => punishCounter; set => SetCounterState(CounterType.PunishCounter, value); }
 
+    public int SingleDamage => singleDamage;
+
+    /// <summary>공격이 끝났을 때 판정 높이와 공격 특성을 모두 끔</summary>
+    public void ClearAttack()
+    {
+        SetHeight(HeightType.None);
+        projectile = false;
+        grap = false;
+        superArmor = false;
+    }
+
+    /// <summary>상대에게 damage를 줬을 때 호출 (단일 데미지 기록)</summary>
+    public void SetDealtDamage(int damage)
+    {
+        singleDamage = damage;
+    }
+
     private void SetAction(ActionType type, bool value)
     {
         if (value)
@@ -61,14 +81,6 @@ public class CharactorState : MonoBehaviour
             standUp = type == ActionType.StandUp;
             sitDown = type == ActionType.SitDown;
             jump = type == ActionType.Jump;
-            high = type == ActionType.High;
-            middle = type == ActionType.Middle;
-            low = type == ActionType.Low;
-            grap = type == ActionType.Grap;
-            pos = type == ActionType.Pos;
-            parry = type == ActionType.Parry;
-            dash = type == ActionType.Dash;
-            run = type == ActionType.Run;
         }
         else
         {
@@ -77,19 +89,18 @@ public class CharactorState : MonoBehaviour
                 case ActionType.StandUp: standUp = false; break;
                 case ActionType.SitDown: sitDown = false; break;
                 case ActionType.Jump: jump = false; break;
-                case ActionType.High: high = false; break;
-                case ActionType.Middle: middle = false; break;
-                case ActionType.Low: low = false; break;
-                case ActionType.Grap: grap = false; break;
-                case ActionType.Pos: pos = false; break;
-                case ActionType.Parry: parry = false; break;
-                case ActionType.Dash: dash = false; break;
-                case ActionType.Run: run = false; break;
             }
         }
         EnsureActionDefault();
 
-        if (value && type == ActionType.Jump) SetGroundState(GroundType.Air, true);  
+        if (value && type == ActionType.Jump) SetGroundState(GroundType.Air, true);
+    }
+
+    private void SetHeight(HeightType type)
+    {
+        high = type == HeightType.High;
+        middle = type == HeightType.Middle;
+        low = type == HeightType.Low;
     }
 
     private void SetGroundState(GroundType type, bool value)
@@ -131,7 +142,7 @@ public class CharactorState : MonoBehaviour
 
     private void EnsureActionDefault()
     {
-        if (!standUp && !sitDown && !jump && !high && !middle && !low && !grap && !pos && !parry && !dash && !run)
+        if (!standUp && !sitDown && !jump)
         {
             standUp = true;
         }
@@ -145,7 +156,8 @@ public class CharactorState : MonoBehaviour
         }
     }
 
-    private bool prevStandUp, prevSitDown, prevJump, prevHigh, prevMiddle, prevLow, prevGrap, prevPos, prevParry, prevDash, prevRun;
+    private bool prevStandUp, prevSitDown, prevJump;
+    private bool prevHigh, prevMiddle, prevLow;
     private bool prevGround, prevAir;
     private bool prevNormalHit, prevCounterHit, prevPunishCounter;
     private bool validateInitialized;
@@ -162,15 +174,11 @@ public class CharactorState : MonoBehaviour
         if (standUp && !prevStandUp) SetAction(ActionType.StandUp, true);
         else if (sitDown && !prevSitDown) SetAction(ActionType.SitDown, true);
         else if (jump && !prevJump) SetAction(ActionType.Jump, true);
-        else if (high && !prevHigh) SetAction(ActionType.High, true);
-        else if (middle && !prevMiddle) SetAction(ActionType.Middle, true);
-        else if (low && !prevLow) SetAction(ActionType.Low, true);
-        else if (grap && !prevGrap) SetAction(ActionType.Grap, true);
-        else if (pos && !prevPos) SetAction(ActionType.Pos, true);
-        else if (parry && !prevParry) SetAction(ActionType.Parry, true);
-        else if (dash && !prevDash) SetAction(ActionType.Dash, true);
-        else if (run && !prevRun) SetAction(ActionType.Run, true);
-        else EnsureActionDefault(); 
+        else EnsureActionDefault();
+
+        if (high && !prevHigh) SetHeight(HeightType.High);
+        else if (middle && !prevMiddle) SetHeight(HeightType.Middle);
+        else if (low && !prevLow) SetHeight(HeightType.Low);
 
         if (ground && !prevGround) SetGroundState(GroundType.Ground, true);
         else if (air && !prevAir) SetGroundState(GroundType.Air, true);
@@ -185,9 +193,8 @@ public class CharactorState : MonoBehaviour
 
     private void CachePreviousValues()
     {
-        prevStandUp = standUp; prevSitDown = sitDown; prevJump = jump; prevHigh = high;
-        prevMiddle = middle; prevLow = Low; prevGrap = grap; prevPos = pos; prevParry = parry;
-        prevDash = dash; prevRun = run;
+        prevStandUp = standUp; prevSitDown = sitDown; prevJump = jump;
+        prevHigh = high; prevMiddle = middle; prevLow = low;
         prevGround = ground; prevAir = air;
         prevNormalHit = normalHit; prevCounterHit = counterHit; prevPunishCounter = punishCounter;
     }

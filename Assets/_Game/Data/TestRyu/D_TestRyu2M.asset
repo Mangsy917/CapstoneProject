@@ -18,6 +18,13 @@ MonoBehaviour:
   AD_attackBoxSize: {x: 0.829, y: 0.43}
   AD_attackBoxOffset: {x: 1.111, y: 0.124}
   _attackBoxWindows: []
+  _hitAdvantage: 5
+  _hitBackDistance: 0.5
+  _hitBackFrames: 8
+  _hitMotion: 2
+  _blockAdvantage: 0
+  _guardBackDistance: 0.4
+  _guardBackFrames: 8
   _shouldHideTopHitbox: 1
   _extraHitboxes:
   - AD_size: {x: 0.553, y: 0.594}

@@ -26,14 +26,35 @@ namespace Game.Character
             H_boxCollider.size = size;
         }
 
+        /// <summary>피격 상자 중심 (월드 단위)</summary>
+        public Vector2 WorldCenter => H_boxCollider != null ? (Vector2)transform.TransformPoint(H_boxCollider.center) : (Vector2)transform.position;
+
         /// <summary>target(또는 그 자식)의 켜져 있는 피격 상자 중 하나라도 공격 상자와 겹치는지</summary>
         public static bool IsHitting(GameObject target, Vector2 attackBoxCenter, Vector2 attackBoxSize)
         {
+            return FindHitHitbox(target, attackBoxCenter, attackBoxSize) != null;
+        }
+
+        /// <summary>
+        /// target(또는 그 자식)의 켜져 있는 피격 상자 중 공격 상자와 겹치는 것 (없으면 null)
+        /// 여러 개가 겹치면 가장 많이 겹친 피격 상자 (피격 모션을 정할 때 사용)
+        /// </summary>
+        public static Hitbox FindHitHitbox(GameObject target, Vector2 attackBoxCenter, Vector2 attackBoxSize)
+        {
+            Hitbox bestHitbox = null;
+            float bestArea = 0f;
             foreach (var hitbox in target.GetComponentsInChildren<Hitbox>())
             {
-                if (hitbox.isActiveAndEnabled && hitbox.IsOverlapping(attackBoxCenter, attackBoxSize)) return true;
+                if (!hitbox.isActiveAndEnabled) continue;
+
+                float area = hitbox.GetOverlapArea(attackBoxCenter, attackBoxSize);
+                if (area > bestArea)
+                {
+                    bestArea = area;
+                    bestHitbox = hitbox;
+                }
             }
-            return false;
+            return bestHitbox;
         }
 
         /// <summary>target(또는 그 자식)에 피격 상자가 하나라도 있는지 (꺼져 있는 것 포함)</summary>
@@ -45,16 +66,27 @@ namespace Game.Character
         // 공격 상자(월드 단위 중심, 크기)와 이 피격 상자가 x, y 모두 겹치는지
         public bool IsOverlapping(Vector2 attackBoxCenter, Vector2 attackBoxSize)
         {
-            if (H_boxCollider == null) return false;
+            return GetOverlapArea(attackBoxCenter, attackBoxSize) > 0f;
+        }
 
-            Vector2 center = transform.TransformPoint(H_boxCollider.center);
+        // 공격 상자와 이 피격 상자가 겹치는 넓이 (겹치지 않으면 0)
+        private float GetOverlapArea(Vector2 attackBoxCenter, Vector2 attackBoxSize)
+        {
+            if (H_boxCollider == null) return 0f;
+
+            Vector2 center = WorldCenter;
             Vector3 scale = transform.lossyScale;
             Vector2 halfSize = new Vector2(Mathf.Abs(H_boxCollider.size.x * scale.x), Mathf.Abs(H_boxCollider.size.y * scale.y)) * 0.5f;
             Vector2 attackBoxHalfSize = new Vector2(Mathf.Abs(attackBoxSize.x), Mathf.Abs(attackBoxSize.y)) * 0.5f;
 
-            bool isOverlappingX = Mathf.Abs(center.x - attackBoxCenter.x) < halfSize.x + attackBoxHalfSize.x;
-            bool isOverlappingY = Mathf.Abs(center.y - attackBoxCenter.y) < halfSize.y + attackBoxHalfSize.y;
-            return isOverlappingX && isOverlappingY;
+            float overlapX = halfSize.x + attackBoxHalfSize.x - Mathf.Abs(center.x - attackBoxCenter.x);
+            float overlapY = halfSize.y + attackBoxHalfSize.y - Mathf.Abs(center.y - attackBoxCenter.y);
+            if (overlapX <= 0f || overlapY <= 0f) return 0f;
+
+            // 한쪽 상자가 다른 쪽 안에 들어가 있으면 작은 쪽 크기까지만 겹침
+            overlapX = Mathf.Min(overlapX, halfSize.x * 2f, attackBoxHalfSize.x * 2f);
+            overlapY = Mathf.Min(overlapY, halfSize.y * 2f, attackBoxHalfSize.y * 2f);
+            return overlapX * overlapY;
         }
 
         /// <summary>피격 상자를 캐릭터 기준 월드 단위 위치 / 크기로 맞춤 (공격 모션에 따라 바뀌는 상자에 사용)</summary>

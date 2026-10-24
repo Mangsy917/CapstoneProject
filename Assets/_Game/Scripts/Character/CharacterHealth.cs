@@ -5,15 +5,16 @@ using UnityEngine;
 namespace Game.Character
 {
     // 캐릭터(Player, Enemy)에 붙여서 사용하는 체력
-    // - 공격(CharacterAttack)이나 투사체(Projectile)에 맞으면 TakeDamage로 줄어듦 (0 아래로는 내려가지 않음)
+    // - 공격(CharacterAttack)이나 투사체(Projectile)에 맞으면 TakeDamage로 바로 줄어듦 (0 아래로는 내려가지 않음)
     // - 설정창(파라미터 탭)의 체력 % / 체력 방식을 따름 (HealthSetting이 태그별로 넣어줌)
     //   자동 회복: 맞은 뒤 한동안 맞지 않으면 설정한 체력까지 회복. 체력이 1 아래로 내려가지 않음 (KO 없음)
     //   항상 고정: 맞아도 줄어들지 않음
     //   일반: 맞은 만큼 계속 줄어듦
     // - 연습 재시작(PracticeRestart) 때 ResetHealth로 설정한 체력이 됨
-    // - 때린 공격(CharacterAttack)이 끝날 때까지는 데미지가 "확정되지 않은" 상태 (IsDamageSettled)
-    //   체력바는 그동안 깎인 만큼을 반투명 막대로 남겨 두고, 확정되면 줄임
-    // - 피격 모션은 아직 없음 (체력이 0이 됐을 때의 KO는 KnockOutSequence가 처리)
+    // - 피격 경직(CharacterHitReaction)이 끝날 때까지는 데미지가 "확정되지 않은" 상태 (IsDamageSettled, 콤보 중)
+    //   체력바(HealthBar)는 그동안 깎인 만큼을 반투명 막대로 남겨 두고, 경직이 풀리면(콤보 끝) 반투명 막대를 줄임
+    //   CharacterHitReaction이 없으면 때린 공격(CharacterAttack)이 끝날 때 확정
+    // - 체력이 0이 됐을 때의 KO는 KnockOutSequence가 처리
     public class CharacterHealth : MonoBehaviour
     {
         // 설정창 체력 방식 스테퍼의 선택지 순서와 같음 (자동 회복, 항상 고정, 일반)
@@ -48,16 +49,17 @@ namespace Game.Character
         public HealthMode Mode => _healthMode;
 
         /// <summary>
-        /// 마지막으로 받은 데미지가 확정됐는지 (때린 공격이 회수, 착지 경직까지 끝남)
-        /// 피격 경직이 생기면 그 경직이 끝날 때도 함께 봐야 함
+        /// 마지막으로 받은 데미지가 확정됐는지 (콤보가 끝남)
+        /// 피격 경직이 끝났는지로 정하고, CharacterHitReaction이 없으면 때린 공격이 회수, 착지 경직까지 끝났는지로 정함
         /// </summary>
-        public bool IsDamageSettled => _lastAttacker == null || !_lastAttacker.IsAttacking;
+        public bool IsDamageSettled => _hitReaction != null ? !_hitReaction.IsInHitStun : _lastAttacker == null || !_lastAttacker.IsAttacking;
 
         /// <summary>체력이 바뀌었을 때 (체력바 등에서 구독)</summary>
         public event Action<CharacterHealth> OnHealthChanged;
 
         private int _framesSinceDamage;
         private CharacterAttack _lastAttacker; // 마지막으로 데미지를 준 공격 (투사체면 쏜 캐릭터의 공격)
+        private CharacterHitReaction _hitReaction; // 피격 경직이 끝나면 콤보가 끝난 것으로 봄 (없으면 때린 공격 기준)
 
         // Domain Reload를 꺼둔 상태로 플레이해도 이전 설정이 남지 않도록 초기화
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
@@ -81,6 +83,7 @@ namespace Game.Character
         {
             StartHealth = _maxHealth;
             CurrentHealth = _maxHealth;
+            _hitReaction = GetComponent<CharacterHitReaction>();
         }
 
         private void Start()
@@ -97,7 +100,7 @@ namespace Game.Character
             // 체력이 0이면 KO 연출 중이므로 회복하지 않음
             if (CurrentHealth <= 0 || CurrentHealth >= StartHealth) return;
 
-            // 때린 공격이 끝나서 데미지가 확정된 뒤부터 회복 대기 프레임을 셈
+            // 피격 경직이 풀려서 데미지가 확정된 뒤부터 회복 대기 프레임을 셈
             if (!IsDamageSettled) return;
 
             _framesSinceDamage++;
@@ -118,13 +121,16 @@ namespace Game.Character
             OnHealthChanged?.Invoke(this);
         }
 
-        /// <summary>attacker: 데미지를 준 공격 (그 공격이 끝날 때 데미지가 확정됨). 없으면 바로 확정</summary>
+        /// <summary>attacker: 데미지를 준 공격 (피격 경직이 없는 캐릭터는 그 공격이 끝날 때 데미지가 확정됨)</summary>
         public void TakeDamage(int damage, CharacterAttack attacker = null)
         {
             if (damage <= 0 || CurrentHealth <= 0) return;
 
             _framesSinceDamage = 0;
             _lastAttacker = attacker;
+            // 판정 표시(단일 데미지)에는 체력 방식과 상관없이 기술의 데미지를 그대로 알려줌
+            if (attacker != null) attacker.NotifyDamageDealt(damage);
+
             if (_healthMode == HealthMode.Fixed)
             {
                 Debug.Log($"[Health] {name} {damage} 데미지 (항상 고정이라 체력 그대로 {CurrentHealth} / {_maxHealth})");

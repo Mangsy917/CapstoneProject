@@ -21,6 +21,17 @@ namespace Game.Character
         Low = 1 << 2
     }
 
+    // 맞은 쪽이 재생할 피격 모션
+    public enum HitMotion
+    {
+        Auto,    // 자동: 상단 공격은 Middle, 중단 공격은 Top2Low, 하단 공격은 맞은 피격 상자(Top / Middle / Bottom)에 따라 정함
+        Top,     // 상단 피격 (TopHit)
+        Middle,  // 중단 피격 (MiddleHit)
+        Low,     // 하단 피격 (LowHit)
+        Top2Low, // 위에서 아래로 맞음 (Top2LowHit)
+        Low2Top  // 아래에서 위로 올려 맞음 (Low2TopHit, 승룡권 등)
+    }
+
     // 공격하는 동안 플레이어가 가지는 특성
     public enum AttackTrait
     {
@@ -195,7 +206,19 @@ namespace Game.Character
             [Tooltip("이 버튼으로 나갔을 때 공격 시작부터 이 프레임까지 완전 무적 (피격 상자가 모두 꺼짐). 0이면 무적 없음.\n예) 8이면 1~8프레임 무적")]
             [SerializeField] private int _invincibleFrames = 0;
 
+            [Tooltip("체크하면 이 버튼으로 나갔을 때 아래의 히트 / 가드 시 유리 프레임을 씀 (끄면 기술의 기본 값)")]
+            [SerializeField] private bool _shouldOverrideAdvantage = false;
+
+            [Tooltip("이 버튼으로 나갔을 때의 히트 시 유리 프레임 (위키의 Hit 값)")]
+            [SerializeField] private int _hitAdvantage = 0;
+
+            [Tooltip("이 버튼으로 나갔을 때의 가드 시 유리 프레임 (위키의 Block 값)")]
+            [SerializeField] private int _blockAdvantage = 0;
+
             public CharacterCommand.AttackButtonType Button => _button;
+            public bool ShouldOverrideAdvantage => _shouldOverrideAdvantage;
+            public int HitAdvantage => _hitAdvantage;
+            public int BlockAdvantage => _blockAdvantage;
             public AttackFrames Frames => new AttackFrames(_startupFrames, _activeFrames, _recoveryFrames);
             public int Damage => AD_damage;
             public float ProjectileDistancePerFrame => _projectileDistancePerFrame;
@@ -235,6 +258,29 @@ namespace Game.Character
 
         [Tooltip("지속 프레임 구간마다 다른 공격 상자 (공격 동작에 따라 상자가 움직이는 기술).\n비워두면 위의 공격 상자 하나를 지속 내내 씀 (버튼별 공격 상자보다 먼저 적용)")]
         [SerializeField] private AttackBoxWindow[] _attackBoxWindows = new AttackBoxWindow[0];
+
+        [Header("히트")]
+        [Tooltip("히트 시 유리 프레임 (위키의 Hit 값). 지속 첫 프레임(장풍은 투사체가 나오는 프레임)에 맞았을 때 기준이며,\n피격 경직 = 그때 남은 공격 프레임 + 이 값 (늦게 맞혀도 경직은 같아서 그만큼 더 유리해짐)")]
+        [SerializeField] private int _hitAdvantage = 3;
+
+        [Tooltip("맞은 상대가 뒤로 밀려나는 거리 (월드 단위). 상대가 벽에 붙어 있으면 대신 때린 쪽이 밀려남 (장풍은 제외)")]
+        [SerializeField] private float _hitBackDistance = 0.5f;
+
+        [Tooltip("히트백으로 밀려나는 데 걸리는 프레임 수")]
+        [SerializeField] private int _hitBackFrames = 8;
+
+        [Tooltip("맞은 쪽이 재생할 피격 모션. 자동이면 상단 공격은 MiddleHit, 중단 공격은 Top2Low, 하단 공격은 맞은 피격 상자 위치에 따라 정함")]
+        [SerializeField] private HitMotion _hitMotion = HitMotion.Auto;
+
+        [Header("가드")]
+        [Tooltip("가드 시 유리 프레임 (위키의 Block 값, 보통 음수). 히트 시 유리 프레임과 같은 기준으로 가드 경직을 정함")]
+        [SerializeField] private int _blockAdvantage = -2;
+
+        [Tooltip("가드한 상대가 뒤로 밀려나는 거리 (월드 단위). 상대가 벽에 붙어 있으면 대신 때린 쪽이 밀려남 (장풍은 제외)")]
+        [SerializeField] private float _guardBackDistance = 0.4f;
+
+        [Tooltip("가드백으로 밀려나는 데 걸리는 프레임 수")]
+        [SerializeField] private int _guardBackFrames = 8;
 
         [Header("공격 중 피격 상자")]
         [Tooltip("체크하면 공격하는 동안 Top 피격 상자를 끔 (앉아서 쓰는 공격 등)")]
@@ -309,6 +355,49 @@ namespace Game.Character
         public Vector2 ProjectileSpawnOffset => _projectileSpawnOffset;
         public AttackHeight Height => _height;
         public TraitWindow[] TraitWindows => _traitWindows;
+        public int HitAdvantage => _hitAdvantage;
+        public float HitBackDistance => _hitBackDistance;
+        public int HitBackFrames => _hitBackFrames;
+        public HitMotion HitMotion => _hitMotion;
+        public int BlockAdvantage => _blockAdvantage;
+        public float GuardBackDistance => _guardBackDistance;
+        public int GuardBackFrames => _guardBackFrames;
+
+        /// <summary>이 버튼으로 나갔을 때 맞은 상대의 피격 경직 프레임 수 (히트 시 유리 프레임 기준, 버튼별 값이 있으면 그 값)</summary>
+        public int GetHitStunFrames(CharacterCommand.AttackButtonType button)
+        {
+            ButtonFrames buttonFrames = FindButtonFrames(button);
+            int advantage = buttonFrames != null && buttonFrames.ShouldOverrideAdvantage ? buttonFrames.HitAdvantage : _hitAdvantage;
+            return GetStunFrames(button, advantage);
+        }
+
+        /// <summary>이 버튼으로 나갔을 때 가드한 상대의 가드 경직 프레임 수 (가드 시 유리 프레임 기준, 버튼별 값이 있으면 그 값)</summary>
+        public int GetBlockStunFrames(CharacterCommand.AttackButtonType button)
+        {
+            ButtonFrames buttonFrames = FindButtonFrames(button);
+            int advantage = buttonFrames != null && buttonFrames.ShouldOverrideAdvantage ? buttonFrames.BlockAdvantage : _blockAdvantage;
+            return GetStunFrames(button, advantage);
+        }
+
+        // 지속 첫 프레임(투사체 공격이면 투사체가 가장 빨리 맞힐 수 있는 프레임)에 맞았을 때 "남은 공격 프레임 + 유리 프레임"이 되는 경직 프레임 수
+        // - 공격은 전체 프레임이 지난 다음 프레임에 끝나서(CharacterAttack) 그 프레임까지 움직일 수 없으므로 1프레임을 더함
+        // - 착지 경직이 있는 공격(승룡권, 점프 공격)은 위키 값이 착지 경직까지 포함한 값이므로 착지 경직도 더함
+        // - 투사체는 나온 다음 프레임부터 날아가며 맞히므로, 바로 앞에서 맞으면 나온 프레임 + 1에 맞음 (위키 값은 바로 앞 기준)
+        private int GetStunFrames(CharacterCommand.AttackButtonType button, int advantage)
+        {
+            AttackFrames frames = GetFrames(button);
+            int hitFrame = _projectilePrefab != null ? GetProjectileSpawnFrame(frames) + 1 : frames.FirstActiveFrame;
+            return Mathf.Max(1, frames.TotalFrames - hitFrame + 1 + _landingRecoveryFrames + advantage);
+        }
+
+        /// <summary>이 버튼으로 나간 공격이 맞았을 때(또는 가드됐을 때) 상대에게 줄 정보</summary>
+        public HitInfo GetHitInfo(CharacterCommand.AttackButtonType button)
+        {
+            return new HitInfo(
+                hitStunFrames: GetHitStunFrames(button), hitBackDistance: _hitBackDistance, hitBackFrames: _hitBackFrames,
+                blockStunFrames: GetBlockStunFrames(button), guardBackDistance: _guardBackDistance, guardBackFrames: _guardBackFrames,
+                height: _height, motion: _hitMotion, isThrow: HasTrait(AttackTrait.Throw));
+        }
 
         // 버튼별 프레임 목록에 없을 때 쓰는 기본 프레임
         public AttackFrames DefaultFrames => new AttackFrames(_startupFrames, _activeFrames, _recoveryFrames);
@@ -430,6 +519,10 @@ namespace Game.Character
             if (AD_damage < 0) AD_damage = 0;
             if (AD_attackBoxSize.x < 0f) AD_attackBoxSize.x = 0f;
             if (AD_attackBoxSize.y < 0f) AD_attackBoxSize.y = 0f;
+            if (_hitBackDistance < 0f) _hitBackDistance = 0f;
+            if (_hitBackFrames < 1) _hitBackFrames = 1;
+            if (_guardBackDistance < 0f) _guardBackDistance = 0f;
+            if (_guardBackFrames < 1) _guardBackFrames = 1;
 
             if (_extraHitboxes != null)
             {

@@ -33,6 +33,7 @@ namespace Game.Character
         private GameObject _owner;
         private string _targetTag = "Enemy";
         private int P_damage; // 맞혔을 때 줄 데미지 (쏜 공격의 AttackData 값)
+        private HitInfo _hitInfo; // 맞혔을 때 줄 피격 경직 / 히트백 / 피격 모션 (쏜 공격의 AttackData 값)
 
         /// <summary>owner가 쏜 투사체가 아직 남아 있는지</summary>
         public static bool HasActiveProjectile(GameObject owner)
@@ -60,12 +61,13 @@ namespace Game.Character
         }
 
         /// <summary>distancePerFrame: 1프레임에 날아가는 거리 (0이면 프리팹의 값)</summary>
-        public void Launch(bool isFacingRight, GameObject owner, string targetTag, int damage, float distancePerFrame = 0f)
+        public void Launch(bool isFacingRight, GameObject owner, string targetTag, int damage, HitInfo hitInfo, float distancePerFrame = 0f)
         {
             P_direction = isFacingRight ? 1f : -1f;
             _owner = owner;
             _targetTag = targetTag;
             P_damage = damage;
+            _hitInfo = hitInfo;
             if (distancePerFrame > 0f) _distancePerFrame = distancePerFrame;
             if (P_spriteRenderer != null) P_spriteRenderer.flipX = !isFacingRight;
         }
@@ -77,11 +79,12 @@ namespace Game.Character
 
             transform.position += new Vector3(P_direction * _distancePerFrame, 0f, 0f);
 
-            GameObject hitTarget = FindHitTarget();
+            GameObject hitTarget = FindHitTarget(out Hitbox hitbox);
             if (hitTarget != null)
             {
-                var health = hitTarget.GetComponent<CharacterHealth>();
-                if (health != null) health.TakeDamage(P_damage, attacker: _owner != null ? _owner.GetComponent<CharacterAttack>() : null);
+                // 장풍은 상대가 벽에 붙어 있어도 쏜 쪽을 밀어내지 않음
+                CharacterAttack attacker = _owner != null ? _owner.GetComponent<CharacterAttack>() : null;
+                CharacterHitReaction.HitTarget(hitTarget, P_damage, _hitInfo, hitbox, direction: P_direction, attacker: attacker, shouldPushAttacker: false);
                 DestroyProjectile();
             }
             else if (IsOutOfScreen())
@@ -111,8 +114,10 @@ namespace Game.Character
 
         // 맞힐 태그의 캐릭터 중 공격 판정 상자와 겹치는 캐릭터 (없으면 null)
         // 상대의 피격 상자(Hitbox)로 판정하고, 피격 상자가 없으면 Pushbox, 그것도 없으면 Collider 범위로 판정
-        private GameObject FindHitTarget()
+        // hitbox: 맞은 피격 상자 (피격 상자 없이 판정했으면 null)
+        private GameObject FindHitTarget(out Hitbox hitbox)
         {
+            hitbox = null;
             Vector2 center = (Vector2)transform.position + new Vector2(P_attackBoxOffset.x * P_direction, P_attackBoxOffset.y);
             Vector2 halfSize = new Vector2(Mathf.Abs(P_attackBoxSize.x), Mathf.Abs(P_attackBoxSize.y)) * 0.5f;
 
@@ -122,7 +127,8 @@ namespace Game.Character
 
                 if (Hitbox.HasHitbox(target))
                 {
-                    if (Hitbox.IsHitting(target, center, P_attackBoxSize)) return target;
+                    hitbox = Hitbox.FindHitHitbox(target, center, P_attackBoxSize);
+                    if (hitbox != null) return target;
                     continue;
                 }
 

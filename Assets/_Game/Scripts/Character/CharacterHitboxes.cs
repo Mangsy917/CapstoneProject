@@ -26,6 +26,9 @@ namespace Game.Character
         [Tooltip("공격 모션을 알려줄 CharacterAttack. 비워두면 같은 오브젝트에서 찾음 (없으면 공격 피격 상자 없음)")]
         [SerializeField] private CharacterAttack CH_characterAttack;
 
+        [Tooltip("더미의 앉기 상태를 알려줄 DummyAction. 비워두면 같은 오브젝트에서 찾음 (없어도 됨)")]
+        [SerializeField] private DummyAction CH_dummyAction;
+
         // 공격 모션에 따라 켜고 끄는 피격 상자 (필요한 만큼 만들어 두고 다시 씀)
         private readonly List<Hitbox> _extraHitboxPool = new List<Hitbox>();
 
@@ -33,6 +36,7 @@ namespace Game.Character
         {
             if (CH_characterMove == null) CH_characterMove = GetComponent<CharacterMove>();
             if (CH_characterAttack == null) CH_characterAttack = GetComponent<CharacterAttack>();
+            if (CH_dummyAction == null) CH_dummyAction = GetComponent<DummyAction>();
             if (_extraHitboxParent == null && _topHitbox != null) _extraHitboxParent = _topHitbox.transform.parent;
             if (_extraHitboxParent == null) _extraHitboxParent = transform;
         }
@@ -47,7 +51,7 @@ namespace Game.Character
             // 완전 무적인 동안(예: EX 승룡권 1~8프레임)은 피격 상자를 모두 끔
             bool isInvincible = attack != null && CH_characterAttack.IsInvincible;
 
-            bool isCrouching = CH_characterMove != null && CH_characterMove.IsCrouching;
+            bool isCrouching = (CH_characterMove != null && CH_characterMove.IsCrouching) || (CH_dummyAction != null && CH_dummyAction.DA_IsCrouching);
             bool shouldHideTop = isCrouching || (attack != null && attack.ShouldHideTopHitbox);
             if (_topHitbox != null) _topHitbox.gameObject.SetActive(!shouldHideTop && !isInvincible);
             if (_middleHitbox != null) _middleHitbox.gameObject.SetActive(!isInvincible);
@@ -72,6 +76,36 @@ namespace Game.Character
             {
                 _extraHitboxPool[i].gameObject.SetActive(false);
             }
+        }
+
+        /// <summary>
+        /// 이 피격 상자에 맞았을 때의 피격 모션 (Top → 상단, Middle → 중단, Bottom → 하단)
+        /// 공격 모션으로 더 생긴 피격 상자는 높이가 가장 가까운 평소 피격 상자를 따름
+        /// </summary>
+        public HitMotion GetMotionByHitbox(Hitbox hitbox)
+        {
+            if (hitbox == null) return HitMotion.Middle;
+            if (hitbox == _topHitbox) return HitMotion.Top;
+            if (hitbox == _middleHitbox) return HitMotion.Middle;
+            if (hitbox == _bottomHitbox) return HitMotion.Low;
+
+            float y = hitbox.WorldCenter.y;
+            HitMotion closestMotion = HitMotion.Middle;
+            float closestDistance = float.MaxValue;
+            CheckCloser(_topHitbox, HitMotion.Top, y, ref closestMotion, ref closestDistance);
+            CheckCloser(_middleHitbox, HitMotion.Middle, y, ref closestMotion, ref closestDistance);
+            CheckCloser(_bottomHitbox, HitMotion.Low, y, ref closestMotion, ref closestDistance);
+            return closestMotion;
+        }
+
+        private static void CheckCloser(Hitbox hitbox, HitMotion motion, float y, ref HitMotion closestMotion, ref float closestDistance)
+        {
+            if (hitbox == null) return;
+
+            float distance = Mathf.Abs(hitbox.WorldCenter.y - y);
+            if (distance >= closestDistance) return;
+            closestDistance = distance;
+            closestMotion = motion;
         }
 
         // 지금 피격 상자를 바꿔야 하는 공격 (착지 경직 중에는 평소 피격 상자)

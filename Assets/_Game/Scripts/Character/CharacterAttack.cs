@@ -23,11 +23,14 @@ namespace Game.Character
         [Tooltip("커맨드 성공을 받아올 CharacterCommand. 비워두면 같은 오브젝트에서 찾음")]
         [SerializeField] private CharacterCommand _characterCommand;
 
-        [Tooltip("공격 중 상단/중단/하단/잡기 값을 넣을 CharactorState. 비워두면 같은 오브젝트에서 찾음")]
+        [Tooltip("공격 중 상단/중단/하단, 장풍/잡기/슈퍼아머 값과 준 데미지를 넣을 CharactorState. 비워두면 같은 오브젝트에서 찾음")]
         [SerializeField] private CharactorState CA_characterState;
 
         [Tooltip("바라보는 방향, 땅/공중 상태를 알려줄 CharacterMove. 비워두면 같은 오브젝트에서 찾음")]
         [SerializeField] private CharacterMove CA_characterMove;
+
+        [Tooltip("피격 / 가드 경직 중에는 공격하지 않도록 확인할 CharacterHitReaction. 비워두면 같은 오브젝트에서 찾음")]
+        [SerializeField] private CharacterHitReaction CA_hitReaction;
 
         [Tooltip("투사체가 맞힐 상대의 태그 (Player에는 Enemy)")]
         [SerializeField] private string CA_opponentTag = "Enemy";
@@ -76,6 +79,7 @@ namespace Game.Character
             if (_characterCommand == null) _characterCommand = GetComponent<CharacterCommand>();
             if (CA_characterState == null) CA_characterState = GetComponent<CharactorState>();
             if (CA_characterMove == null) CA_characterMove = GetComponent<CharacterMove>();
+            if (CA_hitReaction == null) CA_hitReaction = GetComponent<CharacterHitReaction>();
 
             if (_characterCommand == null)
                 Debug.LogError("[CharacterAttack] CharacterCommand를 찾을 수 없습니다. Character Command 칸에 지정해 주세요.", this);
@@ -179,7 +183,7 @@ namespace Game.Character
             Vector3 position = transform.position + new Vector3(isFacingRight ? offset.x : -offset.x, offset.y, 0f);
 
             Projectile projectile = Instantiate(attack.ProjectilePrefab, position, Quaternion.identity);
-            projectile.Launch(isFacingRight, owner: gameObject, targetTag: CA_opponentTag, damage: attack.GetDamage(_currentButton), distancePerFrame: attack.GetProjectileDistancePerFrame(_currentButton));
+            projectile.Launch(isFacingRight, owner: gameObject, targetTag: CA_opponentTag, damage: attack.GetDamage(_currentButton), hitInfo: attack.GetHitInfo(_currentButton), distancePerFrame: attack.GetProjectileDistancePerFrame(_currentButton));
         }
 
         // 이번 프레임의 공격 상자와 겹치는 상대(피격 상자)가 있으면 데미지를 줌 (공격 상자가 없는 프레임이면 아무것도 안 함)
@@ -192,11 +196,12 @@ namespace Game.Character
 
             foreach (GameObject opponent in GameObject.FindGameObjectsWithTag(CA_opponentTag))
             {
-                if (opponent == gameObject || !Hitbox.IsHitting(opponent, attackBoxCenter, size)) continue;
+                if (opponent == gameObject) continue;
+                Hitbox hitbox = Hitbox.FindHitHitbox(opponent, attackBoxCenter, size);
+                if (hitbox == null) continue;
 
                 _hasHit = true;
-                var health = opponent.GetComponent<CharacterHealth>();
-                if (health != null) health.TakeDamage(attack.GetDamage(_currentButton), attacker: this);
+                CharacterHitReaction.HitTarget(opponent, attack.GetDamage(_currentButton), attack.GetHitInfo(_currentButton), hitbox, direction: facingSign, attacker: this, shouldPushAttacker: true);
                 return;
             }
         }
@@ -211,10 +216,11 @@ namespace Game.Character
             Gizmos.DrawWireCube(transform.position + new Vector3(offset.x * facingSign, offset.y, 0f), new Vector3(size.x, size.y, 0.1f));
         }
 
-        // 공격 중에 들어온 커맨드는 무시함 (캔슬은 아직 없음)
+        // 공격 중이나 피격 / 가드 경직 중에 들어온 커맨드는 무시함 (캔슬은 아직 없음)
         private void HandleCommandTriggered(CharacterCommand.CommandData command, CharacterCommand.AttackButtonType button)
         {
             if (command.attack == null || IsAttacking || !CanUseCommand(command)) return;
+            if (CA_hitReaction != null && CA_hitReaction.IsInStun) return;
             StartAttack(command.attack, button);
         }
 
@@ -264,6 +270,7 @@ namespace Game.Character
             AttackFrame = 0;
             _landingFrame = 0;
             SetPhase(AttackPhase.None);
+            if (CA_characterState != null) CA_characterState.ClearAttack();
             OnAttackEnded?.Invoke(endedAttack);
         }
 
@@ -281,16 +288,17 @@ namespace Game.Character
             OnPhaseChanged?.Invoke(phase);
         }
 
-        // 잡기 특성이 있으면 잡기, 없으면 판정 높이를 CharactorState에 넣음
+        // 이 공격의 판정 높이와 특성(장풍, 잡기, 슈퍼아머)을 CharactorState에 넣음 (공격이 끝나면 EndAttack에서 지움)
+        // 잡기는 판정 높이가 없음. 장풍은 투사체를 쏘는 공격이거나 장풍 특성이 있는 공격
         private void ApplyCharacterState(AttackData attack)
         {
             if (CA_characterState == null) return;
 
-            if (attack.HasTrait(AttackTrait.Throw))
-            {
-                CA_characterState.Grap = true;
-                return;
-            }
+            CA_characterState.ClearAttack();
+            CA_characterState.Grap = attack.HasTrait(AttackTrait.Throw);
+            CA_characterState.Projectile = attack.ProjectilePrefab != null || attack.HasTrait(AttackTrait.Projectile);
+            CA_characterState.SuperArmor = attack.HasTrait(AttackTrait.SuperArmor);
+            if (CA_characterState.Grap) return;
 
             switch (attack.Height)
             {
@@ -303,6 +311,12 @@ namespace Game.Character
         // =====================================================================
         // 다른 스크립트(피격 판정 등)에서 쓰는 기능
         // =====================================================================
+
+        /// <summary>이 캐릭터의 공격(투사체 포함)이 상대에게 damage를 줬을 때 CharacterHealth에서 호출 (단일 데미지 기록)</summary>
+        public void NotifyDamageDealt(int damage)
+        {
+            if (CA_characterState != null) CA_characterState.SetDealtDamage(damage);
+        }
 
         /// <summary>지금 프레임에 이 특성이 켜져 있는지 (예: HasTrait(AttackTrait.Invincible))</summary>
         public bool HasTrait(AttackTrait trait)
