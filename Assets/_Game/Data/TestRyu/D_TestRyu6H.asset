@@ -14,10 +14,28 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Game.Character.AttackData
   _attackName: 6H
   _height: 0
-  _startupFrames: 10
-  _activeFrames: 4
-  _recoveryFrames: 18
+  AD_damage: 800
+  AD_attackBoxSize: {x: 0.909, y: 0.67}
+  AD_attackBoxOffset: {x: 0.738, y: 0.12}
+  _shouldHideTopHitbox: 0
+  _extraHitboxes:
+  - AD_size: {x: 0.43, y: 1.81}
+    AD_offset: {x: 0.67, y: -0.194}
+    _framesBeforeActive: 2
+    _framesAfterActive: 16
+  _startupFrames: 20
+  _activeFrames: 5
+  _recoveryFrames: 16
+  _buttonFrames: []
   _traitWindows: []
+  _launchFrame: 0
+  _shouldLaunchAtStartup: 0
+  _launchForwardDistance: 1.44
+  _launchHeight: 1.62
+  _launchAirFrames: 43
+  _holdUntilLanding: 0
+  _landingRecoveryFrames: 0
+  _landingAnimationState: 
   _animationState: 6H
   _projectilePrefab: {fileID: 0}
   _projectileSpawnFrame: 1

@@ -1,5 +1,72 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
+--- !u!1 &3088266229916702833
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 952569170195906357}
+  - component: {fileID: 8278007310594947959}
+  - component: {fileID: 56702592480796622}
+  m_Layer: 0
+  m_Name: Middle
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &952569170195906357
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3088266229916702833}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0.038, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 7631513416257052521}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!65 &8278007310594947959
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3088266229916702833}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 0.216, y: 0.224, z: 0.2}
+  m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &56702592480796622
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3088266229916702833}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8fb4642951dd64b4ab3aac92e93f4a8c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Game.Character.Hurtbox
+  H_boxCollider: {fileID: 0}
 --- !u!1 &6229760466325215817
 GameObject:
   m_ObjectHideFlags: 0
@@ -17,6 +84,8 @@ GameObject:
   - component: {fileID: 3575480618678724799}
   - component: {fileID: 6369145166792181835}
   - component: {fileID: 8184242940864822602}
+  - component: {fileID: 310963493456043429}
+  - component: {fileID: 5677842601570313754}
   m_Layer: 0
   m_Name: Player
   m_TagString: Player
@@ -36,7 +105,8 @@ Transform:
   m_LocalPosition: {x: 0, y: 1.5, z: 0}
   m_LocalScale: {x: 5, y: 5, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 7631513416257052521}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!212 &6599023262818102744
@@ -144,8 +214,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.2, y: 0.4, z: 0.2}
-  m_Center: {x: 0, y: 0, z: 0}
+  m_Size: {x: 0.178, y: 0.34600002, z: 0.2}
+  m_Center: {x: 0, y: -0.047, z: 0}
 --- !u!114 &8474504283348405242
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -163,20 +233,20 @@ MonoBehaviour:
   characterAttack: {fileID: 8184242940864822602}
   playerTag: Player
   enemyTag: Enemy
-  forwardWalkSpeed: 3
-  backWalkSpeed: 2
-  jumpVelocity: 15
-  forwardJumpSpeed: 4
-  backJumpSpeed: 4
-  gravity: 25
+  forwardWalkDistancePerFrame: 0.05
+  backWalkDistancePerFrame: 0.033333335
+  jumpHeight: 4.5
+  jumpAirFrames: 38
+  forwardJumpDistance: 2.5
+  backJumpDistance: 2.5
   jumpDirectionBufferFrames: 4
   dashInputWindowFrames: 20
-  forwardDashSpeed: 7
-  forwardDashDuration: 0.2
-  backDashSpeed: 6
-  backDashDuration: 0.25
-  runSpeedMultiplier: 1.5
-  runStopDelayAfterOverlap: 1
+  forwardDashDistance: 1.2
+  forwardDashFrames: 19
+  backDashDistance: 1
+  backDashFrames: 23
+  runDistancePerFrame: 0.075
+  runStopFramesAfterOverlap: 60
   overlapDistance: 1
   useStartYAsGround: 1
   groundY: 0
@@ -248,170 +318,187 @@ MonoBehaviour:
   CC_commandList:
   - commandName: "\uC804\uC778\uD30C\uB3D9\uAD8C"
     directionSequence: 020000000300000006000000020000000300000006000000
+    holdDirections: 
+    usableState: 0
     buttons: 15
     requireAllButtons: 0
     comboWindowFrames: 2
-    requireNeutralDirection: 0
     windowFrames: 5
     stepWindowFrames: 00000000000000000c000000000000000000000000000000
     priority: 20
     attack: {fileID: 0}
   - commandName: "\uC804\uC778\uD30C\uC7A5\uACA9"
     directionSequence: 020000000100000004000000020000000100000004000000
+    holdDirections: 
+    usableState: 0
     buttons: 15
     requireAllButtons: 0
     comboWindowFrames: 2
-    requireNeutralDirection: 0
     windowFrames: 5
     stepWindowFrames: 00000000000000000c000000000000000000000000000000
     priority: 20
     attack: {fileID: 0}
   - commandName: "\uC57D\uC2B9\uB8E1\uAD8C"
     directionSequence: 060000000200000003000000
+    holdDirections: 
+    usableState: 0
     buttons: 1
     requireAllButtons: 0
     comboWindowFrames: 2
-    requireNeutralDirection: 0
     windowFrames: 4
     stepWindowFrames: 0a0000000800000008000000
     priority: 10
     attack: {fileID: 0}
   - commandName: "\uC911\uC2B9\uB8E1\uAD8C"
     directionSequence: 060000000200000003000000
+    holdDirections: 
+    usableState: 0
     buttons: 2
     requireAllButtons: 0
     comboWindowFrames: 2
-    requireNeutralDirection: 0
     windowFrames: 4
     stepWindowFrames: 0a0000000800000008000000
     priority: 10
     attack: {fileID: 0}
   - commandName: "\uAC15\uC2B9\uB8E1\uAD8C"
     directionSequence: 060000000200000003000000
+    holdDirections: 
+    usableState: 0
     buttons: 4
     requireAllButtons: 0
     comboWindowFrames: 2
-    requireNeutralDirection: 0
     windowFrames: 5
     stepWindowFrames: 0a0000000800000008000000
     priority: 10
     attack: {fileID: 0}
   - commandName: "EX\uC2B9\uB8E1\uAD8C"
     directionSequence: 060000000200000003000000
+    holdDirections: 
+    usableState: 0
     buttons: 8
     requireAllButtons: 0
     comboWindowFrames: 2
-    requireNeutralDirection: 0
     windowFrames: 5
     stepWindowFrames: 0a0000000800000008000000
     priority: 10
     attack: {fileID: 0}
   - commandName: "\uC57D\uD30C\uB3D9\uAD8C"
     directionSequence: 020000000300000006000000
+    holdDirections: 
+    usableState: 0
     buttons: 1
     requireAllButtons: 0
     comboWindowFrames: 2
-    requireNeutralDirection: 0
     windowFrames: 5
     stepWindowFrames: 
     priority: 0
     attack: {fileID: 0}
   - commandName: "\uC911\uD30C\uB3D9\uAD8C"
     directionSequence: 020000000300000006000000
+    holdDirections: 
+    usableState: 0
     buttons: 2
     requireAllButtons: 0
     comboWindowFrames: 2
-    requireNeutralDirection: 0
     windowFrames: 5
     stepWindowFrames: 
     priority: 0
     attack: {fileID: 0}
   - commandName: "\uAC15\uD30C\uB3D9\uAD8C"
     directionSequence: 020000000300000006000000
+    holdDirections: 
+    usableState: 0
     buttons: 4
     requireAllButtons: 0
     comboWindowFrames: 2
-    requireNeutralDirection: 0
     windowFrames: 5
     stepWindowFrames: 
     priority: 0
     attack: {fileID: 0}
   - commandName: "EX\uD30C\uB3D9\uAD8C"
     directionSequence: 020000000300000006000000
+    holdDirections: 
+    usableState: 0
     buttons: 8
     requireAllButtons: 0
     comboWindowFrames: 2
-    requireNeutralDirection: 0
     windowFrames: 5
     stepWindowFrames: 
     priority: 0
     attack: {fileID: 0}
   - commandName: "\uC57D\uD30C\uC7A5\uACA9"
     directionSequence: 020000000100000004000000
+    holdDirections: 
+    usableState: 0
     buttons: 1
     requireAllButtons: 0
     comboWindowFrames: 2
-    requireNeutralDirection: 0
     windowFrames: 5
     stepWindowFrames: 
     priority: 0
     attack: {fileID: 0}
   - commandName: "\uC911\uD30C\uC7A5\uACA9"
     directionSequence: 020000000100000004000000
+    holdDirections: 
+    usableState: 0
     buttons: 2
     requireAllButtons: 0
     comboWindowFrames: 2
-    requireNeutralDirection: 0
     windowFrames: 5
     stepWindowFrames: 
     priority: 0
     attack: {fileID: 0}
   - commandName: "\uAC15\uD30C\uC7A5\uACA9"
     directionSequence: 020000000100000004000000
+    holdDirections: 
+    usableState: 0
     buttons: 4
     requireAllButtons: 0
     comboWindowFrames: 2
-    requireNeutralDirection: 0
     windowFrames: 5
     stepWindowFrames: 
     priority: 0
     attack: {fileID: 0}
   - commandName: "EX\uD30C\uC7A5\uACA9"
     directionSequence: 020000000100000004000000
+    holdDirections: 
+    usableState: 0
     buttons: 8
     requireAllButtons: 0
     comboWindowFrames: 2
-    requireNeutralDirection: 0
     windowFrames: 5
     stepWindowFrames: 
     priority: 0
     attack: {fileID: 0}
   - commandName: "\uC804\uC778\uC2A4\uD0DD"
     directionSequence: 0200000002000000
+    holdDirections: 
+    usableState: 0
     buttons: 15
     requireAllButtons: 0
     comboWindowFrames: 2
-    requireNeutralDirection: 0
     windowFrames: 10
     stepWindowFrames: 
     priority: 5
     attack: {fileID: 0}
   - commandName: "\uC7A1\uAE30"
     directionSequence: 
+    holdDirections: 
+    usableState: 0
     buttons: 3
     requireAllButtons: 1
     comboWindowFrames: 2
-    requireNeutralDirection: 1
     windowFrames: 0
     stepWindowFrames: 
     priority: 5
     attack: {fileID: 0}
   - commandName: "\uB3C4\uBC1C"
     directionSequence: 
+    holdDirections: 
+    usableState: 0
     buttons: 15
     requireAllButtons: 1
     comboWindowFrames: 2
-    requireNeutralDirection: 1
     windowFrames: 0
     stepWindowFrames: 
     priority: 10
@@ -430,3 +517,204 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Game.Character.CharacterAttack
   _characterCommand: {fileID: 6369145166792181835}
   CA_characterState: {fileID: 4803506849746667894}
+  CA_characterMove: {fileID: 0}
+  CA_opponentTag: Enemy
+--- !u!114 &310963493456043429
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6229760466325215817}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 88cffd40d6853094ab3fa1135432c405, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Game.Character.CharacterHealth
+  _maxHealth: 10000
+--- !u!114 &5677842601570313754
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6229760466325215817}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7026ea371f17f9c4c88668caedca5189, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Game.Character.CharacterHitboxes
+  _topHitbox: {fileID: 496425808131054054}
+  _middleHitbox: {fileID: 56702592480796622}
+  _bottomHitbox: {fileID: 1584780527052438796}
+  _extraHitboxParent: {fileID: 7631513416257052521}
+  CH_characterMove: {fileID: 0}
+  CH_characterAttack: {fileID: 0}
+--- !u!1 &7147089888107093491
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 3278417471219444255}
+  - component: {fileID: 7118811477090027453}
+  - component: {fileID: 1584780527052438796}
+  m_Layer: 0
+  m_Name: Bottom
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &3278417471219444255
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7147089888107093491}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: -0.148, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 7631513416257052521}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!65 &7118811477090027453
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7147089888107093491}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 0.216, y: 0.146, z: 0.2}
+  m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &1584780527052438796
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7147089888107093491}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8fb4642951dd64b4ab3aac92e93f4a8c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Game.Character.Hurtbox
+  H_boxCollider: {fileID: 0}
+--- !u!1 &7205266267211184954
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2078367989895779848}
+  - component: {fileID: 4958470272745408058}
+  - component: {fileID: 496425808131054054}
+  m_Layer: 0
+  m_Name: Top
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2078367989895779848
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7205266267211184954}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0.188, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 7631513416257052521}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!65 &4958470272745408058
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7205266267211184954}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 0.216, y: 0.076, z: 0.2}
+  m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &496425808131054054
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7205266267211184954}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8fb4642951dd64b4ab3aac92e93f4a8c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Game.Character.Hurtbox
+  H_boxCollider: {fileID: 0}
+--- !u!1 &8541901902213232165
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 7631513416257052521}
+  m_Layer: 0
+  m_Name: Hitbox
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &7631513416257052521
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8541901902213232165}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 2078367989895779848}
+  - {fileID: 952569170195906357}
+  - {fileID: 3278417471219444255}
+  m_Father: {fileID: 8333046871381767720}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}

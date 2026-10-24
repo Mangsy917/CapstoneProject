@@ -63,39 +63,42 @@ public class CharacterMove : MonoBehaviour
     [SerializeField] private string enemyTag = "Enemy";
 
     [Header("걷기")]
-    [Tooltip("앞으로 걷는 속도")]
-    [SerializeField] private float forwardWalkSpeed = 3f;
-    [Tooltip("뒤로 걷는 속도")]
-    [SerializeField] private float backWalkSpeed = 2.5f;
+    [Tooltip("앞으로 걸을 때 1프레임에 움직이는 거리 (예: 0.05면 60프레임에 3)")]
+    [SerializeField] private float forwardWalkDistancePerFrame = 0.05f;
+    [Tooltip("뒤로 걸을 때 1프레임에 움직이는 거리")]
+    [SerializeField] private float backWalkDistancePerFrame = 2f / 60f;
 
+    // 점프 전체 프레임 = 점프 준비(입력한 프레임 1 + jumpDirectionBufferFrames) + jumpAirFrames
+    // 기본값: 준비 5프레임(1~5, 지상) + 공중 38프레임(6~43) = 43프레임, 44프레임째부터 다시 땅에서 움직임
     [Header("점프")]
-    [Tooltip("점프 시작 시 위로 향하는 속도")]
-    [SerializeField] private float jumpVelocity = 8f;
-    [Tooltip("앞으로 점프할 때 가로 속도")]
-    [SerializeField] private float forwardJumpSpeed = 3f;
-    [Tooltip("뒤로 점프할 때 가로 속도")]
-    [SerializeField] private float backJumpSpeed = 3f;
-    [Tooltip("중력 가속도")]
-    [SerializeField] private float gravity = 25f;
+    [Tooltip("점프의 가장 높은 곳까지의 높이 (바닥 기준)")]
+    [SerializeField] private float jumpHeight = 2.88f;
+    [Tooltip("공중에 떠 있는 프레임 수 (공중 판정을 가지는 프레임). 높이와 상관없이 항상 이 프레임 수만에 착지함")]
+    [SerializeField] private int jumpAirFrames = 38;
+    [Tooltip("앞으로 점프할 때 공중에 있는 동안 가는 전체 가로 거리")]
+    [SerializeField] private float forwardJumpDistance = 1.9f;
+    [Tooltip("뒤로 점프할 때 공중에 있는 동안 가는 전체 가로 거리")]
+    [SerializeField] private float backJumpDistance = 1.9f;
     [Tooltip("점프 입력(7, 8, 9) 후 이 프레임 수까지는 땅에서 방향 입력을 받고, 그다음 프레임에 점프함.\n" +
-             "예) 4면 1~4프레임까지 방향 전환 가능(8→9면 앞 점프), 5프레임째에 마지막 방향으로 점프")]
+             "예) 4면 입력한 프레임 포함 1~5프레임은 지상(2~5프레임까지 방향 전환 가능, 8→9면 앞 점프), 6프레임째부터 공중")]
     [SerializeField] private int jumpDirectionBufferFrames = 4;
 
     [Header("대쉬 / 달리기")]
     [Tooltip("같은 방향을 두 번 누를 때(66, 44), 첫 입력 후 이 프레임 수 이내에 다시 눌러야 대쉬로 인정")]
     [SerializeField] private int dashInputWindowFrames = 12;
-    [Tooltip("앞대쉬 속도 (걷기보다 빠르게)")]
-    [SerializeField] private float forwardDashSpeed = 8f;
-    [Tooltip("앞대쉬 지속 시간(초)")]
-    [SerializeField] private float forwardDashDuration = 0.2f;
-    [Tooltip("백대쉬 속도 (걷기보다 빠르게)")]
-    [SerializeField] private float backDashSpeed = 7f;
-    [Tooltip("백대쉬 지속 시간(초)")]
-    [SerializeField] private float backDashDuration = 0.25f;
-    [Tooltip("달리기 속도 = 앞으로 걷는 속도 × 이 배율")]
-    [SerializeField] private float runSpeedMultiplier = 1.5f;
-    [Tooltip("달리는 중 Enemy와 겹치면, 이 시간(초) 뒤 자동으로 달리기를 멈춤")]
-    [SerializeField] private float runStopDelayAfterOverlap = 1f;
+    // 대쉬를 시작한 프레임(66의 두 번째 6을 누른 프레임)을 1로 세서 이 프레임 수만큼 움직이고, 그다음 프레임부터 다른 동작이 가능
+    [Tooltip("앞대쉬로 움직이는 전체 거리")]
+    [SerializeField] private float forwardDashDistance = 1.2f;
+    [Tooltip("앞대쉬 전체 프레임 수")]
+    [SerializeField] private int forwardDashFrames = 19;
+    [Tooltip("백대쉬로 움직이는 전체 거리 (앞대쉬보다 짧게)")]
+    [SerializeField] private float backDashDistance = 1f;
+    [Tooltip("백대쉬 전체 프레임 수")]
+    [SerializeField] private int backDashFrames = 23;
+    [Tooltip("달리는 동안 1프레임에 움직이는 거리 (예: 0.075면 60프레임에 4.5)")]
+    [SerializeField] private float runDistancePerFrame = 0.075f;
+    [Tooltip("달리는 중 Enemy와 겹치면, 겹친 프레임부터 이 프레임 수 뒤 자동으로 달리기를 멈춤")]
+    [SerializeField] private int runStopFramesAfterOverlap = 60;
     [Tooltip("Collider가 없을 때 사용할 겹침 판정 거리. Player와 Enemy의 x축 거리가 이 값 이하이면 겹친 것으로 봄")]
     [SerializeField] private float overlapDistance = 1f;
 
@@ -135,18 +138,23 @@ public class CharacterMove : MonoBehaviour
     // ===== 이동 내부 상태 =====
     private Transform enemy;
     private float searchTimer;
-    private Vector2 airVelocity; // 점프 중 속도 (x: 가로, y: 세로)
     private bool isJumpStarting;         // 점프 준비 중인지
     private int jumpStartFrame;          // 점프 입력이 처음 들어온 프레임
     private int pendingJumpDirection = 8; // 점프 준비 중 마지막으로 받은 방향 (7, 8, 9)
+
+    // 지금 하고 있는 공중 포물선 (레버 점프, 공격으로 뛰어오르기 공통)
+    private int airFrame;                // 공중에 뜬 뒤 지난 프레임 (공중 첫 프레임 = 1)
+    private int airFrames = 1;           // 공중에 떠 있는 전체 프레임 수
+    private float airHeight;             // 가장 높은 곳까지의 높이
+    private float airDistancePerFrame;   // 1프레임에 움직이는 가로 거리 (오른쪽이 +)
 
     // ===== 대쉬 / 달리기 내부 상태 =====
     private int previousRelativeDirection = 5;          // 직전 프레임의 상대 방향 (66 / 44 판정용)
     private int lastForwardTapFrame = int.MinValue / 2; // 마지막으로 6을 새로 누른 프레임
     private int lastBackTapFrame = int.MinValue / 2;    // 마지막으로 4를 새로 누른 프레임
-    private float dashTimer;                            // 남은 대쉬 시간 (0보다 크면 대쉬 중)
+    private int dashFramesLeft;                         // 남은 대쉬 프레임 (0보다 크면 대쉬 중)
     private bool isRunning;
-    private float runOverlapTimer = -1f;                // 달리는 중 Enemy와 겹친 뒤 지난 시간 (-1이면 아직 안 겹침)
+    private int runOverlapFrames = -1;                  // 달리는 중 Enemy와 겹친 뒤 지난 프레임 (-1이면 아직 안 겹침)
     private Collider selfCollider;
     private Collider enemyCollider;
     private Game.Character.Pushbox selfPushbox;
@@ -194,6 +202,9 @@ public class CharacterMove : MonoBehaviour
     {
         if (inputReader == null) return;
 
+        // 슬로우 모션 중에는 건너뛰는 프레임이 있음 (GameSpeed)
+        if (!Game.Field.GameSpeed.IsTickFrame) return;
+
         frameCounter++;
 
         // Enemy 주기적 검색
@@ -203,6 +214,10 @@ public class CharacterMove : MonoBehaviour
             FindEnemy();
             searchTimer = searchInterval;
         }
+
+        // 레버 점프의 공중 프레임을 다 채웠으면 이번 프레임부터 땅에서 움직임 (착지한 프레임에 바로 다시 점프 가능)
+        if (!IsGrounded && airFrame >= airFrames)
+            Land();
 
         // 좌우 판정은 땅에 있을 때만 갱신 (점프로 상대를 넘어가는 도중에 조작이 뒤집히지 않도록)
         if (IsGrounded)
@@ -297,11 +312,15 @@ public class CharacterMove : MonoBehaviour
         }
 
         // 대쉬 중이면 대쉬만 처리 (방향 입력 무시)
-        if (dashTimer > 0f)
+        if (dashFramesLeft > 0)
         {
             UpdateDash();
             return;
         }
+
+        // 대쉬 프레임을 다 채웠으면 이번 프레임부터 다른 동작 (앞대쉬 후 6을 누르고 있으면 달리기)
+        if (IsDashing || IsBackDashing)
+            EndDash();
 
         // 달리는 중이면 달리기 처리 (6을 놓으면 아래 일반 이동으로 넘어감)
         if (isRunning && UpdateRun())
@@ -320,11 +339,11 @@ public class CharacterMove : MonoBehaviour
             case 3: CurrentState = MoveState.Crouch; break;
             case 4:
                 CurrentState = MoveState.WalkBackGuard;
-                Move(-facingSign * backWalkSpeed);
+                MoveBy(-facingSign * backWalkDistancePerFrame);
                 break;
             case 6:
                 CurrentState = MoveState.WalkForward;
-                Move(facingSign * forwardWalkSpeed);
+                MoveBy(facingSign * forwardWalkDistancePerFrame);
                 break;
             case 7:
             case 8:
@@ -342,7 +361,6 @@ public class CharacterMove : MonoBehaviour
     {
         StopForAttack();
         IsGrounded = true;
-        airVelocity = Vector2.zero;
         lastForwardTapFrame = int.MinValue / 2;
         lastBackTapFrame = int.MinValue / 2;
         appliedPosture = StatePosture.None; // 다음 프레임에 서기 자세를 다시 넣음
@@ -356,14 +374,15 @@ public class CharacterMove : MonoBehaviour
     private void StopForAttack()
     {
         isJumpStarting = false;
-        dashTimer = 0f;
+        dashFramesLeft = 0;
         StopRun();
         CurrentState = MoveState.Neutral;
     }
 
-    private void Move(float xSpeed)
+    // 이번 프레임에 x만큼 움직임 (걷기, 대쉬, 달리기는 모두 프레임 기준)
+    private void MoveBy(float x)
     {
-        transform.position += new Vector3(xSpeed * Time.deltaTime, 0f, 0f);
+        transform.position += new Vector3(x, 0f, 0f);
     }
 
     // =====================================================================
@@ -399,7 +418,7 @@ public class CharacterMove : MonoBehaviour
             if (frameCounter - lastForwardTapFrame <= dashInputWindowFrames)
             {
                 lastForwardTapFrame = int.MinValue / 2; // 666이 대쉬 두 번으로 읽히지 않도록 초기화
-                StartDash(MoveState.ForwardDash, forwardDashDuration);
+                StartDash(MoveState.ForwardDash, forwardDashFrames);
                 return true;
             }
             lastForwardTapFrame = frameCounter;
@@ -410,7 +429,7 @@ public class CharacterMove : MonoBehaviour
             if (frameCounter - lastBackTapFrame <= dashInputWindowFrames)
             {
                 lastBackTapFrame = int.MinValue / 2;
-                StartDash(MoveState.BackDash, backDashDuration);
+                StartDash(MoveState.BackDash, backDashFrames);
                 return true;
             }
             lastBackTapFrame = frameCounter;
@@ -420,28 +439,30 @@ public class CharacterMove : MonoBehaviour
         return false;
     }
 
-    private void StartDash(MoveState dashState, float duration)
+    // 대쉬 시작. 이 프레임이 대쉬 첫 프레임이므로 바로 한 프레임만큼 움직임
+    private void StartDash(MoveState dashState, int frames)
     {
         CurrentState = dashState;
-        dashTimer = duration;
+        dashFramesLeft = frames;
         isRunning = false;
+        UpdateDash();
     }
 
+    // 전체 거리를 프레임 수로 나눠서 매 프레임 같은 거리만큼 움직임
     private void UpdateDash()
     {
         float facingSign = IsFacingRight ? 1f : -1f;
 
         if (CurrentState == MoveState.ForwardDash)
-            Move(facingSign * forwardDashSpeed);
+            MoveBy(facingSign * forwardDashDistance / forwardDashFrames);
         else
-            Move(-facingSign * backDashSpeed);
+            MoveBy(-facingSign * backDashDistance / backDashFrames);
 
-        dashTimer -= Time.deltaTime;
-        if (dashTimer > 0f) return;
+        dashFramesLeft--;
+    }
 
-        // 대쉬 끝
-        dashTimer = 0f;
-
+    private void EndDash()
+    {
         // 앞대쉬가 끝났을 때 6을 계속 누르고 있으면 달리기로 이어짐
         if (CurrentState == MoveState.ForwardDash && RelativeDirection == 6)
             StartRun();
@@ -452,14 +473,14 @@ public class CharacterMove : MonoBehaviour
     private void StartRun()
     {
         isRunning = true;
-        runOverlapTimer = -1f;
+        runOverlapFrames = -1;
         CurrentState = MoveState.Run;
     }
 
     private void StopRun()
     {
         isRunning = false;
-        runOverlapTimer = -1f;
+        runOverlapFrames = -1;
     }
 
     /// <summary>
@@ -474,16 +495,16 @@ public class CharacterMove : MonoBehaviour
             return false;
         }
 
-        // Enemy와 겹치면 그때부터 시간을 재기 시작
-        if (runOverlapTimer < 0f && IsOverlappingEnemy())
-            runOverlapTimer = 0f;
+        // Enemy와 겹치면 그때부터 프레임을 세기 시작
+        if (runOverlapFrames < 0 && IsOverlappingEnemy())
+            runOverlapFrames = 0;
 
-        if (runOverlapTimer >= 0f)
+        if (runOverlapFrames >= 0)
         {
-            runOverlapTimer += Time.deltaTime;
-            if (runOverlapTimer >= runStopDelayAfterOverlap)
+            runOverlapFrames++;
+            if (runOverlapFrames >= runStopFramesAfterOverlap)
             {
-                // 겹친 지 1초가 지나면 자동으로 달리기 종료 (6을 계속 누르고 있으면 걷기로 바뀜)
+                // 겹친 뒤 runStopFramesAfterOverlap 프레임이 지나면 자동으로 달리기 종료 (6을 계속 누르고 있으면 걷기로 바뀜)
                 StopRun();
                 return false;
             }
@@ -491,7 +512,7 @@ public class CharacterMove : MonoBehaviour
 
         float facingSign = IsFacingRight ? 1f : -1f;
         CurrentState = MoveState.Run;
-        Move(facingSign * forwardWalkSpeed * runSpeedMultiplier);
+        MoveBy(facingSign * runDistancePerFrame);
         return true;
     }
 
@@ -530,7 +551,7 @@ public class CharacterMove : MonoBehaviour
 
     /// <summary>
     /// 점프 준비 중: 입력한 프레임 이후 jumpDirectionBufferFrames(4)프레임까지는 방향을 계속 받고,
-    /// 그다음 프레임(5프레임째)에 마지막으로 받은 방향으로 점프
+    /// 그다음 프레임(입력한 프레임을 1로 세면 6프레임째)에 마지막으로 받은 방향으로 점프해서 공중에 뜸
     /// </summary>
     private void UpdateJumpStartup()
     {
@@ -551,56 +572,76 @@ public class CharacterMove : MonoBehaviour
 
         switch (pendingJumpDirection)
         {
-            case 7: StartJump(MoveState.JumpBack, -facingSign * backJumpSpeed); break;
-            case 9: StartJump(MoveState.JumpForward, facingSign * forwardJumpSpeed); break;
+            case 7: StartJump(MoveState.JumpBack, -facingSign * backJumpDistance); break;
+            case 9: StartJump(MoveState.JumpForward, facingSign * forwardJumpDistance); break;
             default: StartJump(MoveState.JumpNeutral, 0f); break;
         }
     }
 
     /// <summary>
-    /// 공격(승룡권 등)으로 공중에 뛰어오름. forwardSpeed는 바라보는 쪽이 +
+    /// 공격(승룡권 등)으로 공중에 뛰어오름. 레버 점프와 같은 방식으로 airFrames 프레임 동안 포물선을 그림
+    /// forwardDistance: 공중에 있는 동안 앞으로 가는 전체 거리 (바라보는 쪽이 +, 음수면 뒤로)
+    /// height: 가장 높은 곳까지의 높이 (바닥 기준)
     /// </summary>
-    public void LaunchIntoAir(float forwardSpeed, float upSpeed)
+    public void LaunchIntoAir(float forwardDistance, float height, int airFrames)
     {
         isJumpStarting = false;
-        dashTimer = 0f;
+        dashFramesLeft = 0;
         StopRun();
 
         float facingSign = IsFacingRight ? 1f : -1f;
-        MoveState jumpState = forwardSpeed > 0f ? MoveState.JumpForward
-                            : forwardSpeed < 0f ? MoveState.JumpBack
+        MoveState jumpState = forwardDistance > 0f ? MoveState.JumpForward
+                            : forwardDistance < 0f ? MoveState.JumpBack
                             : MoveState.JumpNeutral;
-        CurrentState = jumpState;
-        IsGrounded = false;
-        airVelocity = new Vector2(facingSign * forwardSpeed, upSpeed);
+        int frames = Mathf.Max(1, airFrames);
+        StartAirArc(jumpState, height, frames, facingSign * forwardDistance / frames);
     }
 
-    private void StartJump(MoveState jumpState, float xSpeed)
+    // 레버 점프 시작. xDistance는 공중에 있는 동안 가는 전체 가로 거리 (오른쪽이 +)
+    private void StartJump(MoveState jumpState, float xDistance)
+    {
+        StartAirArc(jumpState, jumpHeight, jumpAirFrames, xDistance / jumpAirFrames);
+    }
+
+    // 공중 포물선 시작 (레버 점프, 공격으로 뛰어오르기 공통)
+    // 이 프레임이 공중 첫 프레임이므로 바로 한 프레임만큼 움직임
+    private void StartAirArc(MoveState jumpState, float height, int frames, float xDistancePerFrame)
     {
         CurrentState = jumpState;
         IsGrounded = false;
-        airVelocity = new Vector2(xSpeed, jumpVelocity);
+        airFrame = 0;
+        airFrames = frames;
+        airHeight = height;
+        airDistancePerFrame = xDistancePerFrame;
+        UpdateAirborne();
     }
 
+    /// <summary>
+    /// 공중: airFrames 프레임 동안 포물선을 그리고, 마지막 프레임에 바닥 높이에 닿음
+    /// (착지 처리는 다음 프레임 Update 처음에 함. 마지막 프레임까지 공중 판정)
+    /// 점프 방향은 뛰어오를 때 정해지고, 공중에서는 바뀌지 않음
+    /// </summary>
     private void UpdateAirborne()
     {
-        // 점프 방향은 점프 준비 때 정해지고, 공중에서는 바뀌지 않음
-        airVelocity.y -= gravity * Time.deltaTime;
+        airFrame++;
+
+        // 공중에서 지난 비율 (0 → 1). 높이는 비율 0.5에서 airHeight가 되는 포물선
+        float progress = (float)airFrame / airFrames;
 
         Vector3 pos = transform.position;
-        pos.x += airVelocity.x * Time.deltaTime;
-        pos.y += airVelocity.y * Time.deltaTime;
-
-        // 착지
-        if (pos.y <= groundY)
-        {
-            pos.y = groundY;
-            IsGrounded = true;
-            airVelocity = Vector2.zero;
-            CurrentState = MoveState.Neutral;
-        }
-
+        pos.x += airDistancePerFrame;
+        pos.y = groundY + 4f * airHeight * progress * (1f - progress);
         transform.position = pos;
+    }
+
+    private void Land()
+    {
+        Vector3 pos = transform.position;
+        pos.y = groundY;
+        transform.position = pos;
+
+        IsGrounded = true;
+        CurrentState = MoveState.Neutral;
     }
 
     // =====================================================================
@@ -660,21 +701,21 @@ public class CharacterMove : MonoBehaviour
 
     private void OnValidate()
     {
-        if (forwardWalkSpeed < 0f) forwardWalkSpeed = 0f;
-        if (backWalkSpeed < 0f) backWalkSpeed = 0f;
-        if (forwardJumpSpeed < 0f) forwardJumpSpeed = 0f;
-        if (backJumpSpeed < 0f) backJumpSpeed = 0f;
-        if (jumpVelocity < 0f) jumpVelocity = 0f;
-        if (gravity < 0.01f) gravity = 0.01f;
+        if (forwardWalkDistancePerFrame < 0f) forwardWalkDistancePerFrame = 0f;
+        if (backWalkDistancePerFrame < 0f) backWalkDistancePerFrame = 0f;
+        if (forwardJumpDistance < 0f) forwardJumpDistance = 0f;
+        if (backJumpDistance < 0f) backJumpDistance = 0f;
+        if (jumpHeight < 0f) jumpHeight = 0f;
+        if (jumpAirFrames < 1) jumpAirFrames = 1;
         if (searchInterval < 0f) searchInterval = 0f;
         if (jumpDirectionBufferFrames < 0) jumpDirectionBufferFrames = 0;
         if (dashInputWindowFrames < 1) dashInputWindowFrames = 1;
-        if (forwardDashSpeed < 0f) forwardDashSpeed = 0f;
-        if (backDashSpeed < 0f) backDashSpeed = 0f;
-        if (forwardDashDuration < 0f) forwardDashDuration = 0f;
-        if (backDashDuration < 0f) backDashDuration = 0f;
-        if (runSpeedMultiplier < 0f) runSpeedMultiplier = 0f;
-        if (runStopDelayAfterOverlap < 0f) runStopDelayAfterOverlap = 0f;
+        if (forwardDashDistance < 0f) forwardDashDistance = 0f;
+        if (backDashDistance < 0f) backDashDistance = 0f;
+        if (forwardDashFrames < 1) forwardDashFrames = 1;
+        if (backDashFrames < 1) backDashFrames = 1;
+        if (runDistancePerFrame < 0f) runDistancePerFrame = 0f;
+        if (runStopFramesAfterOverlap < 0) runStopFramesAfterOverlap = 0;
         if (overlapDistance < 0f) overlapDistance = 0f;
     }
 }

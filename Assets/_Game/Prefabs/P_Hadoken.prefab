@@ -104,6 +104,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 130cb0b3bdf5fcf45b62096ea1dd25df, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Game.Character.Projectile
-  _speed: 6
-  _lifetime: 2
+  _distancePerFrame: 0.07
   P_spriteRenderer: {fileID: 0}
+  P_attackBoxSize: {x: 0.33, y: 0.58}
+  P_attackBoxOffset: {x: 0, y: 0}

@@ -97,8 +97,11 @@ namespace Game.Character
         /// <summary>가장 최근에 성공한 커맨드</summary>
         public CommandData LastCommand { get; private set; }
 
-        /// <summary>커맨드 입력에 성공했을 때 호출되는 이벤트 (공격/애니메이션 스크립트에서 구독)</summary>
-        public event Action<CommandData> OnCommandTriggered;
+        /// <summary>
+        /// 커맨드 입력에 성공했을 때 호출되는 이벤트 (공격/애니메이션 스크립트에서 구독)
+        /// 두 번째 값은 커맨드를 완성한 버튼 (예: 236L이면 L). 공격이 버튼마다 다른 프레임을 쓸 때 사용
+        /// </summary>
+        public event Action<CommandData, AttackButtonType> OnCommandTriggered;
 
         /// <summary>
         /// 지금 쓸 수 있는 커맨드인지 알려주는 함수 (비어 있으면 모두 쓸 수 있음)
@@ -151,6 +154,9 @@ namespace Game.Character
         private void Update()
         {
             if (CC_inputReader == null) return;
+
+            // 슬로우 모션 중에는 건너뛰는 프레임이 있음 (GameSpeed)
+            if (!Game.Field.GameSpeed.IsTickFrame) return;
 
             CC_frameCounter++;
 
@@ -246,7 +252,7 @@ namespace Game.Character
                         Debug.Log($"[Command] '{command.commandName}' 커맨드 입력 성공! (버튼: {button}, 프레임: {CC_frameCounter})");
                         triggeredThisFrame.Add(command);
                         LastCommand = command;
-                        OnCommandTriggered?.Invoke(command);
+                        OnCommandTriggered?.Invoke(command, button);
                         break; // 이 버튼에 대해서는 가장 구체적인/우선순위 높은 커맨드 하나만 채택하고 종료
                     }
                 }

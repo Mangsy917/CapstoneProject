@@ -33,12 +33,25 @@ namespace Game.UI
         // 순간 검은 화면 -> onBlack 실행 -> 서서히 게임 화면으로
         public void Play(Action onBlack)
         {
-            if (_fadeRoutine != null) StopCoroutine(_fadeRoutine);
-            _fadeRoutine = StartCoroutine(PlayRoutine(onBlack));
+            Play(onBlack, fadeInTime: 0f);
         }
 
-        private IEnumerator PlayRoutine(Action onBlack)
+        /// <summary>fadeInTime(초) 동안 서서히 검은 화면이 됨 -> onBlack 실행 -> 서서히 게임 화면으로 (0이면 순간 검은 화면)</summary>
+        public void Play(Action onBlack, float fadeInTime)
         {
+            if (_fadeRoutine != null) StopCoroutine(_fadeRoutine);
+            _fadeRoutine = StartCoroutine(PlayRoutine(onBlack, fadeInTime));
+        }
+
+        private IEnumerator PlayRoutine(Action onBlack, float fadeInTime)
+        {
+            float fadeInElapsed = 0f;
+            while (fadeInElapsed < fadeInTime)
+            {
+                fadeInElapsed += Time.unscaledDeltaTime;
+                SetFadeAlpha(Mathf.Clamp01(fadeInElapsed / fadeInTime));
+                yield return null;
+            }
             SetFadeAlpha(1f);
 
             // 화면이 가려진 동안 할 일

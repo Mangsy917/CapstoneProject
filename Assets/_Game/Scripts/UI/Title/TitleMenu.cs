@@ -3,6 +3,7 @@ using UnityEngine.UI;
 using UnityEngine.EventSystems;
 
 // 타이틀 화면의 UIManager에 붙여서 사용
+// 타이틀 버튼들(Start, Setting, Back Title, Exit)의 OnClick에 연결할 함수도 여기에 있음
 // 키보드/컨트롤러(UIControl)와 마우스가 같은 선택 상태를 공유함
 // - 위/아래(W/S): 선택 이동 (끝에서 누르면 반대쪽 끝으로)
 // - 마우스 올리기: 그 버튼이 선택됨
@@ -11,8 +12,9 @@ using UnityEngine.EventSystems;
 public class TitleMenu : MonoBehaviour
 {
     [SerializeField] private UIControl uiControl;
-    [SerializeField] private TitleBTUI titleBTUI;
     [SerializeField] private GameObject settingUI;
+    // Start 버튼을 눌렀을 때 이동할 씬 이름
+    [SerializeField] private string sceneName;
 
     // 타이틀 메뉴 버튼 (위에서 아래 순서: Start, Setting, Exit)
     [SerializeField] private Button[] mainButtons;
@@ -48,6 +50,7 @@ public class TitleMenu : MonoBehaviour
 
     void Start()
     {
+        settingUI.SetActive(false);
         wasSettingOpen = IsSettingOpen();
         Refresh();
     }
@@ -86,12 +89,36 @@ public class TitleMenu : MonoBehaviour
         else if (uiControl.uiCancelDown && settingOpen)
         {
             uiControl.uiCancelDown = false;
-            titleBTUI.PressSettingBackBT();
+            PressSettingBackBT();
         }
 
         prevUp = up;
         prevDown = down;
         prevSelect = select;
+    }
+
+    public void PressStartBT()
+    {
+        LoadingScene.LoadScene(sceneName);
+    }
+
+    public void PressSettingBT()
+    {
+        settingUI.SetActive(true);
+    }
+
+    public void PressSettingBackBT()
+    {
+        settingUI.SetActive(false);
+    }
+
+    public void PressExitBT()
+    {
+        Application.Quit();
+        // 에디터 전용 코드는 빌드에 들어가면 빌드가 실패하므로 에디터에서만 컴파일
+#if UNITY_EDITOR
+        UnityEditor.EditorApplication.isPlaying = false;
+#endif
     }
 
     private bool IsSettingOpen()

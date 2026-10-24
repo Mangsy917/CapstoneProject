@@ -27,6 +27,11 @@ public class WhatIsSetting : MonoBehaviour
     [SerializeField] private GameObject commandListWindow;
     [SerializeField] private GameObject displaySettingWindow;
 
+    // 타이틀로 버튼을 눌렀을 때 이동할 씬 이름
+    [SerializeField] private string titleSceneName = "Title";
+    // "타이틀로 돌아가시겠습니까?" 팝업
+    [SerializeField] private GameObject goTitlePopup;
+
     private const float selectValue = 255f / 255f;
     private const float notSelectValue = 50f / 255f;
 
@@ -51,6 +56,7 @@ public class WhatIsSetting : MonoBehaviour
         texts = new TMP_Text[] { pSTXT, shortPSTXT, parameterTXT, dummyTXT, commandLTXT, displaySTXT };
         windows = new GameObject[] { practiceSettingWindow, shortPracticeSettingWindow, parameterWindow, dummySettingWindow, commandListWindow, displaySettingWindow };
 
+        if (goTitlePopup != null) goTitlePopup.SetActive(false);
         Refresh();
     }
 
@@ -90,6 +96,24 @@ public class WhatIsSetting : MonoBehaviour
 
         selectedIndex = index;
         Refresh();
+    }
+
+    // 연습설정 > 타이틀로 : 확인 팝업을 띄움
+    public void PressGoTitleBT()
+    {
+        goTitlePopup.SetActive(true);
+    }
+
+    // 타이틀로 팝업 > 예 : 타이틀 씬으로 이동
+    public void PressGoTitleYesBT()
+    {
+        LoadingScene.LoadScene(titleSceneName);
+    }
+
+    // 타이틀로 팝업 > 아니오 : 팝업을 닫음
+    public void PressGoTitleNoBT()
+    {
+        goTitlePopup.SetActive(false);
     }
 
     // 선택된 번호를 기준으로 모든 탭의 위치, 글자 크기, 알파값을 다시 맞춤

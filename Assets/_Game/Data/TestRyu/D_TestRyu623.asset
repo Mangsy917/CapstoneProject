@@ -14,18 +14,57 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Game.Character.AttackData
   _attackName: 623
   _height: 0
-  _startupFrames: 3
+  AD_damage: 1200
+  AD_attackBoxSize: {x: 0.84, y: 1.43}
+  AD_attackBoxOffset: {x: 0.47, y: 0.256}
+  _shouldHideTopHitbox: 0
+  _extraHitboxes: []
+  _startupFrames: 6
   _activeFrames: 10
-  _recoveryFrames: 25
-  _traitWindows:
-  - _trait: 3
-    _startFrame: 1
-    _endFrame: 5
-    _armorHeights: 0
-    _armorHitCount: 0
+  _recoveryFrames: 30
+  _buttonFrames:
+  - _button: 1
+    _startupFrames: 5
+    _activeFrames: 10
+    _recoveryFrames: 21
+    AD_damage: 1100
+    _projectileDistancePerFrame: 0
+    AD_attackBoxSize: {x: 0, y: 0}
+    AD_attackBoxOffset: {x: 0, y: 0}
+    _invincibleFrames: 0
+  - _button: 2
+    _startupFrames: 6
+    _activeFrames: 10
+    _recoveryFrames: 30
+    AD_damage: 1200
+    _projectileDistancePerFrame: 0
+    AD_attackBoxSize: {x: 0, y: 0}
+    AD_attackBoxOffset: {x: 0, y: 0}
+    _invincibleFrames: 0
+  - _button: 4
+    _startupFrames: 7
+    _activeFrames: 10
+    _recoveryFrames: 34
+    AD_damage: 1400
+    _projectileDistancePerFrame: 0
+    AD_attackBoxSize: {x: 0, y: 0}
+    AD_attackBoxOffset: {x: 0, y: 0}
+    _invincibleFrames: 0
+  - _button: 8
+    _startupFrames: 6
+    _activeFrames: 10
+    _recoveryFrames: 37
+    AD_damage: 1600
+    _projectileDistancePerFrame: 0
+    AD_attackBoxSize: {x: 0, y: 0}
+    AD_attackBoxOffset: {x: 0, y: 0}
+    _invincibleFrames: 8
+  _traitWindows: []
   _launchFrame: 3
-  _launchForwardSpeed: 2
-  _launchUpSpeed: 9
+  _shouldLaunchAtStartup: 1
+  _launchForwardDistance: 1.44
+  _launchHeight: 1.62
+  _launchAirFrames: 0
   _holdUntilLanding: 1
   _landingRecoveryFrames: 12
   _landingAnimationState: Sit

@@ -14,11 +14,57 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Game.Character.AttackData
   _attackName: 236
   _height: 0
-  _startupFrames: 13
-  _activeFrames: 2
-  _recoveryFrames: 30
+  AD_damage: 700
+  AD_attackBoxSize: {x: 0, y: 0}
+  AD_attackBoxOffset: {x: 0, y: 0}
+  _shouldHideTopHitbox: 0
+  _extraHitboxes:
+  - AD_size: {x: 0.364, y: 0.676}
+    AD_offset: {x: 0.727, y: 0.395}
+    _framesBeforeActive: 2
+    _framesAfterActive: 32
+  - AD_size: {x: 0.364, y: 0.727}
+    AD_offset: {x: 0.635, y: -0.736}
+    _framesBeforeActive: 2
+    _framesAfterActive: 32
+  _startupFrames: 14
+  _activeFrames: 1
+  _recoveryFrames: 32
+  _buttonFrames:
+  - _button: 1
+    _startupFrames: 16
+    _activeFrames: 1
+    _recoveryFrames: 30
+    AD_damage: 700
+    _projectileDistancePerFrame: 0.055
+  - _button: 2
+    _startupFrames: 14
+    _activeFrames: 1
+    _recoveryFrames: 32
+    AD_damage: 700
+    _projectileDistancePerFrame: 0.07
+  - _button: 4
+    _startupFrames: 12
+    _activeFrames: 1
+    _recoveryFrames: 34
+    AD_damage: 700
+    _projectileDistancePerFrame: 0.085
+  - _button: 8
+    _startupFrames: 12
+    _activeFrames: 1
+    _recoveryFrames: 27
+    AD_damage: 1000
+    _projectileDistancePerFrame: 0.112
   _traitWindows: []
+  _launchFrame: 0
+  _shouldLaunchAtStartup: 0
+  _launchForwardDistance: 1.44
+  _launchHeight: 1.62
+  _launchAirFrames: 43
+  _holdUntilLanding: 0
+  _landingRecoveryFrames: 0
+  _landingAnimationState: 
   _animationState: 236
   _projectilePrefab: {fileID: 5406294107860528325, guid: 782b275b08e685e4bbccf1bd5f5faf3b, type: 3}
-  _projectileSpawnFrame: 13
-  _projectileSpawnOffset: {x: 1, y: 0.4}
+  _projectileSpawnFrame: 0
+  _projectileSpawnOffset: {x: 1.39, y: 0.26}
