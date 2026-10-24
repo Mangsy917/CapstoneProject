@@ -58,6 +58,9 @@ public class CharacterMove : MonoBehaviour
     [Tooltip("공격 중인지 알려줄 CharacterAttack. 공격 중에는 땅에서 움직이지 않음. 비워두면 같은 오브젝트에서 찾음")]
     [SerializeField] private Game.Character.CharacterAttack characterAttack;
 
+    [Tooltip("피격 경직 중인지 알려줄 CharacterHitReaction. 경직 중에는 땅에서 움직이지 않음. 비워두면 같은 오브젝트에서 찾음")]
+    [SerializeField] private Game.Character.CharacterHitReaction CM_hitReaction;
+
     [Header("태그")]
     [SerializeField] private string playerTag = "Player";
     [SerializeField] private string enemyTag = "Enemy";
@@ -178,6 +181,9 @@ public class CharacterMove : MonoBehaviour
         if (characterAttack == null)
             characterAttack = GetComponent<Game.Character.CharacterAttack>();
 
+        if (CM_hitReaction == null)
+            CM_hitReaction = GetComponent<Game.Character.CharacterHitReaction>();
+
         selfCollider = GetComponent<Collider>();
         selfPushbox = GetComponent<Game.Character.Pushbox>();
 
@@ -228,16 +234,17 @@ public class CharacterMove : MonoBehaviour
         CancelDashTapOnOtherDirection();
 
         bool isAttacking = characterAttack != null && characterAttack.IsAttacking;
+        bool isInHitStun = CM_hitReaction != null && CM_hitReaction.IsInHitStun;
 
-        // 이동 (공격 중에는 땅에서 멈추고, 공중 공격은 점프 궤도를 그대로 따라감)
+        // 이동 (공격 / 피격 경직 중에는 땅에서 멈추고, 공중에서는 점프 궤도를 그대로 따라감. 히트백은 CharacterHitReaction이 함)
         if (!IsGrounded)
             UpdateAirborne();
-        else if (isAttacking)
+        else if (isAttacking || isInHitStun)
             StopForAttack();
         else
             UpdateGrounded();
 
-        UpdateCharacterState(isAttacking);
+        UpdateCharacterState(isAttacking || isInHitStun);
 
         previousRelativeDirection = RelativeDirection;
     }

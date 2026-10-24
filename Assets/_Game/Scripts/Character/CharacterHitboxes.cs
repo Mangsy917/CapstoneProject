@@ -74,6 +74,36 @@ namespace Game.Character
             }
         }
 
+        /// <summary>
+        /// 이 피격 상자에 맞았을 때의 피격 모션 (Top → 상단, Middle → 중단, Bottom → 하단)
+        /// 공격 모션으로 더 생긴 피격 상자는 높이가 가장 가까운 평소 피격 상자를 따름
+        /// </summary>
+        public HitMotion GetMotionByHitbox(Hitbox hitbox)
+        {
+            if (hitbox == null) return HitMotion.Middle;
+            if (hitbox == _topHitbox) return HitMotion.Top;
+            if (hitbox == _middleHitbox) return HitMotion.Middle;
+            if (hitbox == _bottomHitbox) return HitMotion.Low;
+
+            float y = hitbox.WorldCenter.y;
+            HitMotion closestMotion = HitMotion.Middle;
+            float closestDistance = float.MaxValue;
+            CheckCloser(_topHitbox, HitMotion.Top, y, ref closestMotion, ref closestDistance);
+            CheckCloser(_middleHitbox, HitMotion.Middle, y, ref closestMotion, ref closestDistance);
+            CheckCloser(_bottomHitbox, HitMotion.Low, y, ref closestMotion, ref closestDistance);
+            return closestMotion;
+        }
+
+        private static void CheckCloser(Hitbox hitbox, HitMotion motion, float y, ref HitMotion closestMotion, ref float closestDistance)
+        {
+            if (hitbox == null) return;
+
+            float distance = Mathf.Abs(hitbox.WorldCenter.y - y);
+            if (distance >= closestDistance) return;
+            closestDistance = distance;
+            closestMotion = motion;
+        }
+
         // 지금 피격 상자를 바꿔야 하는 공격 (착지 경직 중에는 평소 피격 상자)
         private AttackData GetCurrentAttack()
         {

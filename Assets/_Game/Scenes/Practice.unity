@@ -28746,6 +28746,7 @@ GameObject:
   - component: {fileID: 1389828403}
   - component: {fileID: 1389828404}
   - component: {fileID: 1389828405}
+  - component: {fileID: 1389828406}
   m_Layer: 0
   m_Name: Test_Ryu
   m_TagString: Player
@@ -28768,6 +28769,7 @@ MonoBehaviour:
   _characterCommand: {fileID: 1389828393}
   CA_characterState: {fileID: 1389828395}
   CA_characterMove: {fileID: 1389828396}
+  CA_hitReaction: {fileID: 0}
   CA_opponentTag: Enemy
 --- !u!114 &1389828393
 MonoBehaviour:
@@ -29005,9 +29007,7 @@ MonoBehaviour:
   normalHit: 0
   counterHit: 0
   punishCounter: 0
-  comboDamage: 0
   singleDamage: 0
-  _comboGapFrames: 15
 --- !u!114 &1389828396
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -29023,6 +29023,7 @@ MonoBehaviour:
   inputReader: {fileID: 1896591971}
   characterState: {fileID: 1389828395}
   characterAttack: {fileID: 1389828392}
+  CM_hitReaction: {fileID: 0}
   playerTag: Player
   enemyTag: Enemy
   forwardWalkDistancePerFrame: 0.05
@@ -29154,11 +29155,17 @@ MonoBehaviour:
   _animator: {fileID: 1389828402}
   CAP_characterMove: {fileID: 1389828396}
   CAP_characterAttack: {fileID: 1389828392}
+  CAP_hitReaction: {fileID: 0}
   _idleState: Idle
   _sitState: Sit
   _jumpState: Jump
   _walkForwardState: WalkForward
   _walkBackState: WalkBack
+  _topHitState: TopHit
+  _middleHitState: MiddleHit
+  _lowHitState: LowHit
+  _top2LowHitState: Top2LowHit
+  _low2TopHitState: Low2TopHit
 --- !u!95 &1389828402
 Animator:
   serializedVersion: 7
@@ -29232,6 +29239,21 @@ MonoBehaviour:
   _extraHitboxParent: {fileID: 435584487}
   CH_characterMove: {fileID: 0}
   CH_characterAttack: {fileID: 0}
+--- !u!114 &1389828406
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1389828391}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: def598337d67db74da5b15c809b39fa1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Game.Character.CharacterHitReaction
+  CHR_characterAttack: {fileID: 0}
+  _characterHitboxes: {fileID: 0}
+  _pushbox: {fileID: 0}
 --- !u!1 &1397161733
 GameObject:
   m_ObjectHideFlags: 0

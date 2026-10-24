@@ -120,6 +120,12 @@ namespace Game.Character
             }
         }
 
+        /// <summary>이 상자를 direction(1: 오른쪽, -1: 왼쪽)으로 밀면 바로 벽에 막히는지 (예: 히트백 중 벽에 붙었는지)</summary>
+        public bool IsTouchingWall(float direction)
+        {
+            return IsBlockedByWall(this, direction);
+        }
+
         /// <summary>두 상자가 맞닿아 있거나 겹쳐 있는지 (예: 달리다가 상대에게 붙었는지)</summary>
         public static bool IsTouching(Pushbox a, Pushbox b)
         {

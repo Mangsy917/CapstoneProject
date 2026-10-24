@@ -29,6 +29,9 @@ namespace Game.Character
         [Tooltip("바라보는 방향, 땅/공중 상태를 알려줄 CharacterMove. 비워두면 같은 오브젝트에서 찾음")]
         [SerializeField] private CharacterMove CA_characterMove;
 
+        [Tooltip("피격 경직 중에는 공격하지 않도록 확인할 CharacterHitReaction. 비워두면 같은 오브젝트에서 찾음")]
+        [SerializeField] private CharacterHitReaction CA_hitReaction;
+
         [Tooltip("투사체가 맞힐 상대의 태그 (Player에는 Enemy)")]
         [SerializeField] private string CA_opponentTag = "Enemy";
 
@@ -76,6 +79,7 @@ namespace Game.Character
             if (_characterCommand == null) _characterCommand = GetComponent<CharacterCommand>();
             if (CA_characterState == null) CA_characterState = GetComponent<CharactorState>();
             if (CA_characterMove == null) CA_characterMove = GetComponent<CharacterMove>();
+            if (CA_hitReaction == null) CA_hitReaction = GetComponent<CharacterHitReaction>();
 
             if (_characterCommand == null)
                 Debug.LogError("[CharacterAttack] CharacterCommand를 찾을 수 없습니다. Character Command 칸에 지정해 주세요.", this);
@@ -179,7 +183,7 @@ namespace Game.Character
             Vector3 position = transform.position + new Vector3(isFacingRight ? offset.x : -offset.x, offset.y, 0f);
 
             Projectile projectile = Instantiate(attack.ProjectilePrefab, position, Quaternion.identity);
-            projectile.Launch(isFacingRight, owner: gameObject, targetTag: CA_opponentTag, damage: attack.GetDamage(_currentButton), distancePerFrame: attack.GetProjectileDistancePerFrame(_currentButton));
+            projectile.Launch(isFacingRight, owner: gameObject, targetTag: CA_opponentTag, damage: attack.GetDamage(_currentButton), hitInfo: attack.GetHitInfo(_currentButton), distancePerFrame: attack.GetProjectileDistancePerFrame(_currentButton));
         }
 
         // 이번 프레임의 공격 상자와 겹치는 상대(피격 상자)가 있으면 데미지를 줌 (공격 상자가 없는 프레임이면 아무것도 안 함)
@@ -192,11 +196,12 @@ namespace Game.Character
 
             foreach (GameObject opponent in GameObject.FindGameObjectsWithTag(CA_opponentTag))
             {
-                if (opponent == gameObject || !Hitbox.IsHitting(opponent, attackBoxCenter, size)) continue;
+                if (opponent == gameObject) continue;
+                Hitbox hitbox = Hitbox.FindHitHitbox(opponent, attackBoxCenter, size);
+                if (hitbox == null) continue;
 
                 _hasHit = true;
-                var health = opponent.GetComponent<CharacterHealth>();
-                if (health != null) health.TakeDamage(attack.GetDamage(_currentButton), attacker: this);
+                CharacterHitReaction.HitTarget(opponent, attack.GetDamage(_currentButton), attack.GetHitInfo(_currentButton), hitbox, direction: facingSign, attacker: this, shouldPushAttacker: true);
                 return;
             }
         }
@@ -211,10 +216,11 @@ namespace Game.Character
             Gizmos.DrawWireCube(transform.position + new Vector3(offset.x * facingSign, offset.y, 0f), new Vector3(size.x, size.y, 0.1f));
         }
 
-        // 공격 중에 들어온 커맨드는 무시함 (캔슬은 아직 없음)
+        // 공격 중이나 피격 경직 중에 들어온 커맨드는 무시함 (캔슬은 아직 없음)
         private void HandleCommandTriggered(CharacterCommand.CommandData command, CharacterCommand.AttackButtonType button)
         {
             if (command.attack == null || IsAttacking || !CanUseCommand(command)) return;
+            if (CA_hitReaction != null && CA_hitReaction.IsInHitStun) return;
             StartAttack(command.attack, button);
         }
 

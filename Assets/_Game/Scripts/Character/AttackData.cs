@@ -21,6 +21,17 @@ namespace Game.Character
         Low = 1 << 2
     }
 
+    // 맞은 쪽이 재생할 피격 모션
+    public enum HitMotion
+    {
+        Auto,    // 자동: 중단 공격이면 Top2Low, 아니면 맞은 피격 상자(Top / Middle / Bottom)에 따라 정함
+        Top,     // 상단 피격 (TopHit)
+        Middle,  // 중단 피격 (MiddleHit)
+        Low,     // 하단 피격 (LowHit)
+        Top2Low, // 위에서 아래로 맞음 (Top2LowHit)
+        Low2Top  // 아래에서 위로 올려 맞음 (Low2TopHit, 승룡권 등)
+    }
+
     // 공격하는 동안 플레이어가 가지는 특성
     public enum AttackTrait
     {
@@ -236,6 +247,19 @@ namespace Game.Character
         [Tooltip("지속 프레임 구간마다 다른 공격 상자 (공격 동작에 따라 상자가 움직이는 기술).\n비워두면 위의 공격 상자 하나를 지속 내내 씀 (버튼별 공격 상자보다 먼저 적용)")]
         [SerializeField] private AttackBoxWindow[] _attackBoxWindows = new AttackBoxWindow[0];
 
+        [Header("히트")]
+        [Tooltip("히트 시 유리 프레임 (위키의 Hit 값). 지속 첫 프레임(장풍은 투사체가 나오는 프레임)에 맞았을 때 기준이며,\n피격 경직 = 그때 남은 공격 프레임 + 이 값 (늦게 맞혀도 경직은 같아서 그만큼 더 유리해짐)")]
+        [SerializeField] private int _hitAdvantage = 3;
+
+        [Tooltip("맞은 상대가 뒤로 밀려나는 거리 (월드 단위). 상대가 벽에 붙어 있으면 대신 때린 쪽이 밀려남 (장풍은 제외)")]
+        [SerializeField] private float _hitBackDistance = 0.5f;
+
+        [Tooltip("히트백으로 밀려나는 데 걸리는 프레임 수")]
+        [SerializeField] private int _hitBackFrames = 8;
+
+        [Tooltip("맞은 쪽이 재생할 피격 모션. 자동이면 중단 공격은 Top2Low, 그 외는 맞은 피격 상자 위치에 따라 정함")]
+        [SerializeField] private HitMotion _hitMotion = HitMotion.Auto;
+
         [Header("공격 중 피격 상자")]
         [Tooltip("체크하면 공격하는 동안 Top 피격 상자를 끔 (앉아서 쓰는 공격 등)")]
         [SerializeField] private bool _shouldHideTopHitbox = false;
@@ -309,6 +333,28 @@ namespace Game.Character
         public Vector2 ProjectileSpawnOffset => _projectileSpawnOffset;
         public AttackHeight Height => _height;
         public TraitWindow[] TraitWindows => _traitWindows;
+        public int HitAdvantage => _hitAdvantage;
+        public float HitBackDistance => _hitBackDistance;
+        public int HitBackFrames => _hitBackFrames;
+        public HitMotion HitMotion => _hitMotion;
+
+        /// <summary>
+        /// 이 버튼으로 나갔을 때 맞은 상대의 피격 경직 프레임 수
+        /// 지속 첫 프레임(투사체 공격이면 투사체가 나오는 프레임)에 맞았을 때 "남은 공격 프레임 + 히트 시 유리 프레임"이 되도록 정함
+        /// 공격은 전체 프레임이 지난 다음 프레임에 끝나서(CharacterAttack) 그 프레임까지 움직일 수 없으므로 1프레임을 더함
+        /// </summary>
+        public int GetHitStunFrames(CharacterCommand.AttackButtonType button)
+        {
+            AttackFrames frames = GetFrames(button);
+            int hitFrame = _projectilePrefab != null ? GetProjectileSpawnFrame(frames) : frames.FirstActiveFrame;
+            return Mathf.Max(1, frames.TotalFrames - hitFrame + 1 + _hitAdvantage);
+        }
+
+        /// <summary>이 버튼으로 나간 공격이 맞았을 때 상대에게 줄 피격 정보</summary>
+        public HitInfo GetHitInfo(CharacterCommand.AttackButtonType button)
+        {
+            return new HitInfo(GetHitStunFrames(button), _hitBackDistance, _hitBackFrames, _height, _hitMotion);
+        }
 
         // 버튼별 프레임 목록에 없을 때 쓰는 기본 프레임
         public AttackFrames DefaultFrames => new AttackFrames(_startupFrames, _activeFrames, _recoveryFrames);
@@ -430,6 +476,8 @@ namespace Game.Character
             if (AD_damage < 0) AD_damage = 0;
             if (AD_attackBoxSize.x < 0f) AD_attackBoxSize.x = 0f;
             if (AD_attackBoxSize.y < 0f) AD_attackBoxSize.y = 0f;
+            if (_hitBackDistance < 0f) _hitBackDistance = 0f;
+            if (_hitBackFrames < 1) _hitBackFrames = 1;
 
             if (_extraHitboxes != null)
             {

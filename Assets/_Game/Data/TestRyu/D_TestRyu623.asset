@@ -17,6 +17,11 @@ MonoBehaviour:
   AD_damage: 1200
   AD_attackBoxSize: {x: 0.84, y: 1.43}
   AD_attackBoxOffset: {x: 0.47, y: 0.256}
+  _attackBoxWindows: []
+  _hitAdvantage: 3
+  _hitBackDistance: 0.5
+  _hitBackFrames: 8
+  _hitMotion: 5
   _shouldHideTopHitbox: 0
   _extraHitboxes: []
   _startupFrames: 6

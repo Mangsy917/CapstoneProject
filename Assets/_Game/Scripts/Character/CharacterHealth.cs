@@ -12,10 +12,10 @@ namespace Game.Character
     //   항상 고정: 맞아도 줄어들지 않음
     //   일반: 맞은 만큼 계속 줄어듦
     // - 연습 재시작(PracticeRestart) 때 ResetHealth로 설정한 체력이 됨
-    // - 때린 공격(CharacterAttack)이 끝날 때까지는 데미지가 "확정되지 않은" 상태 (IsDamageSettled)
+    // - 피격 경직(CharacterHitReaction)이 끝날 때까지는 데미지가 "확정되지 않은" 상태 (IsDamageSettled)
     //   그동안 맞은 데미지는 PendingDamage에 쌓아 두었다가, 확정되면 합산해서 한 번에 줄임 (콤보 끝)
-    //   피격 경직이 생기면 경직이 끝날 때를 콤보 끝으로 봐야 함
-    // - 피격 모션은 아직 없음 (체력이 0이 됐을 때의 KO는 KnockOutSequence가 처리)
+    //   CharacterHitReaction이 없으면 때린 공격(CharacterAttack)이 끝날 때 확정
+    // - 체력이 0이 됐을 때의 KO는 KnockOutSequence가 처리
     public class CharacterHealth : MonoBehaviour
     {
         // 설정창 체력 방식 스테퍼의 선택지 순서와 같음 (자동 회복, 항상 고정, 일반)
@@ -50,10 +50,10 @@ namespace Game.Character
         public HealthMode Mode => _healthMode;
 
         /// <summary>
-        /// 마지막으로 받은 데미지가 확정됐는지 (때린 공격이 회수, 착지 경직까지 끝남)
-        /// 피격 경직이 생기면 그 경직이 끝날 때도 함께 봐야 함
+        /// 마지막으로 받은 데미지가 확정됐는지 (콤보가 끝남)
+        /// 피격 경직이 끝났는지로 정하고, CharacterHitReaction이 없으면 때린 공격이 회수, 착지 경직까지 끝났는지로 정함
         /// </summary>
-        public bool IsDamageSettled => _lastAttacker == null || !_lastAttacker.IsAttacking;
+        public bool IsDamageSettled => _hitReaction != null ? !_hitReaction.IsInHitStun : _lastAttacker == null || !_lastAttacker.IsAttacking;
 
         /// <summary>콤보 중에 맞아서 쌓여 있고 아직 체력에서 빼지 않은 데미지</summary>
         public int PendingDamage { get; private set; }
@@ -63,6 +63,7 @@ namespace Game.Character
 
         private int _framesSinceDamage;
         private CharacterAttack _lastAttacker; // 마지막으로 데미지를 준 공격 (투사체면 쏜 캐릭터의 공격)
+        private CharacterHitReaction _hitReaction; // 피격 경직이 끝나면 콤보가 끝난 것으로 봄 (없으면 때린 공격 기준)
 
         // Domain Reload를 꺼둔 상태로 플레이해도 이전 설정이 남지 않도록 초기화
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
@@ -86,6 +87,7 @@ namespace Game.Character
         {
             StartHealth = _maxHealth;
             CurrentHealth = _maxHealth;
+            _hitReaction = GetComponent<CharacterHitReaction>();
         }
 
         private void Start()

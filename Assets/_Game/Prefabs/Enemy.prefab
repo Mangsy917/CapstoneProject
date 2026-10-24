@@ -17,6 +17,8 @@ GameObject:
   - component: {fileID: 3271997685772264477}
   - component: {fileID: 5656190444093950423}
   - component: {fileID: 2024175151764231273}
+  - component: {fileID: 7945998929045402111}
+  - component: {fileID: 305886227930586829}
   m_Layer: 0
   m_Name: Enemy
   m_TagString: Enemy
@@ -234,9 +236,48 @@ MonoBehaviour:
   normalHit: 0
   counterHit: 0
   punishCounter: 0
-  comboDamage: 0
   singleDamage: 0
-  _comboGapFrames: 15
+--- !u!114 &7945998929045402111
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2347769319118467310}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: def598337d67db74da5b15c809b39fa1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Game.Character.CharacterHitReaction
+  CHR_characterAttack: {fileID: 0}
+  _characterHitboxes: {fileID: 0}
+  _pushbox: {fileID: 0}
+--- !u!114 &305886227930586829
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2347769319118467310}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d3571f86751cca64dbe92a53293a1eee, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Game.Character.CharacterAnimationPlayer
+  _animator: {fileID: 0}
+  CAP_characterMove: {fileID: 0}
+  CAP_characterAttack: {fileID: 0}
+  CAP_hitReaction: {fileID: 0}
+  _idleState: Idle
+  _sitState: Sit
+  _jumpState: Jump
+  _walkForwardState: WalkForward
+  _walkBackState: WalkBack
+  _topHitState: TopHit
+  _middleHitState: MiddleHit
+  _lowHitState: LowHit
+  _top2LowHitState: Top2LowHit
+  _low2TopHitState: Low2TopHit
 --- !u!1 &7336444245606331161
 GameObject:
   m_ObjectHideFlags: 0
