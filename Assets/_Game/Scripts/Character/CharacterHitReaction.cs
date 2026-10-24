@@ -43,8 +43,10 @@ namespace Game.Character
     // - 경직 중에는 움직이거나 공격할 수 없음 (CharacterMove, CharacterAttack이 IsInStun을 확인)
     // - 슈퍼아머로 버틴 공격은 데미지만 받고 경직 / 히트백이 없음
     // - 모션 재생은 CharacterAnimationPlayer가 함
-    // 공격(CharacterAttack, 실행 순서 20)이 맞힌 다음 프레임부터 세도록, 공격보다 먼저 실행
-    [DefaultExecutionOrder(10)]
+    // 경직은 공격(CharacterAttack, 실행 순서 20)과 투사체가 처리된 뒤에 1프레임씩 줄임 (밀림 판정 Pushbox(50)보다는 먼저)
+    // - 경직 마지막 프레임에 들어온 공격도 경직 중에 맞은 것(콤보)으로 봄
+    // - 맞은 프레임에는 줄이지 않아서, 다음 프레임부터 경직 프레임 수만큼 움직일 수 없음
+    [DefaultExecutionOrder(40)]
     public class CharacterHitReaction : MonoBehaviour
     {
         [Tooltip("맞으면 하던 공격을 취소할 CharacterAttack. 비워두면 같은 오브젝트에서 찾음 (없어도 됨)")]
@@ -86,6 +88,7 @@ namespace Game.Character
         /// <summary>맞거나 가드할 때마다 1씩 늘어남 (같은 모션이 연달아 나와도 처음부터 다시 재생하는 데 사용)</summary>
         public int HitCount { get; private set; }
 
+        private int _reactionStartFrame = -1; // 마지막으로 맞거나 가드한 프레임 (그 프레임에는 경직 / 밀림을 진행하지 않음)
         private int _pushBackFramesLeft;
         private float _pushBackDistancePerFrame;
         private float _pushBackDirection;    // 밀려나는 방향 (1: 오른쪽, -1: 왼쪽)
@@ -128,6 +131,7 @@ namespace Game.Character
         {
             // 슬로우 모션 중에는 건너뛰는 프레임이 있음 (GameSpeed)
             if (!Game.Field.GameSpeed.IsTickFrame) return;
+            if (_reactionStartFrame == Time.frameCount) return;
 
             if (_pushBackFramesLeft > 0)
             {
@@ -152,6 +156,7 @@ namespace Game.Character
 
         private void StartPushBack(float distance, int frames, float direction, Transform pushedAttacker)
         {
+            _reactionStartFrame = Time.frameCount;
             _pushBackFramesLeft = Mathf.Max(1, frames);
             _pushBackDistancePerFrame = distance / _pushBackFramesLeft;
             _pushBackDirection = direction < 0f ? -1f : 1f;
@@ -228,6 +233,7 @@ namespace Game.Character
         {
             HitStunFramesLeft = 0;
             GuardStunFramesLeft = 0;
+            _reactionStartFrame = -1;
             _pushBackFramesLeft = 0;
             _pushBackAttacker = null;
             if (_dummyGuard != null) _dummyGuard.ResetRecord();
