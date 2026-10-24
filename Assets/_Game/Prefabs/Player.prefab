@@ -165,7 +165,8 @@ MonoBehaviour:
   enemyTag: Enemy
   forwardWalkSpeed: 3
   backWalkSpeed: 2
-  jumpVelocity: 15
+  jumpHeight: 4.5
+  jumpAirFrames: 38
   forwardJumpSpeed: 4
   backJumpSpeed: 4
   gravity: 25
@@ -248,170 +249,187 @@ MonoBehaviour:
   CC_commandList:
   - commandName: "\uC804\uC778\uD30C\uB3D9\uAD8C"
     directionSequence: 020000000300000006000000020000000300000006000000
+    holdDirections: 
+    usableState: 0
     buttons: 15
     requireAllButtons: 0
     comboWindowFrames: 2
-    requireNeutralDirection: 0
     windowFrames: 5
     stepWindowFrames: 00000000000000000c000000000000000000000000000000
     priority: 20
     attack: {fileID: 0}
   - commandName: "\uC804\uC778\uD30C\uC7A5\uACA9"
     directionSequence: 020000000100000004000000020000000100000004000000
+    holdDirections: 
+    usableState: 0
     buttons: 15
     requireAllButtons: 0
     comboWindowFrames: 2
-    requireNeutralDirection: 0
     windowFrames: 5
     stepWindowFrames: 00000000000000000c000000000000000000000000000000
     priority: 20
     attack: {fileID: 0}
   - commandName: "\uC57D\uC2B9\uB8E1\uAD8C"
     directionSequence: 060000000200000003000000
+    holdDirections: 
+    usableState: 0
     buttons: 1
     requireAllButtons: 0
     comboWindowFrames: 2
-    requireNeutralDirection: 0
     windowFrames: 4
     stepWindowFrames: 0a0000000800000008000000
     priority: 10
     attack: {fileID: 0}
   - commandName: "\uC911\uC2B9\uB8E1\uAD8C"
     directionSequence: 060000000200000003000000
+    holdDirections: 
+    usableState: 0
     buttons: 2
     requireAllButtons: 0
     comboWindowFrames: 2
-    requireNeutralDirection: 0
     windowFrames: 4
     stepWindowFrames: 0a0000000800000008000000
     priority: 10
     attack: {fileID: 0}
   - commandName: "\uAC15\uC2B9\uB8E1\uAD8C"
     directionSequence: 060000000200000003000000
+    holdDirections: 
+    usableState: 0
     buttons: 4
     requireAllButtons: 0
     comboWindowFrames: 2
-    requireNeutralDirection: 0
     windowFrames: 5
     stepWindowFrames: 0a0000000800000008000000
     priority: 10
     attack: {fileID: 0}
   - commandName: "EX\uC2B9\uB8E1\uAD8C"
     directionSequence: 060000000200000003000000
+    holdDirections: 
+    usableState: 0
     buttons: 8
     requireAllButtons: 0
     comboWindowFrames: 2
-    requireNeutralDirection: 0
     windowFrames: 5
     stepWindowFrames: 0a0000000800000008000000
     priority: 10
     attack: {fileID: 0}
   - commandName: "\uC57D\uD30C\uB3D9\uAD8C"
     directionSequence: 020000000300000006000000
+    holdDirections: 
+    usableState: 0
     buttons: 1
     requireAllButtons: 0
     comboWindowFrames: 2
-    requireNeutralDirection: 0
     windowFrames: 5
     stepWindowFrames: 
     priority: 0
     attack: {fileID: 0}
   - commandName: "\uC911\uD30C\uB3D9\uAD8C"
     directionSequence: 020000000300000006000000
+    holdDirections: 
+    usableState: 0
     buttons: 2
     requireAllButtons: 0
     comboWindowFrames: 2
-    requireNeutralDirection: 0
     windowFrames: 5
     stepWindowFrames: 
     priority: 0
     attack: {fileID: 0}
   - commandName: "\uAC15\uD30C\uB3D9\uAD8C"
     directionSequence: 020000000300000006000000
+    holdDirections: 
+    usableState: 0
     buttons: 4
     requireAllButtons: 0
     comboWindowFrames: 2
-    requireNeutralDirection: 0
     windowFrames: 5
     stepWindowFrames: 
     priority: 0
     attack: {fileID: 0}
   - commandName: "EX\uD30C\uB3D9\uAD8C"
     directionSequence: 020000000300000006000000
+    holdDirections: 
+    usableState: 0
     buttons: 8
     requireAllButtons: 0
     comboWindowFrames: 2
-    requireNeutralDirection: 0
     windowFrames: 5
     stepWindowFrames: 
     priority: 0
     attack: {fileID: 0}
   - commandName: "\uC57D\uD30C\uC7A5\uACA9"
     directionSequence: 020000000100000004000000
+    holdDirections: 
+    usableState: 0
     buttons: 1
     requireAllButtons: 0
     comboWindowFrames: 2
-    requireNeutralDirection: 0
     windowFrames: 5
     stepWindowFrames: 
     priority: 0
     attack: {fileID: 0}
   - commandName: "\uC911\uD30C\uC7A5\uACA9"
     directionSequence: 020000000100000004000000
+    holdDirections: 
+    usableState: 0
     buttons: 2
     requireAllButtons: 0
     comboWindowFrames: 2
-    requireNeutralDirection: 0
     windowFrames: 5
     stepWindowFrames: 
     priority: 0
     attack: {fileID: 0}
   - commandName: "\uAC15\uD30C\uC7A5\uACA9"
     directionSequence: 020000000100000004000000
+    holdDirections: 
+    usableState: 0
     buttons: 4
     requireAllButtons: 0
     comboWindowFrames: 2
-    requireNeutralDirection: 0
     windowFrames: 5
     stepWindowFrames: 
     priority: 0
     attack: {fileID: 0}
   - commandName: "EX\uD30C\uC7A5\uACA9"
     directionSequence: 020000000100000004000000
+    holdDirections: 
+    usableState: 0
     buttons: 8
     requireAllButtons: 0
     comboWindowFrames: 2
-    requireNeutralDirection: 0
     windowFrames: 5
     stepWindowFrames: 
     priority: 0
     attack: {fileID: 0}
   - commandName: "\uC804\uC778\uC2A4\uD0DD"
     directionSequence: 0200000002000000
+    holdDirections: 
+    usableState: 0
     buttons: 15
     requireAllButtons: 0
     comboWindowFrames: 2
-    requireNeutralDirection: 0
     windowFrames: 10
     stepWindowFrames: 
     priority: 5
     attack: {fileID: 0}
   - commandName: "\uC7A1\uAE30"
     directionSequence: 
+    holdDirections: 
+    usableState: 0
     buttons: 3
     requireAllButtons: 1
     comboWindowFrames: 2
-    requireNeutralDirection: 1
     windowFrames: 0
     stepWindowFrames: 
     priority: 5
     attack: {fileID: 0}
   - commandName: "\uB3C4\uBC1C"
     directionSequence: 
+    holdDirections: 
+    usableState: 0
     buttons: 15
     requireAllButtons: 1
     comboWindowFrames: 2
-    requireNeutralDirection: 1
     windowFrames: 0
     stepWindowFrames: 
     priority: 10
@@ -430,3 +448,5 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Game.Character.CharacterAttack
   _characterCommand: {fileID: 6369145166792181835}
   CA_characterState: {fileID: 4803506849746667894}
+  CA_characterMove: {fileID: 0}
+  CA_opponentTag: Enemy

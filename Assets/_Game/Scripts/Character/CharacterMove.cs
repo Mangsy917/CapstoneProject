@@ -68,17 +68,21 @@ public class CharacterMove : MonoBehaviour
     [Tooltip("뒤로 걷는 속도")]
     [SerializeField] private float backWalkSpeed = 2.5f;
 
+    // 점프 전체 프레임 = 점프 준비(입력한 프레임 1 + jumpDirectionBufferFrames) + jumpAirFrames
+    // 기본값: 준비 5프레임(1~5, 지상) + 공중 38프레임(6~43) = 43프레임, 44프레임째부터 다시 땅에서 움직임
     [Header("점프")]
-    [Tooltip("점프 시작 시 위로 향하는 속도")]
-    [SerializeField] private float jumpVelocity = 8f;
-    [Tooltip("앞으로 점프할 때 가로 속도")]
+    [Tooltip("점프의 가장 높은 곳까지의 높이 (바닥 기준)")]
+    [SerializeField] private float jumpHeight = 2.88f;
+    [Tooltip("공중에 떠 있는 프레임 수 (공중 판정을 가지는 프레임). 높이와 상관없이 항상 이 프레임 수만에 착지함")]
+    [SerializeField] private int jumpAirFrames = 38;
+    [Tooltip("앞으로 점프할 때 가로 속도 (1초 = 60프레임 기준)")]
     [SerializeField] private float forwardJumpSpeed = 3f;
-    [Tooltip("뒤로 점프할 때 가로 속도")]
+    [Tooltip("뒤로 점프할 때 가로 속도 (1초 = 60프레임 기준)")]
     [SerializeField] private float backJumpSpeed = 3f;
-    [Tooltip("중력 가속도")]
+    [Tooltip("공격(승룡권 등)으로 뛰어올랐을 때의 중력 가속도. 일반 점프에는 쓰지 않음")]
     [SerializeField] private float gravity = 25f;
     [Tooltip("점프 입력(7, 8, 9) 후 이 프레임 수까지는 땅에서 방향 입력을 받고, 그다음 프레임에 점프함.\n" +
-             "예) 4면 1~4프레임까지 방향 전환 가능(8→9면 앞 점프), 5프레임째에 마지막 방향으로 점프")]
+             "예) 4면 입력한 프레임 포함 1~5프레임은 지상(2~5프레임까지 방향 전환 가능, 8→9면 앞 점프), 6프레임째부터 공중")]
     [SerializeField] private int jumpDirectionBufferFrames = 4;
 
     [Header("대쉬 / 달리기")]
@@ -139,6 +143,11 @@ public class CharacterMove : MonoBehaviour
     private bool isJumpStarting;         // 점프 준비 중인지
     private int jumpStartFrame;          // 점프 입력이 처음 들어온 프레임
     private int pendingJumpDirection = 8; // 점프 준비 중 마지막으로 받은 방향 (7, 8, 9)
+    private bool isNormalJumping;         // 레버 점프로 공중에 있는지 (공격으로 뛰어오른 것은 false)
+    private int jumpAirFrame;             // 레버 점프로 공중에 뜬 뒤 지난 프레임 (공중 첫 프레임 = 1)
+
+    // 레버 점프의 가로 이동을 프레임 단위로 맞추기 위한 한 프레임 시간 (게임은 60프레임 고정)
+    private const float FrameTime = 1f / 60f;
 
     // ===== 대쉬 / 달리기 내부 상태 =====
     private int previousRelativeDirection = 5;          // 직전 프레임의 상대 방향 (66 / 44 판정용)
@@ -203,6 +212,10 @@ public class CharacterMove : MonoBehaviour
             FindEnemy();
             searchTimer = searchInterval;
         }
+
+        // 레버 점프의 공중 프레임을 다 채웠으면 이번 프레임부터 땅에서 움직임 (착지한 프레임에 바로 다시 점프 가능)
+        if (isNormalJumping && jumpAirFrame >= jumpAirFrames)
+            Land();
 
         // 좌우 판정은 땅에 있을 때만 갱신 (점프로 상대를 넘어가는 도중에 조작이 뒤집히지 않도록)
         if (IsGrounded)
@@ -343,6 +356,7 @@ public class CharacterMove : MonoBehaviour
         StopForAttack();
         IsGrounded = true;
         airVelocity = Vector2.zero;
+        isNormalJumping = false;
         lastForwardTapFrame = int.MinValue / 2;
         lastBackTapFrame = int.MinValue / 2;
         appliedPosture = StatePosture.None; // 다음 프레임에 서기 자세를 다시 넣음
@@ -530,7 +544,7 @@ public class CharacterMove : MonoBehaviour
 
     /// <summary>
     /// 점프 준비 중: 입력한 프레임 이후 jumpDirectionBufferFrames(4)프레임까지는 방향을 계속 받고,
-    /// 그다음 프레임(5프레임째)에 마지막으로 받은 방향으로 점프
+    /// 그다음 프레임(입력한 프레임을 1로 세면 6프레임째)에 마지막으로 받은 방향으로 점프해서 공중에 뜸
     /// </summary>
     private void UpdateJumpStartup()
     {
@@ -563,6 +577,7 @@ public class CharacterMove : MonoBehaviour
     public void LaunchIntoAir(float forwardSpeed, float upSpeed)
     {
         isJumpStarting = false;
+        isNormalJumping = false;
         dashTimer = 0f;
         StopRun();
 
@@ -575,32 +590,67 @@ public class CharacterMove : MonoBehaviour
         airVelocity = new Vector2(facingSign * forwardSpeed, upSpeed);
     }
 
+    // 레버 점프 시작. 이 프레임이 공중 첫 프레임이므로 바로 한 프레임만큼 움직임
     private void StartJump(MoveState jumpState, float xSpeed)
     {
         CurrentState = jumpState;
         IsGrounded = false;
-        airVelocity = new Vector2(xSpeed, jumpVelocity);
+        isNormalJumping = true;
+        jumpAirFrame = 0;
+        airVelocity = new Vector2(xSpeed, 0f);
+        UpdateNormalJump();
     }
 
     private void UpdateAirborne()
     {
-        // 점프 방향은 점프 준비 때 정해지고, 공중에서는 바뀌지 않음
+        if (isNormalJumping)
+            UpdateNormalJump();
+        else
+            UpdateLaunch();
+    }
+
+    /// <summary>
+    /// 레버 점프: 공중 jumpAirFrames 프레임 동안 포물선을 그리고, 마지막 프레임에 바닥 높이에 닿음
+    /// (착지 처리는 다음 프레임 Update 처음에 함. 마지막 프레임까지 공중 판정)
+    /// 점프 방향은 점프 준비 때 정해지고, 공중에서는 바뀌지 않음
+    /// </summary>
+    private void UpdateNormalJump()
+    {
+        jumpAirFrame++;
+
+        // 공중에서 지난 비율 (0 → 1). 높이는 비율 0.5에서 jumpHeight가 되는 포물선
+        float progress = (float)jumpAirFrame / jumpAirFrames;
+
+        Vector3 pos = transform.position;
+        pos.x += airVelocity.x * FrameTime;
+        pos.y = groundY + 4f * jumpHeight * progress * (1f - progress);
+        transform.position = pos;
+    }
+
+    // 공격(승룡권 등)으로 뛰어올랐을 때: 속도와 중력으로 움직이고 바닥에 닿으면 착지
+    private void UpdateLaunch()
+    {
         airVelocity.y -= gravity * Time.deltaTime;
 
         Vector3 pos = transform.position;
         pos.x += airVelocity.x * Time.deltaTime;
         pos.y += airVelocity.y * Time.deltaTime;
-
-        // 착지
-        if (pos.y <= groundY)
-        {
-            pos.y = groundY;
-            IsGrounded = true;
-            airVelocity = Vector2.zero;
-            CurrentState = MoveState.Neutral;
-        }
-
         transform.position = pos;
+
+        if (pos.y <= groundY)
+            Land();
+    }
+
+    private void Land()
+    {
+        Vector3 pos = transform.position;
+        pos.y = groundY;
+        transform.position = pos;
+
+        IsGrounded = true;
+        isNormalJumping = false;
+        airVelocity = Vector2.zero;
+        CurrentState = MoveState.Neutral;
     }
 
     // =====================================================================
@@ -664,7 +714,8 @@ public class CharacterMove : MonoBehaviour
         if (backWalkSpeed < 0f) backWalkSpeed = 0f;
         if (forwardJumpSpeed < 0f) forwardJumpSpeed = 0f;
         if (backJumpSpeed < 0f) backJumpSpeed = 0f;
-        if (jumpVelocity < 0f) jumpVelocity = 0f;
+        if (jumpHeight < 0f) jumpHeight = 0f;
+        if (jumpAirFrames < 1) jumpAirFrames = 1;
         if (gravity < 0.01f) gravity = 0.01f;
         if (searchInterval < 0f) searchInterval = 0f;
         if (jumpDirectionBufferFrames < 0) jumpDirectionBufferFrames = 0;
