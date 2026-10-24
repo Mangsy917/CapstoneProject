@@ -298,7 +298,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cb1934b55e26d174b90b887d622b89ee, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Game.Character.DummyGuard
-  _resetFrames: 30
+  _resetFrames: 60
   DG_hitReaction: {fileID: 0}
 --- !u!1 &7336444245606331161
 GameObject:

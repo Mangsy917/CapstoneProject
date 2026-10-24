@@ -8,7 +8,7 @@ namespace Game.UI.Setting
     // - 스테퍼 값이 바뀌면 바로 적용하고, 설정창을 닫을 때도 한 번 더 적용함
     //   (설정창이 열려 있는 동안은 게임이 멈춰 있으므로 바로 적용해도 닫을 때 적용한 것과 같음)
     // - 스테퍼 선택지 순서는 DummyGuard.GuardMode / GuardType과 같아야 함
-    // - 카운트 가드 스테퍼는 1부터 시작함 (선택지 번호 + 1 = 횟수)
+    // - 카운트 가드 횟수는 스테퍼 선택지 글자(2 ~ 10)를 그대로 숫자로 씀
     public class GuardSetting : MonoBehaviour
     {
         [SerializeField] private SettingStepper GS_guardStepper;
@@ -39,8 +39,17 @@ namespace Game.UI.Setting
         {
             var mode = (DummyGuard.GuardMode)GetIndex(GS_guardStepper);
             var type = (DummyGuard.GuardType)GetIndex(_guardTypeStepper);
-            int countGuardLimit = GetIndex(_countGuardStepper) + 1;
-            DummyGuard.ApplySetting(mode, type, countGuardLimit);
+            DummyGuard.ApplySetting(mode, type, GetCountGuardLimit());
+        }
+
+        // 카운트 가드 스테퍼에서 고른 선택지 글자를 숫자로 바꿈 (숫자가 아니면 가장 작은 횟수 2)
+        private int GetCountGuardLimit()
+        {
+            const int minCount = 2;
+            if (_countGuardStepper == null || _countGuardStepper.options == null || _countGuardStepper.options.Length == 0) return minCount;
+
+            string option = _countGuardStepper.options[_countGuardStepper.Index];
+            return int.TryParse(option, out int count) ? count : minCount;
         }
 
         private int GetIndex(SettingStepper stepper)
