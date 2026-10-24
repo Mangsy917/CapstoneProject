@@ -6,7 +6,8 @@ namespace Game.Character
     // 장풍 같은 투사체. CharacterAttack이 생성한 뒤 Launch로 날아갈 방향, 쏜 캐릭터, 맞힐 상대 태그를 정함
     // - 바라보는 쪽으로 일정한 속도로 날아감
     // - 화면(카메라에 보이는 범위) 밖으로 완전히 나가면 사라짐
-    // - 상대 캐릭터(맞힐 태그)에 닿으면 사라짐 (데미지는 아직 없음)
+    // - 상대 캐릭터(맞힐 태그)의 피격 상자(Hurtbox)에 닿으면 데미지를 주고 사라짐
+    //   (피격 상자가 없는 상대는 Pushbox, 없으면 Collider 범위로 판정)
     // - 쏜 캐릭터의 투사체가 남아 있는 동안은 같은 캐릭터가 투사체 공격을 다시 쓸 수 없음 (HasActiveProjectile)
     public class Projectile : MonoBehaviour
     {
@@ -28,6 +29,7 @@ namespace Game.Character
         private float P_direction = 1f; // 1이면 오른쪽, -1이면 왼쪽
         private GameObject _owner;
         private string _targetTag = "Enemy";
+        private int P_damage; // 맞혔을 때 줄 데미지 (쏜 공격의 AttackData 값)
 
         /// <summary>owner가 쏜 투사체가 아직 남아 있는지</summary>
         public static bool HasActiveProjectile(GameObject owner)
@@ -54,11 +56,12 @@ namespace Game.Character
             _activeProjectiles.Remove(this);
         }
 
-        public void Launch(bool isFacingRight, GameObject owner, string targetTag)
+        public void Launch(bool isFacingRight, GameObject owner, string targetTag, int damage)
         {
             P_direction = isFacingRight ? 1f : -1f;
             _owner = owner;
             _targetTag = targetTag;
+            P_damage = damage;
             if (P_spriteRenderer != null) P_spriteRenderer.flipX = !isFacingRight;
         }
 
@@ -66,8 +69,17 @@ namespace Game.Character
         {
             transform.position += new Vector3(P_direction * _speed * Time.deltaTime, 0f, 0f);
 
-            if (IsHittingTarget() || IsOutOfScreen())
+            GameObject hitTarget = FindHitTarget();
+            if (hitTarget != null)
+            {
+                var health = hitTarget.GetComponent<CharacterHealth>();
+                if (health != null) health.TakeDamage(P_damage);
                 DestroyProjectile();
+            }
+            else if (IsOutOfScreen())
+            {
+                DestroyProjectile();
+            }
         }
 
         private void DestroyProjectile()
@@ -89,8 +101,9 @@ namespace Game.Character
             return mainCamera.WorldToViewportPoint(new Vector3(bounds.max.x, bounds.center.y, bounds.center.z)).x < 0f;
         }
 
-        // 맞힐 태그의 캐릭터 중 하나라도 공격 판정 상자와 겹치는지 (상대의 Pushbox, 없으면 Collider 범위로 판정)
-        private bool IsHittingTarget()
+        // 맞힐 태그의 캐릭터 중 공격 판정 상자와 겹치는 캐릭터 (없으면 null)
+        // 상대의 피격 상자(Hurtbox)로 판정하고, 피격 상자가 없으면 Pushbox, 그것도 없으면 Collider 범위로 판정
+        private GameObject FindHitTarget()
         {
             Vector2 center = (Vector2)transform.position + new Vector2(_hitboxOffset.x * P_direction, _hitboxOffset.y);
             Vector2 halfSize = new Vector2(Mathf.Abs(_hitboxSize.x), Mathf.Abs(_hitboxSize.y)) * 0.5f;
@@ -98,6 +111,12 @@ namespace Game.Character
             foreach (GameObject target in GameObject.FindGameObjectsWithTag(_targetTag))
             {
                 if (target == _owner) continue;
+
+                if (Hurtbox.HasHurtbox(target))
+                {
+                    if (Hurtbox.IsHitting(target, center, _hitboxSize)) return target;
+                    continue;
+                }
 
                 float targetCenterX, targetHalfWidth, targetBottom, targetTop;
                 var pushbox = target.GetComponent<Pushbox>();
@@ -121,9 +140,9 @@ namespace Game.Character
 
                 bool isOverlappingX = Mathf.Abs(targetCenterX - center.x) < targetHalfWidth + halfSize.x;
                 bool isOverlappingY = center.y - halfSize.y < targetTop && targetBottom < center.y + halfSize.y;
-                if (isOverlappingX && isOverlappingY) return true;
+                if (isOverlappingX && isOverlappingY) return target;
             }
-            return false;
+            return null;
         }
 
         // 씬 뷰에서 공격 판정 상자를 빨간 사각형으로 보여줌

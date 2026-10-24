@@ -14,6 +14,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Game.Character.AttackData
   _attackName: 22
   _height: 0
+  AD_damage: 800
+  AD_hitboxSize: {x: 1, y: 0.8}
+  AD_hitboxOffset: {x: 0.9, y: -0.2}
   _startupFrames: 12
   _activeFrames: 3
   _recoveryFrames: 25
@@ -36,6 +39,7 @@ MonoBehaviour:
     _recoveryFrames: 23
   _traitWindows: []
   _launchFrame: 0
+  _shouldLaunchAtStartup: 0
   _launchForwardDistance: 1.44
   _launchHeight: 1.62
   _launchAirFrames: 43

@@ -14,6 +14,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Game.Character.AttackData
   _attackName: 623
   _height: 0
+  AD_damage: 1200
+  AD_hitboxSize: {x: 0.7, y: 1.4}
+  AD_hitboxOffset: {x: 0.6, y: 0.8}
   _startupFrames: 3
   _activeFrames: 10
   _recoveryFrames: 25
@@ -41,6 +44,7 @@ MonoBehaviour:
     _armorHeights: 0
     _armorHitCount: 0
   _launchFrame: 3
+  _shouldLaunchAtStartup: 1
   _launchForwardDistance: 1.44
   _launchHeight: 1.62
   _launchAirFrames: 43

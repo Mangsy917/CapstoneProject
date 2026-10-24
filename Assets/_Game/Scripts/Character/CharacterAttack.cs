@@ -56,6 +56,7 @@ namespace Game.Character
         private int[] _remainingArmorHits = new int[0];
 
         private bool _isAirAttack; // 점프 중에 시작한 공격인지 (착지하면 끝남)
+        private bool _hasHit;      // 이번 공격이 이미 상대를 맞혔는지 (한 번 맞히면 지속 프레임이 남아도 다시 맞히지 않음)
         private int _landingFrame;  // 착지 경직이 시작된 뒤 지난 프레임 (착지한 프레임 = 1)
 
         // 공중에서 프레임이 다 끝난 공격. 착지하면 이 공격의 착지 경직을 시작함
@@ -138,11 +139,15 @@ namespace Game.Character
             if (CurrentAttack.ProjectilePrefab != null && AttackFrame == CurrentAttack.GetProjectileSpawnFrame(CurrentFrames))
                 SpawnProjectile(CurrentAttack);
 
-            if (AttackFrame == CurrentAttack.LaunchFrame && CA_characterMove != null)
+            if (AttackFrame == CurrentAttack.GetLaunchFrame(CurrentFrames) && CA_characterMove != null)
             {
                 CA_characterMove.LaunchIntoAir(forwardDistance: CurrentAttack.LaunchForwardDistance, height: CurrentAttack.LaunchHeight, airFrames: CurrentAttack.LaunchAirFrames);
                 _isAirAttack = true; // 뛰어오른 뒤 착지하면 공격이 끝남
             }
+
+            // 지속 프레임 동안 공격 판정 상자가 상대의 피격 상자에 닿으면 데미지 (공격 한 번에 한 번만)
+            if (CurrentPhase == AttackPhase.Active && !_hasHit && CurrentAttack.HasHitbox)
+                TryHitOpponent(CurrentAttack);
         }
 
         private bool IsGrounded()
@@ -162,7 +167,36 @@ namespace Game.Character
             Vector3 position = transform.position + new Vector3(isFacingRight ? offset.x : -offset.x, offset.y, 0f);
 
             Projectile projectile = Instantiate(attack.ProjectilePrefab, position, Quaternion.identity);
-            projectile.Launch(isFacingRight, owner: gameObject, targetTag: CA_opponentTag);
+            projectile.Launch(isFacingRight, owner: gameObject, targetTag: CA_opponentTag, damage: attack.Damage);
+        }
+
+        // 공격 판정 상자와 겹치는 상대(피격 상자)가 있으면 데미지를 줌
+        private void TryHitOpponent(AttackData attack)
+        {
+            float facingSign = IsFacingRight() ? 1f : -1f;
+            Vector2 offset = attack.HitboxOffset;
+            Vector2 hitboxCenter = (Vector2)transform.position + new Vector2(offset.x * facingSign, offset.y);
+
+            foreach (GameObject opponent in GameObject.FindGameObjectsWithTag(CA_opponentTag))
+            {
+                if (opponent == gameObject || !Hurtbox.IsHitting(opponent, hitboxCenter, attack.HitboxSize)) continue;
+
+                _hasHit = true;
+                var health = opponent.GetComponent<CharacterHealth>();
+                if (health != null) health.TakeDamage(attack.Damage);
+                return;
+            }
+        }
+
+        // 씬 뷰에서 지금 공격의 판정 상자를 빨간 사각형으로 보여줌 (플레이 중, 이 오브젝트를 선택했을 때)
+        private void OnDrawGizmosSelected()
+        {
+            if (!IsAttacking || !CurrentAttack.HasHitbox) return;
+
+            float facingSign = IsFacingRight() ? 1f : -1f;
+            Vector2 offset = CurrentAttack.HitboxOffset;
+            Gizmos.color = CurrentPhase == AttackPhase.Active ? Color.red : new Color(1f, 0.5f, 0.5f, 0.4f);
+            Gizmos.DrawWireCube(transform.position + new Vector3(offset.x * facingSign, offset.y, 0f), new Vector3(CurrentAttack.HitboxSize.x, CurrentAttack.HitboxSize.y, 0.1f));
         }
 
         // 공격 중에 들어온 커맨드는 무시함 (캔슬은 아직 없음)
@@ -179,6 +213,7 @@ namespace Game.Character
             CurrentFrames = attack.GetFrames(button);
             AttackFrame = 0; // 이번 프레임 Update에서 1이 됨
             _isAirAttack = !IsGrounded();
+            _hasHit = false;
             _pendingLandingAttack = null; // 공중에서 다시 공격하면 새 공격의 착지 경직을 따름
 
             var windows = attack.TraitWindows;

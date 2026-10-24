@@ -126,6 +126,15 @@ namespace Game.Character
         [Header("판정")]
         [SerializeField] private AttackHeight _height = AttackHeight.High;
 
+        [Tooltip("맞혔을 때 상대 체력을 줄이는 양 (투사체도 이 값을 씀)")]
+        [SerializeField] private int AD_damage = 500;
+
+        [Tooltip("공격 판정 상자 크기 (월드 단위). 지속 프레임 동안 상대의 피격 상자(Hurtbox)와 겹치면 맞음.\n0이면 직접 맞히는 판정이 없음 (장풍만 쓰는 기술 등)")]
+        [SerializeField] private Vector2 AD_hitboxSize = new Vector2(0.8f, 0.4f);
+
+        [Tooltip("공격 판정 상자 중심 위치 (캐릭터 위치 기준, x는 바라보는 쪽이 +)")]
+        [SerializeField] private Vector2 AD_hitboxOffset = new Vector2(0.8f, 0.3f);
+
         [Header("프레임")]
         [Tooltip("발생 프레임: 공격 판정이 처음 나오는 프레임.\n예) 5면 1~4프레임은 준비, 5프레임부터 공격 판정")]
         [SerializeField] private int _startupFrames = 5;
@@ -146,6 +155,8 @@ namespace Game.Character
         [Header("공중으로 뛰어오르기")]
         [Tooltip("이 프레임에 앞으로 뛰어오름 (공격 시작 프레임 = 1). 0이면 뛰어오르지 않음")]
         [SerializeField] private int _launchFrame = 0;
+        [Tooltip("체크하면 Launch Frame 대신 발생 프레임에 뛰어오름 (누른 버튼마다 발생 프레임이 달라도 맞춰짐)")]
+        [SerializeField] private bool _shouldLaunchAtStartup = false;
         [Tooltip("공중에 있는 동안 앞으로 가는 전체 거리 (음수면 뒤로)")]
         [SerializeField] private float _launchForwardDistance = 1.44f;
         [Tooltip("가장 높은 곳까지의 높이 (바닥 기준)")]
@@ -174,7 +185,10 @@ namespace Game.Character
         [SerializeField] private Vector2 _projectileSpawnOffset = new Vector2(1f, 0.3f);
 
         public string AttackName => _attackName;
-        public int LaunchFrame => _launchFrame;
+        public int Damage => AD_damage;
+        public Vector2 HitboxSize => AD_hitboxSize;
+        public Vector2 HitboxOffset => AD_hitboxOffset;
+        public bool HasHitbox => AD_hitboxSize.x > 0f && AD_hitboxSize.y > 0f;
         public float LaunchForwardDistance => _launchForwardDistance;
         public float LaunchHeight => _launchHeight;
         public int LaunchAirFrames => _launchAirFrames;
@@ -204,6 +218,12 @@ namespace Game.Character
             return DefaultFrames;
         }
 
+        /// <summary>뛰어오르는 프레임 (0이면 뛰어오르지 않음, 발생 프레임에 맞추게 했으면 이번 공격의 발생 프레임)</summary>
+        public int GetLaunchFrame(AttackFrames frames)
+        {
+            return _shouldLaunchAtStartup ? frames.FirstActiveFrame : _launchFrame;
+        }
+
         /// <summary>투사체를 생성할 프레임 (0으로 두었으면 이번 공격의 발생 프레임)</summary>
         public int GetProjectileSpawnFrame(AttackFrames frames)
         {
@@ -225,6 +245,9 @@ namespace Game.Character
             if (_activeFrames < 1) _activeFrames = 1;
             if (_recoveryFrames < 0) _recoveryFrames = 0;
             if (_projectileSpawnFrame < 0) _projectileSpawnFrame = 0;
+            if (AD_damage < 0) AD_damage = 0;
+            if (AD_hitboxSize.x < 0f) AD_hitboxSize.x = 0f;
+            if (AD_hitboxSize.y < 0f) AD_hitboxSize.y = 0f;
             if (_launchFrame < 0) _launchFrame = 0;
             if (_launchHeight < 0f) _launchHeight = 0f;
             if (_launchAirFrames < 1) _launchAirFrames = 1;

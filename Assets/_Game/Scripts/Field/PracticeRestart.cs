@@ -12,7 +12,7 @@ namespace Game.Field
     //   레버 없음: 설정해 둔 위치
     //   대각선은 좌우가 위치, 위아래가 사이드를 정함 (예: 왼쪽 위 = 2P 자리 + 왼쪽 벽, 오른쪽 아래 = 1P 자리 + 오른쪽 벽)
     //   바꾼 값은 설정창의 시작 위치 / 시작 사이드에도 그대로 반영됨
-    // - 하던 점프, 대쉬, 달리기, 공격, 착지 경직, 입력 버퍼를 모두 취소하고 날아가던 투사체를 지움
+    // - 하던 점프, 대쉬, 달리기, 공격, 착지 경직, 입력 버퍼를 모두 취소하고 날아가던 투사체를 지움, 두 캐릭터의 체력을 가득 채움
     // - 설정창이 열려 있을 때는 캐릭터 조작 입력(InputReader)이 꺼져 있으므로 재시작되지 않음
     public class PracticeRestart : MonoBehaviour
     {
@@ -51,6 +51,7 @@ namespace Game.Field
             foreach (var attack in FindObjectsByType<CharacterAttack>(FindObjectsSortMode.None)) attack.CancelAttack();
             foreach (var command in FindObjectsByType<CharacterCommand>(FindObjectsSortMode.None)) command.ClearBuffer();
             foreach (var projectile in FindObjectsByType<Projectile>(FindObjectsSortMode.None)) Destroy(projectile.gameObject);
+            foreach (var health in FindObjectsByType<CharacterHealth>(FindObjectsSortMode.None)) health.ResetHealth();
 
             bool isUp = direction >= 7;
             bool isDown = direction <= 3;
