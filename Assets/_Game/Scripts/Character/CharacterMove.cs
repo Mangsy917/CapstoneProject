@@ -88,14 +88,15 @@ public class CharacterMove : MonoBehaviour
     [Header("대쉬 / 달리기")]
     [Tooltip("같은 방향을 두 번 누를 때(66, 44), 첫 입력 후 이 프레임 수 이내에 다시 눌러야 대쉬로 인정")]
     [SerializeField] private int dashInputWindowFrames = 12;
-    [Tooltip("앞대쉬 속도 (걷기보다 빠르게)")]
-    [SerializeField] private float forwardDashSpeed = 8f;
-    [Tooltip("앞대쉬 지속 시간(초)")]
-    [SerializeField] private float forwardDashDuration = 0.2f;
-    [Tooltip("백대쉬 속도 (걷기보다 빠르게)")]
-    [SerializeField] private float backDashSpeed = 7f;
-    [Tooltip("백대쉬 지속 시간(초)")]
-    [SerializeField] private float backDashDuration = 0.25f;
+    // 대쉬를 시작한 프레임(66의 두 번째 6을 누른 프레임)을 1로 세서 이 프레임 수만큼 움직이고, 그다음 프레임부터 다른 동작이 가능
+    [Tooltip("앞대쉬로 움직이는 전체 거리")]
+    [SerializeField] private float forwardDashDistance = 1.2f;
+    [Tooltip("앞대쉬 전체 프레임 수")]
+    [SerializeField] private int forwardDashFrames = 19;
+    [Tooltip("백대쉬로 움직이는 전체 거리 (앞대쉬보다 짧게)")]
+    [SerializeField] private float backDashDistance = 1f;
+    [Tooltip("백대쉬 전체 프레임 수")]
+    [SerializeField] private int backDashFrames = 23;
     [Tooltip("달리기 속도 = 앞으로 걷는 속도 × 이 배율")]
     [SerializeField] private float runSpeedMultiplier = 1.5f;
     [Tooltip("달리는 중 Enemy와 겹치면, 이 시간(초) 뒤 자동으로 달리기를 멈춤")]
@@ -153,7 +154,7 @@ public class CharacterMove : MonoBehaviour
     private int previousRelativeDirection = 5;          // 직전 프레임의 상대 방향 (66 / 44 판정용)
     private int lastForwardTapFrame = int.MinValue / 2; // 마지막으로 6을 새로 누른 프레임
     private int lastBackTapFrame = int.MinValue / 2;    // 마지막으로 4를 새로 누른 프레임
-    private float dashTimer;                            // 남은 대쉬 시간 (0보다 크면 대쉬 중)
+    private int dashFramesLeft;                         // 남은 대쉬 프레임 (0보다 크면 대쉬 중)
     private bool isRunning;
     private float runOverlapTimer = -1f;                // 달리는 중 Enemy와 겹친 뒤 지난 시간 (-1이면 아직 안 겹침)
     private Collider selfCollider;
@@ -310,11 +311,15 @@ public class CharacterMove : MonoBehaviour
         }
 
         // 대쉬 중이면 대쉬만 처리 (방향 입력 무시)
-        if (dashTimer > 0f)
+        if (dashFramesLeft > 0)
         {
             UpdateDash();
             return;
         }
+
+        // 대쉬 프레임을 다 채웠으면 이번 프레임부터 다른 동작 (앞대쉬 후 6을 누르고 있으면 달리기)
+        if (IsDashing || IsBackDashing)
+            EndDash();
 
         // 달리는 중이면 달리기 처리 (6을 놓으면 아래 일반 이동으로 넘어감)
         if (isRunning && UpdateRun())
@@ -370,7 +375,7 @@ public class CharacterMove : MonoBehaviour
     private void StopForAttack()
     {
         isJumpStarting = false;
-        dashTimer = 0f;
+        dashFramesLeft = 0;
         StopRun();
         CurrentState = MoveState.Neutral;
     }
@@ -378,6 +383,12 @@ public class CharacterMove : MonoBehaviour
     private void Move(float xSpeed)
     {
         transform.position += new Vector3(xSpeed * Time.deltaTime, 0f, 0f);
+    }
+
+    // 이번 프레임에 x만큼 움직임 (프레임 수로 정해진 동작에 사용)
+    private void MoveBy(float x)
+    {
+        transform.position += new Vector3(x, 0f, 0f);
     }
 
     // =====================================================================
@@ -413,7 +424,7 @@ public class CharacterMove : MonoBehaviour
             if (frameCounter - lastForwardTapFrame <= dashInputWindowFrames)
             {
                 lastForwardTapFrame = int.MinValue / 2; // 666이 대쉬 두 번으로 읽히지 않도록 초기화
-                StartDash(MoveState.ForwardDash, forwardDashDuration);
+                StartDash(MoveState.ForwardDash, forwardDashFrames);
                 return true;
             }
             lastForwardTapFrame = frameCounter;
@@ -424,7 +435,7 @@ public class CharacterMove : MonoBehaviour
             if (frameCounter - lastBackTapFrame <= dashInputWindowFrames)
             {
                 lastBackTapFrame = int.MinValue / 2;
-                StartDash(MoveState.BackDash, backDashDuration);
+                StartDash(MoveState.BackDash, backDashFrames);
                 return true;
             }
             lastBackTapFrame = frameCounter;
@@ -434,28 +445,30 @@ public class CharacterMove : MonoBehaviour
         return false;
     }
 
-    private void StartDash(MoveState dashState, float duration)
+    // 대쉬 시작. 이 프레임이 대쉬 첫 프레임이므로 바로 한 프레임만큼 움직임
+    private void StartDash(MoveState dashState, int frames)
     {
         CurrentState = dashState;
-        dashTimer = duration;
+        dashFramesLeft = frames;
         isRunning = false;
+        UpdateDash();
     }
 
+    // 전체 거리를 프레임 수로 나눠서 매 프레임 같은 거리만큼 움직임
     private void UpdateDash()
     {
         float facingSign = IsFacingRight ? 1f : -1f;
 
         if (CurrentState == MoveState.ForwardDash)
-            Move(facingSign * forwardDashSpeed);
+            MoveBy(facingSign * forwardDashDistance / forwardDashFrames);
         else
-            Move(-facingSign * backDashSpeed);
+            MoveBy(-facingSign * backDashDistance / backDashFrames);
 
-        dashTimer -= Time.deltaTime;
-        if (dashTimer > 0f) return;
+        dashFramesLeft--;
+    }
 
-        // 대쉬 끝
-        dashTimer = 0f;
-
+    private void EndDash()
+    {
         // 앞대쉬가 끝났을 때 6을 계속 누르고 있으면 달리기로 이어짐
         if (CurrentState == MoveState.ForwardDash && RelativeDirection == 6)
             StartRun();
@@ -578,7 +591,7 @@ public class CharacterMove : MonoBehaviour
     {
         isJumpStarting = false;
         isNormalJumping = false;
-        dashTimer = 0f;
+        dashFramesLeft = 0;
         StopRun();
 
         float facingSign = IsFacingRight ? 1f : -1f;
@@ -720,10 +733,10 @@ public class CharacterMove : MonoBehaviour
         if (searchInterval < 0f) searchInterval = 0f;
         if (jumpDirectionBufferFrames < 0) jumpDirectionBufferFrames = 0;
         if (dashInputWindowFrames < 1) dashInputWindowFrames = 1;
-        if (forwardDashSpeed < 0f) forwardDashSpeed = 0f;
-        if (backDashSpeed < 0f) backDashSpeed = 0f;
-        if (forwardDashDuration < 0f) forwardDashDuration = 0f;
-        if (backDashDuration < 0f) backDashDuration = 0f;
+        if (forwardDashDistance < 0f) forwardDashDistance = 0f;
+        if (backDashDistance < 0f) backDashDistance = 0f;
+        if (forwardDashFrames < 1) forwardDashFrames = 1;
+        if (backDashFrames < 1) backDashFrames = 1;
         if (runSpeedMultiplier < 0f) runSpeedMultiplier = 0f;
         if (runStopDelayAfterOverlap < 0f) runStopDelayAfterOverlap = 0f;
         if (overlapDistance < 0f) overlapDistance = 0f;

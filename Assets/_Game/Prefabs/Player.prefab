@@ -172,10 +172,10 @@ MonoBehaviour:
   gravity: 25
   jumpDirectionBufferFrames: 4
   dashInputWindowFrames: 20
-  forwardDashSpeed: 7
-  forwardDashDuration: 0.2
-  backDashSpeed: 6
-  backDashDuration: 0.25
+  forwardDashDistance: 1.2
+  forwardDashFrames: 19
+  backDashDistance: 1
+  backDashFrames: 23
   runSpeedMultiplier: 1.5
   runStopDelayAfterOverlap: 1
   overlapDistance: 1
