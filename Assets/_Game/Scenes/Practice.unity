@@ -39890,7 +39890,6 @@ MonoBehaviour:
   leftButton: {fileID: 428122210}
   rightButton: {fileID: 343205591}
   options:
-  - 1
   - 2
   - 3
   - 4
