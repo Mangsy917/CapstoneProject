@@ -48,6 +48,14 @@ namespace Game.Character
         /// <summary>착지 경직 중인지 (이 동안에도 IsAttacking은 true라서 움직일 수 없음)</summary>
         public bool IsLanding => CurrentPhase == AttackPhase.Landing;
 
+        /// <summary>
+        /// 지금 프레임에 완전 무적인지 (피격 상자를 모두 끔)
+        /// 버튼별 무적 프레임(예: EX 승룡권 1~8프레임) 또는 프레임 구간별 특성의 무적
+        /// </summary>
+        public bool IsInvincible =>
+            IsAttacking && !IsLanding &&
+            ((AttackFrame >= 1 && AttackFrame <= CurrentAttack.GetInvincibleFrames(_currentButton)) || HasTrait(AttackTrait.Invincible));
+
         public event Action<AttackData> OnAttackStarted;
         public event Action<AttackPhase> OnPhaseChanged;
         public event Action<AttackData> OnAttackEnded;

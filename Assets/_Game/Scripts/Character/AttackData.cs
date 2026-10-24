@@ -158,6 +158,9 @@ namespace Game.Character
             [Tooltip("이 버튼으로 나갔을 때의 공격 상자 중심 위치 (크기가 0이 아닐 때만 사용)")]
             [SerializeField] private Vector2 AD_attackBoxOffset = Vector2.zero;
 
+            [Tooltip("이 버튼으로 나갔을 때 공격 시작부터 이 프레임까지 완전 무적 (피격 상자가 모두 꺼짐). 0이면 무적 없음.\n예) 8이면 1~8프레임 무적")]
+            [SerializeField] private int _invincibleFrames = 0;
+
             public CharacterCommand.AttackButtonType Button => _button;
             public AttackFrames Frames => new AttackFrames(_startupFrames, _activeFrames, _recoveryFrames);
             public int Damage => AD_damage;
@@ -165,6 +168,7 @@ namespace Game.Character
             public bool HasAttackBox => AD_attackBoxSize.x > 0f && AD_attackBoxSize.y > 0f;
             public Vector2 AttackBoxSize => AD_attackBoxSize;
             public Vector2 AttackBoxOffset => AD_attackBoxOffset;
+            public int InvincibleFrames => _invincibleFrames;
 
             public void Validate()
             {
@@ -175,6 +179,7 @@ namespace Game.Character
                 if (_projectileDistancePerFrame < 0f) _projectileDistancePerFrame = 0f;
                 if (AD_attackBoxSize.x < 0f) AD_attackBoxSize.x = 0f;
                 if (AD_attackBoxSize.y < 0f) AD_attackBoxSize.y = 0f;
+                if (_invincibleFrames < 0) _invincibleFrames = 0;
             }
         }
 
@@ -298,6 +303,13 @@ namespace Game.Character
         {
             ButtonFrames buttonFrames = FindButtonFrames(button);
             return buttonFrames != null && buttonFrames.HasAttackBox ? buttonFrames.AttackBoxOffset : AD_attackBoxOffset;
+        }
+
+        /// <summary>이 버튼으로 나갔을 때 공격 시작부터 완전 무적인 프레임 수 (0이면 무적 없음)</summary>
+        public int GetInvincibleFrames(CharacterCommand.AttackButtonType button)
+        {
+            ButtonFrames buttonFrames = FindButtonFrames(button);
+            return buttonFrames != null ? buttonFrames.InvincibleFrames : 0;
         }
 
         /// <summary>이 버튼으로 나갔을 때 공격 상자가 있는지 (장풍만 쓰는 기술 등은 없음)</summary>
