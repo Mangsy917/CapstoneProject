@@ -163,8 +163,8 @@ MonoBehaviour:
   characterAttack: {fileID: 8184242940864822602}
   playerTag: Player
   enemyTag: Enemy
-  forwardWalkSpeed: 3
-  backWalkSpeed: 2
+  forwardWalkDistancePerFrame: 0.05
+  backWalkDistancePerFrame: 0.033333335
   jumpHeight: 4.5
   jumpAirFrames: 38
   forwardJumpSpeed: 4

@@ -63,10 +63,10 @@ public class CharacterMove : MonoBehaviour
     [SerializeField] private string enemyTag = "Enemy";
 
     [Header("걷기")]
-    [Tooltip("앞으로 걷는 속도")]
-    [SerializeField] private float forwardWalkSpeed = 3f;
-    [Tooltip("뒤로 걷는 속도")]
-    [SerializeField] private float backWalkSpeed = 2.5f;
+    [Tooltip("앞으로 걸을 때 1프레임에 움직이는 거리 (예: 0.05면 60프레임에 3)")]
+    [SerializeField] private float forwardWalkDistancePerFrame = 0.05f;
+    [Tooltip("뒤로 걸을 때 1프레임에 움직이는 거리")]
+    [SerializeField] private float backWalkDistancePerFrame = 2f / 60f;
 
     // 점프 전체 프레임 = 점프 준비(입력한 프레임 1 + jumpDirectionBufferFrames) + jumpAirFrames
     // 기본값: 준비 5프레임(1~5, 지상) + 공중 38프레임(6~43) = 43프레임, 44프레임째부터 다시 땅에서 움직임
@@ -338,11 +338,11 @@ public class CharacterMove : MonoBehaviour
             case 3: CurrentState = MoveState.Crouch; break;
             case 4:
                 CurrentState = MoveState.WalkBackGuard;
-                Move(-facingSign * backWalkSpeed);
+                MoveBy(-facingSign * backWalkDistancePerFrame);
                 break;
             case 6:
                 CurrentState = MoveState.WalkForward;
-                Move(facingSign * forwardWalkSpeed);
+                MoveBy(facingSign * forwardWalkDistancePerFrame);
                 break;
             case 7:
             case 8:
@@ -380,12 +380,7 @@ public class CharacterMove : MonoBehaviour
         CurrentState = MoveState.Neutral;
     }
 
-    private void Move(float xSpeed)
-    {
-        transform.position += new Vector3(xSpeed * Time.deltaTime, 0f, 0f);
-    }
-
-    // 이번 프레임에 x만큼 움직임 (프레임 수로 정해진 동작에 사용)
+    // 이번 프레임에 x만큼 움직임 (걷기, 대쉬, 달리기는 모두 프레임 기준)
     private void MoveBy(float x)
     {
         transform.position += new Vector3(x, 0f, 0f);
@@ -723,8 +718,8 @@ public class CharacterMove : MonoBehaviour
 
     private void OnValidate()
     {
-        if (forwardWalkSpeed < 0f) forwardWalkSpeed = 0f;
-        if (backWalkSpeed < 0f) backWalkSpeed = 0f;
+        if (forwardWalkDistancePerFrame < 0f) forwardWalkDistancePerFrame = 0f;
+        if (backWalkDistancePerFrame < 0f) backWalkDistancePerFrame = 0f;
         if (forwardJumpSpeed < 0f) forwardJumpSpeed = 0f;
         if (backJumpSpeed < 0f) backJumpSpeed = 0f;
         if (jumpHeight < 0f) jumpHeight = 0f;
