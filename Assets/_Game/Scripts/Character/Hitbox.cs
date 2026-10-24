@@ -12,10 +12,18 @@ namespace Game.Character
         [Tooltip("피격 범위로 쓸 BoxCollider. 비워두면 같은 오브젝트에서 찾음")]
         [SerializeField] private BoxCollider H_boxCollider;
 
+        // 모든 피격 상자의 z 두께 (월드 단위). 판정은 x, y로만 하므로 보기 좋게 통일하는 값
+        private const float Depth = 0.2f;
+
         private void Awake()
         {
             if (H_boxCollider == null) H_boxCollider = GetComponent<BoxCollider>();
-            if (H_boxCollider != null) H_boxCollider.isTrigger = true;
+            if (H_boxCollider == null) return;
+
+            H_boxCollider.isTrigger = true;
+            Vector3 size = H_boxCollider.size;
+            size.z = Depth / Mathf.Abs(transform.lossyScale.z);
+            H_boxCollider.size = size;
         }
 
         /// <summary>target(또는 그 자식)의 켜져 있는 피격 상자 중 하나라도 공격 상자와 겹치는지</summary>
@@ -56,7 +64,7 @@ namespace Game.Character
 
             Vector3 scale = transform.lossyScale;
             H_boxCollider.center = transform.InverseTransformPoint(worldCenter);
-            H_boxCollider.size = new Vector3(worldSize.x / Mathf.Abs(scale.x), worldSize.y / Mathf.Abs(scale.y), H_boxCollider.size.z);
+            H_boxCollider.size = new Vector3(worldSize.x / Mathf.Abs(scale.x), worldSize.y / Mathf.Abs(scale.y), Depth / Mathf.Abs(scale.z));
         }
     }
 }

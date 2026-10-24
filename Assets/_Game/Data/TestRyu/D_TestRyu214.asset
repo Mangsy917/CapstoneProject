@@ -14,55 +14,63 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Game.Character.AttackData
   _attackName: 214
   _height: 0
-  AD_damage: 1000
-  AD_attackBoxSize: {x: 1.09, y: 0.49}
-  AD_attackBoxOffset: {x: 1.057, y: 0.067}
+  AD_damage: 800
+  AD_attackBoxSize: {x: 0.8, y: 0.85}
+  AD_attackBoxOffset: {x: 0.738, y: 0.11}
   _shouldHideTopHitbox: 0
   _extraHitboxes:
-  - AD_size: {x: 1.2, y: 0.717}
-    AD_offset: {x: 1.114, y: 0.138}
+  - AD_size: {x: 0.62, y: 0.72}
+    AD_offset: {x: 0.638, y: 0.11}
     _framesBeforeActive: 2
-    _framesAfterActive: 11
-  - AD_size: {x: 1.075, y: 0.573}
-    AD_offset: {x: -0.96, y: 0.141}
+    _framesAfterActive: 17
+  - AD_size: {x: 0.59, y: 0.85}
+    AD_offset: {x: 0.743, y: -0.675}
     _framesBeforeActive: 2
-    _framesAfterActive: 11
-  _startupFrames: 14
-  _activeFrames: 17
-  _recoveryFrames: 11
+    _framesAfterActive: 17
+  _startupFrames: 19
+  _activeFrames: 6
+  _recoveryFrames: 17
   _buttonFrames:
   - _button: 1
     _startupFrames: 12
-    _activeFrames: 3
-    _recoveryFrames: 14
-    AD_damage: 900
+    _activeFrames: 6
+    _recoveryFrames: 18
+    AD_damage: 700
     _projectileDistancePerFrame: 0
+    AD_attackBoxSize: {x: 0.575, y: 0.85}
+    AD_attackBoxOffset: {x: 0.625, y: 0.12}
   - _button: 2
-    _startupFrames: 14
-    _activeFrames: 17
-    _recoveryFrames: 11
-    AD_damage: 1000
+    _startupFrames: 19
+    _activeFrames: 6
+    _recoveryFrames: 17
+    AD_damage: 800
     _projectileDistancePerFrame: 0
+    AD_attackBoxSize: {x: 0.8, y: 0.85}
+    AD_attackBoxOffset: {x: 0.738, y: 0.11}
   - _button: 4
-    _startupFrames: 16
-    _activeFrames: 32
-    _recoveryFrames: 14
-    AD_damage: 1200
+    _startupFrames: 30
+    _activeFrames: 6
+    _recoveryFrames: 19
+    AD_damage: 800
     _projectileDistancePerFrame: 0
+    AD_attackBoxSize: {x: 0.8, y: 0.8}
+    AD_attackBoxOffset: {x: 0.885, y: 0.09}
   - _button: 8
-    _startupFrames: 13
-    _activeFrames: 25
-    _recoveryFrames: 10
-    AD_damage: 1000
+    _startupFrames: 18
+    _activeFrames: 6
+    _recoveryFrames: 20
+    AD_damage: 1100
     _projectileDistancePerFrame: 0
+    AD_attackBoxSize: {x: 0.785, y: 0.8}
+    AD_attackBoxOffset: {x: 0.823, y: 0.075}
   _traitWindows: []
   _launchFrame: 0
-  _shouldLaunchAtStartup: 1
+  _shouldLaunchAtStartup: 0
   _launchForwardDistance: 1.8
   _launchHeight: 0.3
-  _launchAirFrames: 0
-  _holdUntilLanding: 1
-  _landingRecoveryFrames: 18
+  _launchAirFrames: 43
+  _holdUntilLanding: 0
+  _landingRecoveryFrames: 0
   _landingAnimationState: 
   _animationState: 214
   _projectilePrefab: {fileID: 0}

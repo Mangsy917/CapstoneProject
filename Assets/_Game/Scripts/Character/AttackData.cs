@@ -152,10 +152,19 @@ namespace Game.Character
             [Tooltip("이 버튼으로 나갔을 때 투사체가 1프레임에 날아가는 거리. 0이면 투사체 프리팹의 값 사용")]
             [SerializeField] private float _projectileDistancePerFrame = 0f;
 
+            [Tooltip("이 버튼으로 나갔을 때의 공격 상자 크기. 0이면 위의 기본 공격 상자 사용")]
+            [SerializeField] private Vector2 AD_attackBoxSize = Vector2.zero;
+
+            [Tooltip("이 버튼으로 나갔을 때의 공격 상자 중심 위치 (크기가 0이 아닐 때만 사용)")]
+            [SerializeField] private Vector2 AD_attackBoxOffset = Vector2.zero;
+
             public CharacterCommand.AttackButtonType Button => _button;
             public AttackFrames Frames => new AttackFrames(_startupFrames, _activeFrames, _recoveryFrames);
             public int Damage => AD_damage;
             public float ProjectileDistancePerFrame => _projectileDistancePerFrame;
+            public bool HasAttackBox => AD_attackBoxSize.x > 0f && AD_attackBoxSize.y > 0f;
+            public Vector2 AttackBoxSize => AD_attackBoxSize;
+            public Vector2 AttackBoxOffset => AD_attackBoxOffset;
 
             public void Validate()
             {
@@ -164,6 +173,8 @@ namespace Game.Character
                 if (_recoveryFrames < 0) _recoveryFrames = 0;
                 if (AD_damage < 0) AD_damage = 0;
                 if (_projectileDistancePerFrame < 0f) _projectileDistancePerFrame = 0f;
+                if (AD_attackBoxSize.x < 0f) AD_attackBoxSize.x = 0f;
+                if (AD_attackBoxSize.y < 0f) AD_attackBoxSize.y = 0f;
             }
         }
 
@@ -273,6 +284,27 @@ namespace Game.Character
         {
             ButtonFrames buttonFrames = FindButtonFrames(button);
             return buttonFrames != null && buttonFrames.Damage > 0 ? buttonFrames.Damage : AD_damage;
+        }
+
+        /// <summary>이 버튼으로 나갔을 때의 공격 상자 크기 (버튼별 공격 상자가 없으면 기본 공격 상자)</summary>
+        public Vector2 GetAttackBoxSize(CharacterCommand.AttackButtonType button)
+        {
+            ButtonFrames buttonFrames = FindButtonFrames(button);
+            return buttonFrames != null && buttonFrames.HasAttackBox ? buttonFrames.AttackBoxSize : AD_attackBoxSize;
+        }
+
+        /// <summary>이 버튼으로 나갔을 때의 공격 상자 중심 위치 (버튼별 공격 상자가 없으면 기본 공격 상자)</summary>
+        public Vector2 GetAttackBoxOffset(CharacterCommand.AttackButtonType button)
+        {
+            ButtonFrames buttonFrames = FindButtonFrames(button);
+            return buttonFrames != null && buttonFrames.HasAttackBox ? buttonFrames.AttackBoxOffset : AD_attackBoxOffset;
+        }
+
+        /// <summary>이 버튼으로 나갔을 때 공격 상자가 있는지 (장풍만 쓰는 기술 등은 없음)</summary>
+        public bool HasAttackBoxFor(CharacterCommand.AttackButtonType button)
+        {
+            Vector2 size = GetAttackBoxSize(button);
+            return size.x > 0f && size.y > 0f;
         }
 
         /// <summary>이 버튼으로 나갔을 때 투사체가 1프레임에 날아가는 거리 (0이면 투사체 프리팹의 값)</summary>

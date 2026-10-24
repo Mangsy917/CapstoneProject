@@ -82,7 +82,7 @@ namespace Game.Character
 
                 var boxCollider = extraObject.AddComponent<BoxCollider>();
                 boxCollider.isTrigger = true;
-                _extraHitboxPool.Add(extraObject.AddComponent<Hitbox>());
+                _extraHitboxPool.Add(extraObject.AddComponent<Hitbox>()); // Hitbox가 z 두께를 0.2로 맞춤
             }
             return _extraHitboxPool[index];
         }

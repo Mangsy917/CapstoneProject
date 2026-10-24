@@ -147,7 +147,7 @@ namespace Game.Character
             }
 
             // 지속 프레임 동안 공격 상자가 상대의 피격 상자에 닿으면 데미지 (공격 한 번에 한 번만)
-            if (CurrentPhase == AttackPhase.Active && !_hasHit && CurrentAttack.HasAttackBox)
+            if (CurrentPhase == AttackPhase.Active && !_hasHit && CurrentAttack.HasAttackBoxFor(_currentButton))
                 TryHitOpponent(CurrentAttack);
         }
 
@@ -175,12 +175,12 @@ namespace Game.Character
         private void TryHitOpponent(AttackData attack)
         {
             float facingSign = IsFacingRight() ? 1f : -1f;
-            Vector2 offset = attack.AttackBoxOffset;
+            Vector2 offset = attack.GetAttackBoxOffset(_currentButton);
             Vector2 attackBoxCenter = (Vector2)transform.position + new Vector2(offset.x * facingSign, offset.y);
 
             foreach (GameObject opponent in GameObject.FindGameObjectsWithTag(CA_opponentTag))
             {
-                if (opponent == gameObject || !Hitbox.IsHitting(opponent, attackBoxCenter, attack.AttackBoxSize)) continue;
+                if (opponent == gameObject || !Hitbox.IsHitting(opponent, attackBoxCenter, attack.GetAttackBoxSize(_currentButton))) continue;
 
                 _hasHit = true;
                 var health = opponent.GetComponent<CharacterHealth>();
@@ -192,12 +192,12 @@ namespace Game.Character
         // 씬 뷰에서 지금 공격의 공격 상자를 빨간 사각형으로 보여줌 (플레이 중, 이 오브젝트를 선택했을 때)
         private void OnDrawGizmosSelected()
         {
-            if (!IsAttacking || !CurrentAttack.HasAttackBox) return;
+            if (!IsAttacking || !CurrentAttack.HasAttackBoxFor(_currentButton)) return;
 
             float facingSign = IsFacingRight() ? 1f : -1f;
-            Vector2 offset = CurrentAttack.AttackBoxOffset;
+            Vector2 offset = CurrentAttack.GetAttackBoxOffset(_currentButton);
             Gizmos.color = CurrentPhase == AttackPhase.Active ? Color.red : new Color(1f, 0.5f, 0.5f, 0.4f);
-            Gizmos.DrawWireCube(transform.position + new Vector3(offset.x * facingSign, offset.y, 0f), new Vector3(CurrentAttack.AttackBoxSize.x, CurrentAttack.AttackBoxSize.y, 0.1f));
+            Gizmos.DrawWireCube(transform.position + new Vector3(offset.x * facingSign, offset.y, 0f), (Vector3)CurrentAttack.GetAttackBoxSize(_currentButton) + new Vector3(0f, 0f, 0.1f));
         }
 
         // 공격 중에 들어온 커맨드는 무시함 (캔슬은 아직 없음)

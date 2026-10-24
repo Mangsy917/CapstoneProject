@@ -18,11 +18,7 @@ MonoBehaviour:
   AD_attackBoxSize: {x: 0.829, y: 0.614}
   AD_attackBoxOffset: {x: 1.011, y: -0.55}
   _shouldHideTopHitbox: 0
-  _extraHitboxes:
-  - AD_size: {x: 0.758, y: 1.367}
-    AD_offset: {x: 0.878, y: -0.189}
-    _framesBeforeActive: 2
-    _framesAfterActive: 0
+  _extraHitboxes: []
   _startupFrames: 9
   _activeFrames: 6
   _recoveryFrames: 0
