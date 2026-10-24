@@ -7,7 +7,7 @@ namespace Game.Character
     // 캐릭터(Player, Enemy)에 붙여서 사용하는 체력
     // - 공격(CharacterAttack)이나 투사체(Projectile)에 맞으면 TakeDamage로 줄어듦 (0 아래로는 내려가지 않음)
     // - 설정창(파라미터 탭)의 체력 % / 체력 방식을 따름 (HealthSetting이 태그별로 넣어줌)
-    //   자동 회복: 맞은 뒤 한동안 맞지 않으면 설정한 체력까지 회복
+    //   자동 회복: 맞은 뒤 한동안 맞지 않으면 설정한 체력까지 회복. 체력이 1 아래로 내려가지 않음 (KO 없음)
     //   항상 고정: 맞아도 줄어들지 않음
     //   일반: 맞은 만큼 계속 줄어듦
     // - 연습 재시작(PracticeRestart) 때 ResetHealth로 설정한 체력이 됨
@@ -131,7 +131,9 @@ namespace Game.Character
                 return;
             }
 
-            CurrentHealth = Mathf.Max(0, CurrentHealth - damage);
+            // 자동 회복일 때는 1 아래로 내려가지 않음 (KO 되지 않고 계속 연습할 수 있게)
+            int minHealth = _healthMode == HealthMode.AutoRecover ? 1 : 0;
+            CurrentHealth = Mathf.Max(minHealth, CurrentHealth - damage);
             Debug.Log($"[Health] {name} {damage} 데미지 (남은 체력 {CurrentHealth} / {_maxHealth})");
             OnHealthChanged?.Invoke(this);
         }
