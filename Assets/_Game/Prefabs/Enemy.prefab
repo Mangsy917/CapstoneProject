@@ -19,6 +19,7 @@ GameObject:
   - component: {fileID: 2024175151764231273}
   - component: {fileID: 7945998929045402111}
   - component: {fileID: 305886227930586829}
+  - component: {fileID: 723814536119699407}
   m_Layer: 0
   m_Name: Enemy
   m_TagString: Enemy
@@ -136,6 +137,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Game.Character.CharacterFlip
   _spriteRenderer: {fileID: 647039610034533481}
   CF_characterMove: {fileID: 0}
+  CF_hitReaction: {fileID: 0}
+  _isStunSpriteFacingLeft: 1
   _opponentTag: Player
 --- !u!114 &1540581559021852066
 MonoBehaviour:
@@ -250,6 +253,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Game.Character.CharacterHitReaction
   CHR_characterAttack: {fileID: 0}
+  CHR_characterMove: {fileID: 0}
+  _dummyGuard: {fileID: 0}
   _characterHitboxes: {fileID: 0}
   _pushbox: {fileID: 0}
 --- !u!114 &305886227930586829
@@ -278,6 +283,23 @@ MonoBehaviour:
   _lowHitState: LowHit
   _top2LowHitState: Top2LowHit
   _low2TopHitState: Low2TopHit
+  _topGuardState: TopGuard
+  _middleGuardState: MiddleGuard
+  _bottomGuardState: BottomGuard
+--- !u!114 &723814536119699407
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2347769319118467310}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cb1934b55e26d174b90b887d622b89ee, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Game.Character.DummyGuard
+  _resetFrames: 30
+  DG_hitReaction: {fileID: 0}
 --- !u!1 &7336444245606331161
 GameObject:
   m_ObjectHideFlags: 0

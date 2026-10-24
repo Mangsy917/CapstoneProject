@@ -4,6 +4,7 @@ namespace Game.Character
 {
     // 캐릭터 상태에 맞는 Animator 상태를 재생함
     // - 피격 경직 중이면 피격 모션 (CharacterHitReaction.CurrentMotion)
+    // - 가드 경직 중이면 가드 모션 (CharacterHitReaction.CurrentGuardMotion)
     // - 공격 중이면 그 공격(AttackData)의 애니메이션
     // - 아니면 이동 상태에 따라 Idle / Sit / Jump / 걷기
     // 이동과 공격 처리가 모두 끝난 뒤(LateUpdate)에 정함
@@ -32,8 +33,13 @@ namespace Game.Character
         [SerializeField] private string _top2LowHitState = "Top2LowHit";
         [SerializeField] private string _low2TopHitState = "Low2TopHit";
 
+        [Header("가드 모션 Animator 상태 이름")]
+        [SerializeField] private string _topGuardState = "TopGuard";
+        [SerializeField] private string _middleGuardState = "MiddleGuard";
+        [SerializeField] private string _bottomGuardState = "BottomGuard";
+
         private string CAP_currentState;
-        private int _playedHitCount; // 마지막으로 재생한 피격 (새로 맞으면 같은 모션이어도 처음부터 다시 재생)
+        private int _playedHitCount; // 마지막으로 재생한 피격 / 가드 (새로 맞으면 같은 모션이어도 처음부터 다시 재생)
 
         private void Awake()
         {
@@ -63,6 +69,8 @@ namespace Game.Character
         {
             if (CAP_hitReaction != null && CAP_hitReaction.IsInHitStun)
                 return GetHitStateName(CAP_hitReaction.CurrentMotion);
+            if (CAP_hitReaction != null && CAP_hitReaction.IsInGuardStun)
+                return GetGuardStateName(CAP_hitReaction.CurrentGuardMotion);
 
             if (CAP_characterAttack != null && CAP_characterAttack.IsAttacking)
             {
@@ -101,6 +109,16 @@ namespace Game.Character
                 case HitMotion.Top2Low: return _top2LowHitState;
                 case HitMotion.Low2Top: return _low2TopHitState;
                 default: return _middleHitState;
+            }
+        }
+
+        private string GetGuardStateName(HitMotion motion)
+        {
+            switch (motion)
+            {
+                case HitMotion.Top: return _topGuardState;
+                case HitMotion.Low: return _bottomGuardState;
+                default: return _middleGuardState;
             }
         }
     }

@@ -29,7 +29,7 @@ namespace Game.Character
         [Tooltip("바라보는 방향, 땅/공중 상태를 알려줄 CharacterMove. 비워두면 같은 오브젝트에서 찾음")]
         [SerializeField] private CharacterMove CA_characterMove;
 
-        [Tooltip("피격 경직 중에는 공격하지 않도록 확인할 CharacterHitReaction. 비워두면 같은 오브젝트에서 찾음")]
+        [Tooltip("피격 / 가드 경직 중에는 공격하지 않도록 확인할 CharacterHitReaction. 비워두면 같은 오브젝트에서 찾음")]
         [SerializeField] private CharacterHitReaction CA_hitReaction;
 
         [Tooltip("투사체가 맞힐 상대의 태그 (Player에는 Enemy)")]
@@ -216,11 +216,11 @@ namespace Game.Character
             Gizmos.DrawWireCube(transform.position + new Vector3(offset.x * facingSign, offset.y, 0f), new Vector3(size.x, size.y, 0.1f));
         }
 
-        // 공격 중이나 피격 경직 중에 들어온 커맨드는 무시함 (캔슬은 아직 없음)
+        // 공격 중이나 피격 / 가드 경직 중에 들어온 커맨드는 무시함 (캔슬은 아직 없음)
         private void HandleCommandTriggered(CharacterCommand.CommandData command, CharacterCommand.AttackButtonType button)
         {
             if (command.attack == null || IsAttacking || !CanUseCommand(command)) return;
-            if (CA_hitReaction != null && CA_hitReaction.IsInHitStun) return;
+            if (CA_hitReaction != null && CA_hitReaction.IsInStun) return;
             StartAttack(command.attack, button);
         }
 

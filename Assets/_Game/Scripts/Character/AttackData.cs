@@ -260,6 +260,16 @@ namespace Game.Character
         [Tooltip("맞은 쪽이 재생할 피격 모션. 자동이면 중단 공격은 Top2Low, 그 외는 맞은 피격 상자 위치에 따라 정함")]
         [SerializeField] private HitMotion _hitMotion = HitMotion.Auto;
 
+        [Header("가드")]
+        [Tooltip("가드 시 유리 프레임 (위키의 Block 값, 보통 음수). 히트 시 유리 프레임과 같은 기준으로 가드 경직을 정함")]
+        [SerializeField] private int _blockAdvantage = -2;
+
+        [Tooltip("가드한 상대가 뒤로 밀려나는 거리 (월드 단위). 상대가 벽에 붙어 있으면 대신 때린 쪽이 밀려남 (장풍은 제외)")]
+        [SerializeField] private float _guardBackDistance = 0.4f;
+
+        [Tooltip("가드백으로 밀려나는 데 걸리는 프레임 수")]
+        [SerializeField] private int _guardBackFrames = 8;
+
         [Header("공격 중 피격 상자")]
         [Tooltip("체크하면 공격하는 동안 Top 피격 상자를 끔 (앉아서 쓰는 공격 등)")]
         [SerializeField] private bool _shouldHideTopHitbox = false;
@@ -337,23 +347,38 @@ namespace Game.Character
         public float HitBackDistance => _hitBackDistance;
         public int HitBackFrames => _hitBackFrames;
         public HitMotion HitMotion => _hitMotion;
+        public int BlockAdvantage => _blockAdvantage;
+        public float GuardBackDistance => _guardBackDistance;
+        public int GuardBackFrames => _guardBackFrames;
 
-        /// <summary>
-        /// 이 버튼으로 나갔을 때 맞은 상대의 피격 경직 프레임 수
-        /// 지속 첫 프레임(투사체 공격이면 투사체가 나오는 프레임)에 맞았을 때 "남은 공격 프레임 + 히트 시 유리 프레임"이 되도록 정함
-        /// 공격은 전체 프레임이 지난 다음 프레임에 끝나서(CharacterAttack) 그 프레임까지 움직일 수 없으므로 1프레임을 더함
-        /// </summary>
+        /// <summary>이 버튼으로 나갔을 때 맞은 상대의 피격 경직 프레임 수 (히트 시 유리 프레임 기준)</summary>
         public int GetHitStunFrames(CharacterCommand.AttackButtonType button)
+        {
+            return GetStunFrames(button, _hitAdvantage);
+        }
+
+        /// <summary>이 버튼으로 나갔을 때 가드한 상대의 가드 경직 프레임 수 (가드 시 유리 프레임 기준)</summary>
+        public int GetBlockStunFrames(CharacterCommand.AttackButtonType button)
+        {
+            return GetStunFrames(button, _blockAdvantage);
+        }
+
+        // 지속 첫 프레임(투사체 공격이면 투사체가 나오는 프레임)에 맞았을 때 "남은 공격 프레임 + 유리 프레임"이 되는 경직 프레임 수
+        // 공격은 전체 프레임이 지난 다음 프레임에 끝나서(CharacterAttack) 그 프레임까지 움직일 수 없으므로 1프레임을 더함
+        private int GetStunFrames(CharacterCommand.AttackButtonType button, int advantage)
         {
             AttackFrames frames = GetFrames(button);
             int hitFrame = _projectilePrefab != null ? GetProjectileSpawnFrame(frames) : frames.FirstActiveFrame;
-            return Mathf.Max(1, frames.TotalFrames - hitFrame + 1 + _hitAdvantage);
+            return Mathf.Max(1, frames.TotalFrames - hitFrame + 1 + advantage);
         }
 
-        /// <summary>이 버튼으로 나간 공격이 맞았을 때 상대에게 줄 피격 정보</summary>
+        /// <summary>이 버튼으로 나간 공격이 맞았을 때(또는 가드됐을 때) 상대에게 줄 정보</summary>
         public HitInfo GetHitInfo(CharacterCommand.AttackButtonType button)
         {
-            return new HitInfo(GetHitStunFrames(button), _hitBackDistance, _hitBackFrames, _height, _hitMotion);
+            return new HitInfo(
+                hitStunFrames: GetHitStunFrames(button), hitBackDistance: _hitBackDistance, hitBackFrames: _hitBackFrames,
+                blockStunFrames: GetBlockStunFrames(button), guardBackDistance: _guardBackDistance, guardBackFrames: _guardBackFrames,
+                height: _height, motion: _hitMotion, isThrow: HasTrait(AttackTrait.Throw));
         }
 
         // 버튼별 프레임 목록에 없을 때 쓰는 기본 프레임
@@ -478,6 +503,8 @@ namespace Game.Character
             if (AD_attackBoxSize.y < 0f) AD_attackBoxSize.y = 0f;
             if (_hitBackDistance < 0f) _hitBackDistance = 0f;
             if (_hitBackFrames < 1) _hitBackFrames = 1;
+            if (_guardBackDistance < 0f) _guardBackDistance = 0f;
+            if (_guardBackFrames < 1) _guardBackFrames = 1;
 
             if (_extraHitboxes != null)
             {

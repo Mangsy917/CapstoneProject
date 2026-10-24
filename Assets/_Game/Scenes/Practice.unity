@@ -13901,6 +13901,7 @@ GameObject:
   m_Component:
   - component: {fileID: 606131663}
   - component: {fileID: 606131664}
+  - component: {fileID: 606131665}
   m_Layer: 5
   m_Name: DummySetting
   m_TagString: Untagged
@@ -13967,6 +13968,21 @@ MonoBehaviour:
   countGuardRow: {fileID: 1967105572}
   guardTypeRow: {fileID: 621116501}
   lockedAlpha: 0.3
+--- !u!114 &606131665
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 606131662}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 22998e256d65ea54a968eaf426cc9e85, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Game.UI.Setting.GuardSetting
+  GS_guardStepper: {fileID: 152108021}
+  _guardTypeStepper: {fileID: 621116500}
+  _countGuardStepper: {fileID: 1967105571}
 --- !u!1 &614550844
 GameObject:
   m_ObjectHideFlags: 0
@@ -28980,6 +28996,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Game.Character.CharacterFlip
   _spriteRenderer: {fileID: 1389828399}
   CF_characterMove: {fileID: 1389828396}
+  CF_hitReaction: {fileID: 0}
+  _isStunSpriteFacingLeft: 1
   _opponentTag: Enemy
 --- !u!114 &1389828395
 MonoBehaviour:
@@ -29166,6 +29184,9 @@ MonoBehaviour:
   _lowHitState: LowHit
   _top2LowHitState: Top2LowHit
   _low2TopHitState: Low2TopHit
+  _topGuardState: TopGuard
+  _middleGuardState: MiddleGuard
+  _bottomGuardState: BottomGuard
 --- !u!95 &1389828402
 Animator:
   serializedVersion: 7
@@ -29252,6 +29273,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Game.Character.CharacterHitReaction
   CHR_characterAttack: {fileID: 0}
+  CHR_characterMove: {fileID: 0}
+  _dummyGuard: {fileID: 0}
   _characterHitboxes: {fileID: 0}
   _pushbox: {fileID: 0}
 --- !u!1 &1397161733
