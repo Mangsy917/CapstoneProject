@@ -8,18 +8,20 @@ namespace Game.Character
     // - 공격(CharacterAttack)이나 투사체(Projectile)에 맞으면 TakeDamage로 줄어듦 (0 아래로는 내려가지 않음)
     // - 설정창(파라미터 탭)의 체력 % / 체력 방식을 따름 (HealthSetting이 태그별로 넣어줌)
     //   자동 회복: 맞은 뒤 한동안 맞지 않으면 설정한 체력까지 회복
-    //   일반: 맞은 만큼 계속 줄어듦
     //   항상 고정: 맞아도 줄어들지 않음
+    //   일반: 맞은 만큼 계속 줄어듦
     // - 연습 재시작(PracticeRestart) 때 ResetHealth로 설정한 체력이 됨
+    // - 때린 공격(CharacterAttack)이 끝날 때까지는 데미지가 "확정되지 않은" 상태 (IsDamageSettled)
+    //   체력바는 그동안 깎인 만큼을 반투명 막대로 남겨 두고, 확정되면 줄임
     // - 피격 모션은 아직 없음 (체력이 0이 됐을 때의 KO는 KnockOutSequence가 처리)
     public class CharacterHealth : MonoBehaviour
     {
-        // 설정창 체력 방식 스테퍼의 선택지 순서와 같음
+        // 설정창 체력 방식 스테퍼의 선택지 순서와 같음 (자동 회복, 항상 고정, 일반)
         public enum HealthMode
         {
             AutoRecover, // 자동 회복
-            Normal,      // 일반
-            Fixed        // 항상 고정
+            Fixed,       // 항상 고정
+            Normal       // 일반
         }
 
         [Tooltip("최대 체력 (설정창의 체력 100%)")]
@@ -45,10 +47,17 @@ namespace Game.Character
 
         public HealthMode Mode => _healthMode;
 
+        /// <summary>
+        /// 마지막으로 받은 데미지가 확정됐는지 (때린 공격이 회수, 착지 경직까지 끝남)
+        /// 피격 경직이 생기면 그 경직이 끝날 때도 함께 봐야 함
+        /// </summary>
+        public bool IsDamageSettled => _lastAttacker == null || !_lastAttacker.IsAttacking;
+
         /// <summary>체력이 바뀌었을 때 (체력바 등에서 구독)</summary>
         public event Action<CharacterHealth> OnHealthChanged;
 
         private int _framesSinceDamage;
+        private CharacterAttack _lastAttacker; // 마지막으로 데미지를 준 공격 (투사체면 쏜 캐릭터의 공격)
 
         // Domain Reload를 꺼둔 상태로 플레이해도 이전 설정이 남지 않도록 초기화
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
@@ -88,6 +97,9 @@ namespace Game.Character
             // 체력이 0이면 KO 연출 중이므로 회복하지 않음
             if (CurrentHealth <= 0 || CurrentHealth >= StartHealth) return;
 
+            // 때린 공격이 끝나서 데미지가 확정된 뒤부터 회복 대기 프레임을 셈
+            if (!IsDamageSettled) return;
+
             _framesSinceDamage++;
             if (_framesSinceDamage < _recoveryDelayFrames) return;
 
@@ -106,11 +118,13 @@ namespace Game.Character
             OnHealthChanged?.Invoke(this);
         }
 
-        public void TakeDamage(int damage)
+        /// <summary>attacker: 데미지를 준 공격 (그 공격이 끝날 때 데미지가 확정됨). 없으면 바로 확정</summary>
+        public void TakeDamage(int damage, CharacterAttack attacker = null)
         {
             if (damage <= 0 || CurrentHealth <= 0) return;
 
             _framesSinceDamage = 0;
+            _lastAttacker = attacker;
             if (_healthMode == HealthMode.Fixed)
             {
                 Debug.Log($"[Health] {name} {damage} 데미지 (항상 고정이라 체력 그대로 {CurrentHealth} / {_maxHealth})");
@@ -126,6 +140,7 @@ namespace Game.Character
         {
             CurrentHealth = StartHealth;
             _framesSinceDamage = 0;
+            _lastAttacker = null;
             OnHealthChanged?.Invoke(this);
         }
 

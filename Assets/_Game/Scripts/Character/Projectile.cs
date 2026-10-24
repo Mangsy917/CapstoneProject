@@ -81,7 +81,7 @@ namespace Game.Character
             if (hitTarget != null)
             {
                 var health = hitTarget.GetComponent<CharacterHealth>();
-                if (health != null) health.TakeDamage(P_damage);
+                if (health != null) health.TakeDamage(P_damage, attacker: _owner != null ? _owner.GetComponent<CharacterAttack>() : null);
                 DestroyProjectile();
             }
             else if (IsOutOfScreen())

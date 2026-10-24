@@ -196,7 +196,7 @@ namespace Game.Character
 
                 _hasHit = true;
                 var health = opponent.GetComponent<CharacterHealth>();
-                if (health != null) health.TakeDamage(attack.GetDamage(_currentButton));
+                if (health != null) health.TakeDamage(attack.GetDamage(_currentButton), attacker: this);
                 return;
             }
         }
