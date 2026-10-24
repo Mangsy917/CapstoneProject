@@ -8,8 +8,8 @@ namespace Game.UI
     // - Enemy가 사라졌다가 다시 생성되면 새로 찾음
     // - 바깥쪽부터 안쪽으로 줄어듦: 왼쪽 체력바(1P)는 왼쪽에서 오른쪽으로, 오른쪽 체력바(2P)는 오른쪽에서 왼쪽으로
     //   (남은 체력 막대는 화면 가운데 쪽 끝에 붙어 있음)
-    // - 맞으면 Fill은 바로 줄고, 깎인 만큼은 반투명한 Damage Fill로 남아 있다가
-    //   때린 공격이 끝나서 데미지가 확정되면(CharacterHealth.IsDamageSettled) 서서히 줄어듦
+    // - 콤보 중에는 줄지 않고, 콤보가 끝나면(CharacterHealth가 쌓인 데미지를 한 번에 뺌) Fill이 한 번에 줄어듦
+    //   깎인 만큼은 반투명한 Damage Fill로 남아 있다가 서서히 줄어듦
     public class HealthBar : MonoBehaviour
     {
         [Tooltip("체력을 보여줄 캐릭터의 태그")]

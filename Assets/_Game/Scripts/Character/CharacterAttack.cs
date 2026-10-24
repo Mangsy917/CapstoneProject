@@ -306,10 +306,10 @@ namespace Game.Character
         // 다른 스크립트(피격 판정 등)에서 쓰는 기능
         // =====================================================================
 
-        /// <summary>이 캐릭터의 공격(투사체 포함)이 target에게 damage를 줬을 때 CharacterHealth에서 호출 (콤보 / 단일 데미지 기록)</summary>
-        public void NotifyDamageDealt(int damage, CharacterHealth target)
+        /// <summary>이 캐릭터의 공격(투사체 포함)이 상대에게 damage를 줬을 때 CharacterHealth에서 호출 (단일 데미지 기록)</summary>
+        public void NotifyDamageDealt(int damage)
         {
-            if (CA_characterState != null) CA_characterState.AddDealtDamage(damage, target);
+            if (CA_characterState != null) CA_characterState.SetDealtDamage(damage);
         }
 
         /// <summary>지금 프레임에 이 특성이 켜져 있는지 (예: HasTrait(AttackTrait.Invincible))</summary>

@@ -5,14 +5,16 @@ using UnityEngine;
 namespace Game.Character
 {
     // 캐릭터(Player, Enemy)에 붙여서 사용하는 체력
-    // - 공격(CharacterAttack)이나 투사체(Projectile)에 맞으면 TakeDamage로 줄어듦 (0 아래로는 내려가지 않음)
+    // - 공격(CharacterAttack)이나 투사체(Projectile)에 맞으면 TakeDamage로 데미지가 쌓이고,
+    //   콤보가 끝나면(데미지 확정) 쌓인 데미지를 한 번에 체력에서 뺌 (0 아래로는 내려가지 않음)
     // - 설정창(파라미터 탭)의 체력 % / 체력 방식을 따름 (HealthSetting이 태그별로 넣어줌)
     //   자동 회복: 맞은 뒤 한동안 맞지 않으면 설정한 체력까지 회복. 체력이 1 아래로 내려가지 않음 (KO 없음)
     //   항상 고정: 맞아도 줄어들지 않음
     //   일반: 맞은 만큼 계속 줄어듦
     // - 연습 재시작(PracticeRestart) 때 ResetHealth로 설정한 체력이 됨
     // - 때린 공격(CharacterAttack)이 끝날 때까지는 데미지가 "확정되지 않은" 상태 (IsDamageSettled)
-    //   체력바는 그동안 깎인 만큼을 반투명 막대로 남겨 두고, 확정되면 줄임
+    //   그동안 맞은 데미지는 PendingDamage에 쌓아 두었다가, 확정되면 합산해서 한 번에 줄임 (콤보 끝)
+    //   피격 경직이 생기면 경직이 끝날 때를 콤보 끝으로 봐야 함
     // - 피격 모션은 아직 없음 (체력이 0이 됐을 때의 KO는 KnockOutSequence가 처리)
     public class CharacterHealth : MonoBehaviour
     {
@@ -53,6 +55,9 @@ namespace Game.Character
         /// </summary>
         public bool IsDamageSettled => _lastAttacker == null || !_lastAttacker.IsAttacking;
 
+        /// <summary>콤보 중에 맞아서 쌓여 있고 아직 체력에서 빼지 않은 데미지</summary>
+        public int PendingDamage { get; private set; }
+
         /// <summary>체력이 바뀌었을 때 (체력바 등에서 구독)</summary>
         public event Action<CharacterHealth> OnHealthChanged;
 
@@ -92,6 +97,14 @@ namespace Game.Character
         {
             // 설정창이 열려 멈춰 있거나 슬로우 모션 중에 건너뛰는 프레임에는 회복하지 않음
             if (!Game.Field.GameSpeed.IsTickFrame) return;
+
+            // 콤보가 끝나면(때린 공격이 끝나서 데미지 확정) 쌓인 데미지를 한 번에 뺌
+            if (PendingDamage > 0)
+            {
+                if (IsDamageSettled) ApplyPendingDamage();
+                return;
+            }
+
             if (_healthMode != HealthMode.AutoRecover) return;
 
             // 체력이 0이면 KO 연출 중이므로 회복하지 않음
@@ -114,35 +127,51 @@ namespace Game.Character
             // 0%여도 1은 남겨 둠 (0이면 재시작하자마자 다시 KO가 되므로)
             StartHealth = Mathf.Clamp(Mathf.RoundToInt(_maxHealth * percent / 100f), 1, _maxHealth);
             CurrentHealth = StartHealth;
+            PendingDamage = 0;
             _framesSinceDamage = 0;
             OnHealthChanged?.Invoke(this);
         }
 
-        /// <summary>attacker: 데미지를 준 공격 (그 공격이 끝날 때 데미지가 확정됨). 없으면 바로 확정</summary>
+        /// <summary>
+        /// 데미지를 쌓아 둠 (콤보가 끝나면 Update에서 한 번에 체력에서 뺌)
+        /// attacker: 데미지를 준 공격 (그 공격이 끝날 때 데미지가 확정됨). 없으면 다음 프레임에 바로 확정
+        /// </summary>
         public void TakeDamage(int damage, CharacterAttack attacker = null)
         {
             if (damage <= 0 || CurrentHealth <= 0) return;
 
             _framesSinceDamage = 0;
             _lastAttacker = attacker;
-            // 판정 표시(콤보 / 단일 데미지)에는 체력 방식과 상관없이 기술의 데미지를 그대로 알려줌
-            if (attacker != null) attacker.NotifyDamageDealt(damage, target: this);
+            PendingDamage += damage;
+            // 판정 표시(단일 데미지)에는 체력 방식과 상관없이 기술의 데미지를 그대로 알려줌
+            if (attacker != null) attacker.NotifyDamageDealt(damage);
+            Debug.Log($"[Health] {name} {damage} 데미지 (콤보 누적 {PendingDamage})");
+        }
+
+        // 쌓인 데미지를 한 번에 체력에서 뺌
+        private void ApplyPendingDamage()
+        {
+            int damage = PendingDamage;
+            PendingDamage = 0;
+            _framesSinceDamage = 0;
+
             if (_healthMode == HealthMode.Fixed)
             {
-                Debug.Log($"[Health] {name} {damage} 데미지 (항상 고정이라 체력 그대로 {CurrentHealth} / {_maxHealth})");
+                Debug.Log($"[Health] {name} 콤보 데미지 {damage} (항상 고정이라 체력 그대로 {CurrentHealth} / {_maxHealth})");
                 return;
             }
 
             // 자동 회복일 때는 1 아래로 내려가지 않음 (KO 되지 않고 계속 연습할 수 있게)
             int minHealth = _healthMode == HealthMode.AutoRecover ? 1 : 0;
             CurrentHealth = Mathf.Max(minHealth, CurrentHealth - damage);
-            Debug.Log($"[Health] {name} {damage} 데미지 (남은 체력 {CurrentHealth} / {_maxHealth})");
+            Debug.Log($"[Health] {name} 콤보 데미지 {damage} (남은 체력 {CurrentHealth} / {_maxHealth})");
             OnHealthChanged?.Invoke(this);
         }
 
         public void ResetHealth()
         {
             CurrentHealth = StartHealth;
+            PendingDamage = 0;
             _framesSinceDamage = 0;
             _lastAttacker = null;
             OnHealthChanged?.Invoke(this);

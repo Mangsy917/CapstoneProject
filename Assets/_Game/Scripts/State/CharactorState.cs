@@ -31,11 +31,7 @@ public class CharactorState : MonoBehaviour
     public bool punishCounter = false; //윕퍼니시
 
     [Header("데미지 (이 캐릭터가 준 데미지)")]
-    public int comboDamage = 0; //마지막 콤보의 전체 데미지
     public int singleDamage = 0; //마지막으로 맞힌 기술 하나의 데미지
-
-    [Tooltip("맞은 상대의 데미지가 확정된 뒤(때린 공격이 끝난 뒤) 이 프레임 수 안에 다시 맞히면 같은 콤보로 셈. 피격 경직이 생기면 경직 기준으로 바꿀 것")]
-    [SerializeField] private int _comboGapFrames = 15;
 
     private enum ActionType { StandUp, SitDown, Jump }
     private enum HeightType { None, High, Middle, Low }
@@ -61,21 +57,7 @@ public class CharactorState : MonoBehaviour
     public bool CounterHit { get => counterHit; set => SetCounterState(CounterType.CounterHit, value); }
     public bool PunishCounter { get => punishCounter; set => SetCounterState(CounterType.PunishCounter, value); }
 
-    public int ComboDamage => comboDamage;
     public int SingleDamage => singleDamage;
-
-    private Game.Character.CharacterHealth _comboTarget; // 지금 콤보를 맞고 있는 상대 (콤보가 끝났으면 null)
-    private int _framesSinceSettled;                      // 상대의 데미지가 확정된 뒤 지난 프레임
-
-    private void Update()
-    {
-        // 슬로우 모션 중에 건너뛰는 프레임에는 세지 않음
-        if (!Game.Field.GameSpeed.IsTickFrame) return;
-        if (_comboTarget == null || !_comboTarget.IsDamageSettled) return;
-
-        _framesSinceSettled++;
-        if (_framesSinceSettled > _comboGapFrames) _comboTarget = null;
-    }
 
     /// <summary>공격이 끝났을 때 판정 높이와 공격 특성을 모두 끔</summary>
     public void ClearAttack()
@@ -86,14 +68,10 @@ public class CharactorState : MonoBehaviour
         superArmor = false;
     }
 
-    /// <summary>상대(target)에게 damage를 줬을 때 호출. 콤보가 이어지는 중이면 콤보 데미지에 더하고, 아니면 새 콤보로 시작</summary>
-    public void AddDealtDamage(int damage, Game.Character.CharacterHealth target)
+    /// <summary>상대에게 damage를 줬을 때 호출 (단일 데미지 기록)</summary>
+    public void SetDealtDamage(int damage)
     {
-        bool isComboContinuing = _comboTarget != null && _comboTarget == target;
-        comboDamage = isComboContinuing ? comboDamage + damage : damage;
         singleDamage = damage;
-        _comboTarget = target;
-        _framesSinceSettled = 0;
     }
 
     private void SetAction(ActionType type, bool value)
@@ -186,8 +164,6 @@ public class CharactorState : MonoBehaviour
 
     private void OnValidate()
     {
-        if (_comboGapFrames < 0) _comboGapFrames = 0;
-
         if (!validateInitialized)
         {
             CachePreviousValues();
