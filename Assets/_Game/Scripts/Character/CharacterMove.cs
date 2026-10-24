@@ -75,10 +75,10 @@ public class CharacterMove : MonoBehaviour
     [SerializeField] private float jumpHeight = 2.88f;
     [Tooltip("공중에 떠 있는 프레임 수 (공중 판정을 가지는 프레임). 높이와 상관없이 항상 이 프레임 수만에 착지함")]
     [SerializeField] private int jumpAirFrames = 38;
-    [Tooltip("앞으로 점프할 때 가로 속도 (1초 = 60프레임 기준)")]
-    [SerializeField] private float forwardJumpSpeed = 3f;
-    [Tooltip("뒤로 점프할 때 가로 속도 (1초 = 60프레임 기준)")]
-    [SerializeField] private float backJumpSpeed = 3f;
+    [Tooltip("앞으로 점프할 때 공중에 있는 동안 가는 전체 가로 거리")]
+    [SerializeField] private float forwardJumpDistance = 1.9f;
+    [Tooltip("뒤로 점프할 때 공중에 있는 동안 가는 전체 가로 거리")]
+    [SerializeField] private float backJumpDistance = 1.9f;
     [Tooltip("점프 입력(7, 8, 9) 후 이 프레임 수까지는 땅에서 방향 입력을 받고, 그다음 프레임에 점프함.\n" +
              "예) 4면 입력한 프레임 포함 1~5프레임은 지상(2~5프레임까지 방향 전환 가능, 8→9면 앞 점프), 6프레임째부터 공중")]
     [SerializeField] private int jumpDirectionBufferFrames = 4;
@@ -147,9 +147,6 @@ public class CharacterMove : MonoBehaviour
     private int airFrames = 1;           // 공중에 떠 있는 전체 프레임 수
     private float airHeight;             // 가장 높은 곳까지의 높이
     private float airDistancePerFrame;   // 1프레임에 움직이는 가로 거리 (오른쪽이 +)
-
-    // 레버 점프의 가로 이동을 프레임 단위로 맞추기 위한 한 프레임 시간 (게임은 60프레임 고정)
-    private const float FrameTime = 1f / 60f;
 
     // ===== 대쉬 / 달리기 내부 상태 =====
     private int previousRelativeDirection = 5;          // 직전 프레임의 상대 방향 (66 / 44 판정용)
@@ -572,8 +569,8 @@ public class CharacterMove : MonoBehaviour
 
         switch (pendingJumpDirection)
         {
-            case 7: StartJump(MoveState.JumpBack, -facingSign * backJumpSpeed); break;
-            case 9: StartJump(MoveState.JumpForward, facingSign * forwardJumpSpeed); break;
+            case 7: StartJump(MoveState.JumpBack, -facingSign * backJumpDistance); break;
+            case 9: StartJump(MoveState.JumpForward, facingSign * forwardJumpDistance); break;
             default: StartJump(MoveState.JumpNeutral, 0f); break;
         }
     }
@@ -597,10 +594,10 @@ public class CharacterMove : MonoBehaviour
         StartAirArc(jumpState, height, frames, facingSign * forwardDistance / frames);
     }
 
-    // 레버 점프 시작. xSpeed는 1초(60프레임)에 가는 가로 거리
-    private void StartJump(MoveState jumpState, float xSpeed)
+    // 레버 점프 시작. xDistance는 공중에 있는 동안 가는 전체 가로 거리 (오른쪽이 +)
+    private void StartJump(MoveState jumpState, float xDistance)
     {
-        StartAirArc(jumpState, jumpHeight, jumpAirFrames, xSpeed * FrameTime);
+        StartAirArc(jumpState, jumpHeight, jumpAirFrames, xDistance / jumpAirFrames);
     }
 
     // 공중 포물선 시작 (레버 점프, 공격으로 뛰어오르기 공통)
@@ -703,8 +700,8 @@ public class CharacterMove : MonoBehaviour
     {
         if (forwardWalkDistancePerFrame < 0f) forwardWalkDistancePerFrame = 0f;
         if (backWalkDistancePerFrame < 0f) backWalkDistancePerFrame = 0f;
-        if (forwardJumpSpeed < 0f) forwardJumpSpeed = 0f;
-        if (backJumpSpeed < 0f) backJumpSpeed = 0f;
+        if (forwardJumpDistance < 0f) forwardJumpDistance = 0f;
+        if (backJumpDistance < 0f) backJumpDistance = 0f;
         if (jumpHeight < 0f) jumpHeight = 0f;
         if (jumpAirFrames < 1) jumpAirFrames = 1;
         if (searchInterval < 0f) searchInterval = 0f;
