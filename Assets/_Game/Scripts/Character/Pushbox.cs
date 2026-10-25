@@ -39,8 +39,6 @@ namespace Game.Character
 
         private float _previousX; // 이전 프레임의 상자 중심 x (어느 쪽에 있었는지 판단용)
 
-        public bool CanBePushed => _canBePushed;
-
         private void Awake()
         {
             if (_boxCollider == null) _boxCollider = GetComponent<BoxCollider>();

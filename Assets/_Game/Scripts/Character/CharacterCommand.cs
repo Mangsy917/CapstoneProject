@@ -94,9 +94,6 @@ namespace Game.Character
         [Header("등록된 커맨드 목록")]
         [SerializeField] private List<CommandData> CC_commandList = new List<CommandData>();
 
-        /// <summary>가장 최근에 성공한 커맨드</summary>
-        public CommandData LastCommand { get; private set; }
-
         /// <summary>
         /// 커맨드 입력에 성공했을 때 호출되는 이벤트 (공격/애니메이션 스크립트에서 구독)
         /// 두 번째 값은 커맨드를 완성한 버튼 (예: 236L이면 L). 공격이 버튼마다 다른 프레임을 쓸 때 사용
@@ -134,6 +131,11 @@ namespace Game.Character
         private readonly List<BufferedInput> _inputBuffer = new List<BufferedInput>();
         private List<CommandData> _sortedCommandList;
         private int CC_frameCounter = 0;
+
+        // 한 프레임에 여러 버튼이 동시에 눌리는 경우(예: L, M이 정확히 같은 프레임에 눌림),
+        // 같은 콤보 커맨드가 버튼별로 중복 출력되지 않도록 이번 프레임에 이미 채택된 커맨드를 기록해둔다.
+        // (버튼을 누를 때마다 새로 만들지 않도록 하나를 비워서 다시 씀)
+        private readonly HashSet<CommandData> _triggeredThisFrame = new HashSet<CommandData>();
 
         private void Awake()
         {
@@ -213,10 +215,7 @@ namespace Game.Character
         {
             int currentDirection = _inputBuffer[_inputBuffer.Count - 1].direction;
             bool isGrounded = CC_characterMove == null || CC_characterMove.IsGrounded;
-
-            // 한 프레임에 여러 버튼이 동시에 눌리는 경우(예: L, M이 정확히 같은 프레임에 눌림),
-            // 같은 콤보 커맨드가 버튼별로 중복 출력되지 않도록 이번 프레임에 이미 채택된 커맨드를 기록해둔다.
-            var triggeredThisFrame = new HashSet<CommandData>();
+            _triggeredThisFrame.Clear();
 
             foreach (var button in _allButtonFlags)
             {
@@ -224,7 +223,7 @@ namespace Game.Character
 
                 foreach (var command in _sortedCommandList)
                 {
-                    if (triggeredThisFrame.Contains(command)) continue;
+                    if (_triggeredThisFrame.Contains(command)) continue;
 
                     // 지금 쓸 수 없는 커맨드(예: 장풍이 남아 있을 때의 장풍)는 건너뛰고 다음 커맨드를 찾음
                     if (CanUseCommand != null && !CanUseCommand(command)) continue;
@@ -250,8 +249,7 @@ namespace Game.Character
                     if (isMotionMatched)
                     {
                         Debug.Log($"[Command] '{command.commandName}' 커맨드 입력 성공! (버튼: {button}, 프레임: {CC_frameCounter})");
-                        triggeredThisFrame.Add(command);
-                        LastCommand = command;
+                        _triggeredThisFrame.Add(command);
                         OnCommandTriggered?.Invoke(command, button);
                         break; // 이 버튼에 대해서는 가장 구체적인/우선순위 높은 커맨드 하나만 채택하고 종료
                     }

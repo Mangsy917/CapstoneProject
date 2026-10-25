@@ -74,10 +74,6 @@ namespace Game.UI.Setting
         private static readonly Color _highlightColor = new Color(0.5f, 0.5f, 0.5f, 1f);
         private static readonly Color _normalColor = new Color(1f, 1f, 1f, 0f);
 
-        // 키보드 / 게임패드 바인딩 그룹 이름 (Input Actions 에셋의 Control Scheme)
-        private const string KeyboardGroup = "PC";
-        private const string GamepadGroup = "GamePad";
-
         // 위에서 아래 순서: 공격 버튼 줄들, 버튼 확인, 기본값, 닫기
         private Button[] _menuButtons;
         private int _highlightIndex;
@@ -302,12 +298,12 @@ namespace Game.UI.Setting
             string layoutName;
             if (control.device is Keyboard)
             {
-                group = KeyboardGroup;
+                group = ControllerTypeDetector.KeyboardGroup;
                 layoutName = "<Keyboard>";
             }
             else if (control.device is Gamepad)
             {
-                group = GamepadGroup;
+                group = ControllerTypeDetector.GamepadGroup;
                 layoutName = "<Gamepad>";
             }
             else

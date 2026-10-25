@@ -18,12 +18,6 @@ namespace Game.UI
 
             public string ControlPath => _controlPath;
             public Sprite Sprite => _sprite;
-
-            public Entry(string controlPath, Sprite sprite)
-            {
-                _controlPath = controlPath;
-                _sprite = sprite;
-            }
         }
 
         [SerializeField] private Entry[] _keyboardEntries = new Entry[0];

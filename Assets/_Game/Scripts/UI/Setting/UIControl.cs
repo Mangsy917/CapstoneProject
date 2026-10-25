@@ -1,5 +1,3 @@
-using System;
-using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -18,12 +16,10 @@ public class UIControl : MonoBehaviour
     public bool uiLeftPG;
     public bool uiRightPG;
     public bool uiSelect;
-    public bool uiCancel;
     // 취소 키를 누른 그 프레임에만 true (창 닫기처럼 한 번만 처리할 때 사용, 처리한 쪽에서 false로 지움)
     public bool uiCancelDown;
     public bool uiClose;
 
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Awake()
     {
         if (uiControl == null)
@@ -51,11 +47,6 @@ public class UIControl : MonoBehaviour
         Close = map.FindAction("BackToGame");
     }
 
-    void Start()
-    {
-        
-    }
-
     private void OnEnable()
     {
         uiControl?.FindActionMap(actionMapName)?.Enable();
@@ -66,7 +57,6 @@ public class UIControl : MonoBehaviour
         uiControl?.FindActionMap(actionMapName)?.Disable();
     }
 
-    // Update is called once per frame
     void Update()
     {
         ReadAndApply();
@@ -82,16 +72,15 @@ public class UIControl : MonoBehaviour
         bool leftPage = LeftPage != null && LeftPage.WasPressedThisFrame();
         bool rightPage = RightPage != null && RightPage.WasPressedThisFrame();
         bool select = Select != null && Select.IsPressed();
-        bool cancel = Cancel != null && Cancel.IsPressed();
         bool cancelDown = Cancel != null && Cancel.WasPressedThisFrame();
 
         bool close = Close != null && Close.WasPressedThisFrame();
 
-        UpdateButton(up, down, left, right, leftPage, rightPage, select, cancel, cancelDown, close);
+        UpdateButton(up, down, left, right, leftPage, rightPage, select, cancelDown, close);
     }
 
     private void UpdateButton(bool up, bool down, bool left, bool right,
-                              bool leftPage, bool rightPage, bool select, bool cancel,
+                              bool leftPage, bool rightPage, bool select,
                               bool cancelDown, bool close)
     {
         uiUp = up;
@@ -102,7 +91,6 @@ public class UIControl : MonoBehaviour
         uiLeftPG = leftPage;
         uiRightPG = rightPage;
         uiSelect = select;
-        uiCancel = cancel;
         uiCancelDown = cancelDown;
 
         uiClose = close;

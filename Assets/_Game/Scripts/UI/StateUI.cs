@@ -22,6 +22,12 @@ public class StateUI : MonoBehaviour
         public TextMeshProUGUI positionText;
         public TextMeshProUGUI singleDamageText;
         public TextMeshProUGUI counterText;
+
+        // 값이 바뀔 때만 글자를 새로 만들도록 마지막으로 만든 글자를 기억 (매 프레임 문자열을 만들지 않도록)
+        [NonSerialized] public int shownAttackFlags = -1;
+        [NonSerialized] public string shownAttackString;
+        [NonSerialized] public int shownDamage = int.MinValue;
+        [NonSerialized] public string shownDamageString;
     }
 
     [Header("판정을 읽어올 캐릭터")]
@@ -95,9 +101,9 @@ public class StateUI : MonoBehaviour
         }
 
         SetText(texts.actionText, GetActionText(state));
-        SetText(texts.attackText, GetAttackText(state));
+        SetText(texts.attackText, GetAttackText(state, texts));
         SetText(texts.positionText, state.Air ? airText : groundText);
-        SetText(texts.singleDamageText, state.SingleDamage.ToString());
+        SetText(texts.singleDamageText, GetDamageText(state, texts));
         SetText(texts.counterText, GetCounterText(state));
     }
 
@@ -109,7 +115,18 @@ public class StateUI : MonoBehaviour
     }
 
     // 예) "중단", "중단 · 장풍", "잡기", 공격 중이 아니면 "-"
-    private string GetAttackText(CharactorState state)
+    private string GetAttackText(CharactorState state, SideTexts texts)
+    {
+        int flags = (state.High ? 1 : 0) | (state.Middle ? 2 : 0) | (state.Low ? 4 : 0)
+                  | (state.Projectile ? 8 : 0) | (state.Grap ? 16 : 0) | (state.SuperArmor ? 32 : 0);
+        if (flags == texts.shownAttackFlags) return texts.shownAttackString;
+
+        texts.shownAttackFlags = flags;
+        texts.shownAttackString = BuildAttackText(state);
+        return texts.shownAttackString;
+    }
+
+    private string BuildAttackText(CharactorState state)
     {
         _attackParts.Clear();
         if (state.High) _attackParts.Add(high);
@@ -121,6 +138,15 @@ public class StateUI : MonoBehaviour
         if (state.SuperArmor) _attackParts.Add(superArmorText);
 
         return _attackParts.Count > 0 ? string.Join(traitSeparator, _attackParts) : emptyText;
+    }
+
+    private string GetDamageText(CharactorState state, SideTexts texts)
+    {
+        if (state.SingleDamage == texts.shownDamage) return texts.shownDamageString;
+
+        texts.shownDamage = state.SingleDamage;
+        texts.shownDamageString = state.SingleDamage.ToString();
+        return texts.shownDamageString;
     }
 
     private string GetCounterText(CharactorState state)

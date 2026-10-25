@@ -65,7 +65,9 @@ public class InputHistoryDisplay : MonoBehaviour
     private HistoryRow currentRow;
 
     private int lastDirectionIndex = -1;
-    private bool[] prevAttackStates = new bool[attackCount];
+    // 매 프레임 새 배열을 만들지 않도록 두 배열을 계속 다시 씀
+    private readonly bool[] currentAttackStates = new bool[attackCount];
+    private readonly bool[] prevAttackStates = new bool[attackCount];
 
     private void OnValidate()
     {
@@ -135,7 +137,7 @@ public class InputHistoryDisplay : MonoBehaviour
 
         // 켜진 첫 프레임에 지금 입력으로 첫 줄을 만들도록 초기화
         lastDirectionIndex = -1;
-        prevAttackStates = new bool[attackCount];
+        System.Array.Clear(prevAttackStates, 0, attackCount);
     }
 
     private void Update()
@@ -149,7 +151,7 @@ public class InputHistoryDisplay : MonoBehaviour
             return;
 
         int dirIndex = GetCurrentDirectionIndex();
-        bool[] curAttack = GetCurrentAttackStates();
+        bool[] curAttack = ReadCurrentAttackStates();
 
         bool directionChanged = dirIndex != lastDirectionIndex;
         bool attackStateChanged = false;
@@ -174,7 +176,7 @@ public class InputHistoryDisplay : MonoBehaviour
             }
         }
 
-        prevAttackStates = curAttack;
+        System.Array.Copy(curAttack, prevAttackStates, attackCount);
 
         AdvanceCurrentRowFrameCount();
     }
@@ -289,15 +291,13 @@ public class InputHistoryDisplay : MonoBehaviour
         currentRow.SetFrameText(currentRow.frameCount.ToString());
     }
 
-    private bool[] GetCurrentAttackStates()
+    private bool[] ReadCurrentAttackStates()
     {
-        return new bool[attackCount]
-        {
-            inputReadObject.buttonL,
-            inputReadObject.buttonM,
-            inputReadObject.buttonH,
-            inputReadObject.buttonEX
-        };
+        currentAttackStates[0] = inputReadObject.buttonL;
+        currentAttackStates[1] = inputReadObject.buttonM;
+        currentAttackStates[2] = inputReadObject.buttonH;
+        currentAttackStates[3] = inputReadObject.buttonEX;
+        return currentAttackStates;
     }
 
     private void AddAttackIcon(HistoryRow row, int attackIndex)

@@ -81,7 +81,6 @@ public class SettingPopup : MonoBehaviour
         SP_closedFrame = Time.frameCount;
     }
 
-    // Update is called once per frame
     void Update()
     {
         if (uiControl == null) return;

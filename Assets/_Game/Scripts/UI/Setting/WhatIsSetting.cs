@@ -1,7 +1,5 @@
 using UnityEngine;
-using UnityEngine.UI;
 using TMPro;
-using UnityEngine.InputSystem;
 
 public class WhatIsSetting : MonoBehaviour
 {
@@ -49,7 +47,6 @@ public class WhatIsSetting : MonoBehaviour
     // 지금 가운데에 있는 탭 번호 (처음엔 practiceSetting)
     private int selectedIndex = 0;
 
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
         tabs = new RectTransform[] { practiceSetting, shortPracticeSetting, parameter, dummySetting, commandList, displaySetting };
@@ -60,7 +57,6 @@ public class WhatIsSetting : MonoBehaviour
         Refresh();
     }
 
-    // Update is called once per frame
     void Update()
     {
         if (uiControl == null) return;

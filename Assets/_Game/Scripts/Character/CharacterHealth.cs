@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -46,16 +45,11 @@ namespace Game.Character
         /// <summary>시작 체력 (설정창의 체력 %). 재시작과 자동 회복은 이 값까지 채움</summary>
         public int StartHealth { get; private set; }
 
-        public HealthMode Mode => _healthMode;
-
         /// <summary>
         /// 마지막으로 받은 데미지가 확정됐는지 (콤보가 끝남)
         /// 피격 경직이 끝났는지로 정하고, CharacterHitReaction이 없으면 때린 공격이 회수, 착지 경직까지 끝났는지로 정함
         /// </summary>
         public bool IsDamageSettled => _hitReaction != null ? !_hitReaction.IsInHitStun : _lastAttacker == null || !_lastAttacker.IsAttacking;
-
-        /// <summary>체력이 바뀌었을 때 (체력바 등에서 구독)</summary>
-        public event Action<CharacterHealth> OnHealthChanged;
 
         private int _framesSinceDamage;
         private CharacterAttack _lastAttacker; // 마지막으로 데미지를 준 공격 (투사체면 쏜 캐릭터의 공격)
@@ -108,7 +102,6 @@ namespace Game.Character
 
             int amountPerFrame = Mathf.CeilToInt((float)_maxHealth / Mathf.Max(1, _refillFrames));
             CurrentHealth = Mathf.Min(StartHealth, CurrentHealth + amountPerFrame);
-            OnHealthChanged?.Invoke(this);
         }
 
         public void ApplySetting(HealthMode mode, float percent)
@@ -118,7 +111,6 @@ namespace Game.Character
             StartHealth = Mathf.Clamp(Mathf.RoundToInt(_maxHealth * percent / 100f), 1, _maxHealth);
             CurrentHealth = StartHealth;
             _framesSinceDamage = 0;
-            OnHealthChanged?.Invoke(this);
         }
 
         /// <summary>attacker: 데미지를 준 공격 (피격 경직이 없는 캐릭터는 그 공격이 끝날 때 데미지가 확정됨)</summary>
@@ -141,7 +133,6 @@ namespace Game.Character
             int minHealth = _healthMode == HealthMode.AutoRecover ? 1 : 0;
             CurrentHealth = Mathf.Max(minHealth, CurrentHealth - damage);
             Debug.Log($"[Health] {name} {damage} 데미지 (남은 체력 {CurrentHealth} / {_maxHealth})");
-            OnHealthChanged?.Invoke(this);
         }
 
         public void ResetHealth()
@@ -149,7 +140,6 @@ namespace Game.Character
             CurrentHealth = StartHealth;
             _framesSinceDamage = 0;
             _lastAttacker = null;
-            OnHealthChanged?.Invoke(this);
         }
 
         private void OnValidate()
