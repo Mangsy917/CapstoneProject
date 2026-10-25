@@ -5,7 +5,7 @@ namespace Game.UI.Setting
 {
     // 설정창 더미 설정(DummySetting 패널)에 붙여서 사용
     // 더미 행동 스테퍼(서기 / 앉기 / 점프) 값을 더미의 행동(DummyAction)에 연결함
-    // - 스테퍼 값이 바뀌면 바로 적용하고, 설정창을 닫을 때도 한 번 더 적용함
+    // - 스테퍼 값을 바꾼 순간에는 적용하지 않고, 설정창을 닫고 게임으로 돌아갈 때 적용함
     // - 스테퍼 선택지 순서는 DummyAction.ActionType과 같아야 함
     public class DummyActionSetting : MonoBehaviour
     {
@@ -18,7 +18,6 @@ namespace Game.UI.Setting
         {
             // 이 패널이 꺼진 뒤에도 설정창이 닫히면 알 수 있도록 static 이벤트를 받음
             ControlReaderSwitch.SettingClosed += ApplyToDummy;
-            if (_dummyActionStepper != null) _dummyActionStepper.onValueChanged.AddListener(_ => ApplyToDummy());
         }
 
         void OnDestroy()
