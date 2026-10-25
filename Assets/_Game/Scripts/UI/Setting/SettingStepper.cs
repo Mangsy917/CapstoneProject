@@ -16,7 +16,7 @@ public class SettingStepper : MonoBehaviour, ISettingStepper
     // 선택지 목록
     public string[] options;
 
-    // 처음 값 (설정 초기화 시에도 이 값으로 돌아감)
+    // 처음 값
     [SerializeField] private int defaultIndex = 0;
 
     // 끝에서 넘기면 반대쪽 끝으로 돌아갈지
@@ -50,12 +50,6 @@ public class SettingStepper : MonoBehaviour, ISettingStepper
     public void Prev()
     {
         Step(-1);
-    }
-
-    // 처음 값으로 되돌림
-    public void ResetToDefault()
-    {
-        SetIndex(defaultIndex);
     }
 
     public void SetIndex(int index)

@@ -50,7 +50,6 @@ public class SettingMenu : MonoBehaviour
         currentPanel = null;
     }
 
-    // Update is called once per frame
     void Update()
     {
         CheckPanelChanged();

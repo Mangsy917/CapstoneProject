@@ -55,7 +55,6 @@ public class TitleMenu : MonoBehaviour
         Refresh();
     }
 
-    // Update is called once per frame
     void Update()
     {
         // 세팅 UI가 열리거나 닫히면 그 화면의 선택 표시를 다시 맞춤

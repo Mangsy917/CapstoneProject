@@ -1,4 +1,3 @@
-using System.Xml.Serialization;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -76,11 +75,6 @@ public class InputReader : MonoBehaviour
 
         openUI = map.FindAction("OpenUI");
         restart = map.FindAction("Restart");
-    }
-
-    private void Start()
-    {
-
     }
 
     private void OnEnable()

@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace Game.Character
@@ -15,6 +16,9 @@ namespace Game.Character
         // 모든 피격 상자의 z 두께 (월드 단위). 판정은 x, y로만 하므로 보기 좋게 통일하는 값
         private const float Depth = 0.2f;
 
+        // 피격 상자를 찾을 때 담아 둘 목록 (공격할 때마다 새 배열을 만들지 않도록 하나를 다시 씀)
+        private static readonly List<Hitbox> _hitboxBuffer = new List<Hitbox>();
+
         private void Awake()
         {
             if (H_boxCollider == null) H_boxCollider = GetComponent<BoxCollider>();
@@ -29,12 +33,6 @@ namespace Game.Character
         /// <summary>피격 상자 중심 (월드 단위)</summary>
         public Vector2 WorldCenter => H_boxCollider != null ? (Vector2)transform.TransformPoint(H_boxCollider.center) : (Vector2)transform.position;
 
-        /// <summary>target(또는 그 자식)의 켜져 있는 피격 상자 중 하나라도 공격 상자와 겹치는지</summary>
-        public static bool IsHitting(GameObject target, Vector2 attackBoxCenter, Vector2 attackBoxSize)
-        {
-            return FindHitHitbox(target, attackBoxCenter, attackBoxSize) != null;
-        }
-
         /// <summary>
         /// target(또는 그 자식)의 켜져 있는 피격 상자 중 공격 상자와 겹치는 것 (없으면 null)
         /// 여러 개가 겹치면 가장 많이 겹친 피격 상자 (피격 모션을 정할 때 사용)
@@ -43,7 +41,8 @@ namespace Game.Character
         {
             Hitbox bestHitbox = null;
             float bestArea = 0f;
-            foreach (var hitbox in target.GetComponentsInChildren<Hitbox>())
+            target.GetComponentsInChildren(_hitboxBuffer);
+            foreach (var hitbox in _hitboxBuffer)
             {
                 if (!hitbox.isActiveAndEnabled) continue;
 
@@ -61,12 +60,6 @@ namespace Game.Character
         public static bool HasHitbox(GameObject target)
         {
             return target.GetComponentInChildren<Hitbox>(true) != null;
-        }
-
-        // 공격 상자(월드 단위 중심, 크기)와 이 피격 상자가 x, y 모두 겹치는지
-        public bool IsOverlapping(Vector2 attackBoxCenter, Vector2 attackBoxSize)
-        {
-            return GetOverlapArea(attackBoxCenter, attackBoxSize) > 0f;
         }
 
         // 공격 상자와 이 피격 상자가 겹치는 넓이 (겹치지 않으면 0)

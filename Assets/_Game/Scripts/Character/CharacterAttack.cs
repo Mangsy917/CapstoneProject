@@ -1,4 +1,3 @@
-using System;
 using UnityEngine;
 
 namespace Game.Character
@@ -58,10 +57,6 @@ namespace Game.Character
         public bool IsInvincible =>
             IsAttacking && !IsLanding &&
             ((AttackFrame >= 1 && AttackFrame <= CurrentAttack.GetInvincibleFrames(_currentButton)) || HasTrait(AttackTrait.Invincible));
-
-        public event Action<AttackData> OnAttackStarted;
-        public event Action<AttackPhase> OnPhaseChanged;
-        public event Action<AttackData> OnAttackEnded;
 
         // 슈퍼아머 구간마다 남은 횟수 (CurrentAttack.TraitWindows와 같은 순서)
         private int[] _remainingArmorHits = new int[0];
@@ -243,7 +238,6 @@ namespace Game.Character
             }
 
             ApplyCharacterState(attack);
-            OnAttackStarted?.Invoke(attack);
         }
 
         /// <summary>재시작할 때 호출. 진행 중인 공격과 기다리던 착지 경직을 모두 취소</summary>
@@ -265,13 +259,11 @@ namespace Game.Character
 
         private void EndAttack()
         {
-            AttackData endedAttack = CurrentAttack;
             CurrentAttack = null;
             AttackFrame = 0;
             _landingFrame = 0;
             SetPhase(AttackPhase.None);
             if (CA_characterState != null) CA_characterState.ClearAttack();
-            OnAttackEnded?.Invoke(endedAttack);
         }
 
         private AttackPhase GetPhaseAt(int frame)
@@ -283,9 +275,7 @@ namespace Game.Character
 
         private void SetPhase(AttackPhase phase)
         {
-            if (phase == CurrentPhase) return;
             CurrentPhase = phase;
-            OnPhaseChanged?.Invoke(phase);
         }
 
         // 이 공격의 판정 높이와 특성(장풍, 잡기, 슈퍼아머)을 CharactorState에 넣음 (공격이 끝나면 EndAttack에서 지움)

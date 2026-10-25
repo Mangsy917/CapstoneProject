@@ -18,7 +18,7 @@ public class SettingSliderStepper : MonoBehaviour, ISettingStepper
     [SerializeField] private float maxValue = 100f;
     // 한 번에 바뀌는 양
     [SerializeField] private float step = 10f;
-    // 처음 값 (설정 초기화 시에도 이 값으로 돌아감)
+    // 처음 값
     [SerializeField] private float defaultValue = 100f;
 
     // 값 표시 형식 ({0} 자리에 값이 들어감)
@@ -54,12 +54,6 @@ public class SettingSliderStepper : MonoBehaviour, ISettingStepper
     public void Prev()
     {
         SetValue(Value - step);
-    }
-
-    // 처음 값으로 되돌림
-    public void ResetToDefault()
-    {
-        SetValue(defaultValue);
     }
 
     public void SetValue(float value)

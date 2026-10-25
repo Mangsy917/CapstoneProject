@@ -35,7 +35,6 @@ public class LoadingScene : MonoBehaviour
         SceneManager.LoadScene(loadingSceneName);
     }
 
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
     IEnumerator Start()
     {
         ShowRandomTooltip();
@@ -63,7 +62,6 @@ public class LoadingScene : MonoBehaviour
         op.allowSceneActivation = true;
     }
 
-    // Update is called once per frame
     void Update()
     {
         if (loadingCircle != null)

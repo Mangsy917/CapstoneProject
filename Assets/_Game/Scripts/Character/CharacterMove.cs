@@ -132,11 +132,8 @@ public class CharacterMove : MonoBehaviour
     public bool IsGrounded { get; private set; } = true;
     public bool IsCrouching => CurrentState == MoveState.Crouch || CurrentState == MoveState.CrouchGuard;
     public bool IsGuarding => CurrentState == MoveState.CrouchGuard || CurrentState == MoveState.WalkBackGuard;
-    public bool IsJumping => !IsGrounded;
-    public bool IsJumpStarting => isJumpStarting;
     public bool IsDashing => CurrentState == MoveState.ForwardDash;
     public bool IsBackDashing => CurrentState == MoveState.BackDash;
-    public bool IsRunning => isRunning;
 
     // ===== 이동 내부 상태 =====
     private Transform enemy;

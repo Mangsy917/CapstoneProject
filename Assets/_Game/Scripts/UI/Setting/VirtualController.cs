@@ -60,6 +60,7 @@ namespace Game.UI.Setting
 
         private InputActionMap _actionMap;
         private InputAction _upAction, _downAction, _leftAction, _rightAction;
+        private InputAction[] _attackActions = new InputAction[0]; // _attackButtons와 같은 순서 (매 프레임 이름으로 찾지 않도록 미리 찾아 둠)
         private bool _wasMapEnabled; // 버튼 확인을 시작하기 전에 Char 액션 맵이 켜져 있었는지
 
         private void Awake()
@@ -74,6 +75,15 @@ namespace Game.UI.Setting
                 _downAction = _actionMap.FindAction("Down");
                 _leftAction = _actionMap.FindAction("Left");
                 _rightAction = _actionMap.FindAction("Right");
+
+                if (_attackButtons != null)
+                {
+                    _attackActions = new InputAction[_attackButtons.Length];
+                    for (int i = 0; i < _attackButtons.Length; i++)
+                    {
+                        _attackActions[i] = _actionMap.FindAction(_attackButtons[i].VC_actionName);
+                    }
+                }
             }
         }
 
@@ -167,10 +177,10 @@ namespace Game.UI.Setting
             }
 
             if (_attackButtons == null) return;
-            foreach (AttackButtonView view in _attackButtons)
+            for (int i = 0; i < _attackButtons.Length; i++)
             {
-                InputAction action = isTesting && _actionMap != null ? _actionMap.FindAction(view.VC_actionName) : null;
-                SetBrightness(view.buttonImage, action != null && action.IsPressed());
+                InputAction action = isTesting && i < _attackActions.Length ? _attackActions[i] : null;
+                SetBrightness(_attackButtons[i].buttonImage, action != null && action.IsPressed());
             }
         }
 

@@ -16,7 +16,6 @@ public class ControlReaderSwitch : MonoBehaviour
     // 세팅 UI가 닫힐 때 호출됨 (닫을 때 적용하는 설정에서 사용)
     public static event System.Action SettingClosed;
 
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
         gameUI.SetActive(true);
@@ -26,7 +25,6 @@ public class ControlReaderSwitch : MonoBehaviour
         SetGamePaused(false);
     }
 
-    // Update is called once per frame
     void Update()
     {
         // ESC/Start 또는 취소 키(K/East)로 세팅 UI를 닫음 (팝업이 열려 있으면 팝업만 닫힘)

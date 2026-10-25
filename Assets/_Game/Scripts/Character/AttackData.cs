@@ -87,8 +87,6 @@ namespace Game.Character
             [SerializeField] private int _armorHitCount = 1;
 
             public AttackTrait Trait => _trait;
-            public int StartFrame => _startFrame;
-            public int EndFrame => _endFrame;
             public AttackHeightMask ArmorHeights => _armorHeights;
             public int ArmorHitCount => _armorHitCount;
 
@@ -338,7 +336,6 @@ namespace Game.Character
         [Tooltip("투사체 생성 위치 (캐릭터 위치 기준, x는 바라보는 쪽이 +)")]
         [SerializeField] private Vector2 _projectileSpawnOffset = new Vector2(1f, 0.3f);
 
-        public string AttackName => _attackName;
         public int Damage => AD_damage;
         public Vector2 AttackBoxSize => AD_attackBoxSize;
         public Vector2 AttackBoxOffset => AD_attackBoxOffset;
@@ -351,7 +348,6 @@ namespace Game.Character
         public string LandingAnimationState => _landingAnimationState;
         public string AnimationState => _animationState;
         public Projectile ProjectilePrefab => _projectilePrefab;
-        public int ProjectileSpawnFrame => _projectileSpawnFrame;
         public Vector2 ProjectileSpawnOffset => _projectileSpawnOffset;
         public AttackHeight Height => _height;
         public TraitWindow[] TraitWindows => _traitWindows;
