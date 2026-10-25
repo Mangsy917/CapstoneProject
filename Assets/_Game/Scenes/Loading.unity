@@ -651,7 +651,7 @@ MonoBehaviour:
   rotateSpeed: 360
   waitAfterLoad: 2
   tooltips:
-  - "\uD234\uD301\uC744 \uC778\uC2A4\uD399\uD130\uC758 Tooltips\uC5D0 \uCD94\uAC00\uD574\uC8FC\uC138\uC694."
+  - "Tooltip \uC791\uC131\uB780"
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
