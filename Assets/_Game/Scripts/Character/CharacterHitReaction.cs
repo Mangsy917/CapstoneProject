@@ -88,6 +88,9 @@ namespace Game.Character
         /// <summary>맞거나 가드할 때마다 1씩 늘어남 (같은 모션이 연달아 나와도 처음부터 다시 재생하는 데 사용)</summary>
         public int HitCount { get; private set; }
 
+        /// <summary>이번 콤보에서 맞은 횟수 (피격 경직 중에 또 맞으면 1씩 늘고, 경직이 풀린 뒤에 맞으면 1부터 다시 셈)</summary>
+        public int ComboCount { get; private set; }
+
         private int _reactionStartFrame = -1; // 마지막으로 맞거나 가드한 프레임 (그 프레임에는 경직 / 밀림을 진행하지 않음)
         private int _pushBackFramesLeft;
         private float _pushBackDistancePerFrame;
@@ -206,6 +209,8 @@ namespace Game.Character
         /// <summary>맞았을 때 피격 경직, 히트백, 피격 모션을 정함 (보통은 HitTarget을 통해 호출)</summary>
         public void ReceiveHit(HitInfo info, Hitbox hitbox, float direction, Transform pushedAttacker)
         {
+            // 경직 마지막 프레임에 맞아도 아직 줄기 전이라 경직 중으로 봄
+            ComboCount = IsInHitStun ? ComboCount + 1 : 1;
             HitStunFramesLeft = info.HitStunFrames;
             GuardStunFramesLeft = 0;
             CurrentMotion = GetHitMotion(info, hitbox);
@@ -233,6 +238,7 @@ namespace Game.Character
         {
             HitStunFramesLeft = 0;
             GuardStunFramesLeft = 0;
+            ComboCount = 0;
             _reactionStartFrame = -1;
             _pushBackFramesLeft = 0;
             _pushBackAttacker = null;
