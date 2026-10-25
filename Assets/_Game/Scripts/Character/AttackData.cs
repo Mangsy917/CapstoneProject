@@ -323,11 +323,11 @@ namespace Game.Character
         [Header("착지 경직")]
         [Tooltip("공중에서 착지했을 때 움직일 수 없는 프레임 수. 0이면 경직 없음")]
         [SerializeField] private int _landingRecoveryFrames = 0;
-        [Tooltip("착지 경직 동안 재생할 Animator 상태 이름. 비워두면 공격 애니메이션을 그대로 유지")]
+        [Tooltip("착지 경직 동안 재생할 Animator 상태 이름. 비워두면 공격 애니메이션을 그대로 유지\n전이 만들기 메뉴(Tools > Animator)가 이 값으로 공격 상태 → 착지 상태 전이를 만듦")]
         [SerializeField] private string _landingAnimationState;
 
         [Header("애니메이션")]
-        [Tooltip("공격 중 재생할 Animator 상태 이름")]
+        [Tooltip("공격 중 재생할 Animator 상태 이름. 공격 시작 때 같은 이름의 트리거를 Animator에 보냄\n전이 만들기 메뉴(Tools > Animator)가 이 이름으로 트리거와 전이를 만듦")]
         [SerializeField] private string _animationState;
 
         [Header("투사체")]
