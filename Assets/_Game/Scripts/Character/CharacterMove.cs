@@ -147,9 +147,9 @@ public class CharacterMove : MonoBehaviour
     private int airFrames = 1;           // 공중에 떠 있는 전체 프레임 수
     private float airHeight;             // 가장 높은 곳까지의 높이
     private float airDistancePerFrame;   // 1프레임에 움직이는 가로 거리 (오른쪽이 +)
-    private bool shouldStopBeforeEnemy;  // 벽 근처에서 Enemy 쪽으로 뛰어서, Enemy를 넘어가지 않고 원래 쪽에 착지해야 하는지
+    private bool shouldStopBeforeEnemy;  // 벽에 붙은 Enemy 쪽으로 뛰어서, Enemy를 넘어가지 않고 원래 쪽에 착지해야 하는지
 
-    // 벽 근처 앞 점프에서 Enemy 바로 앞에 멈출 때 남기는 x 거리 (같은 위치가 되어 좌우가 애매해지지 않도록)
+    // 벽에 붙은 Enemy 쪽으로 앞 점프할 때 Enemy 바로 앞에 멈출 때 남기는 x 거리 (같은 위치가 되어 좌우가 애매해지지 않도록)
     private const float StopBeforeEnemyMargin = 0.05f;
 
     // ===== 대쉬 / 달리기 내부 상태 =====
@@ -605,22 +605,21 @@ public class CharacterMove : MonoBehaviour
         airFrames = frames;
         airHeight = height;
         airDistancePerFrame = xDistancePerFrame;
-        shouldStopBeforeEnemy = IsJumpingTowardEnemyNearWall();
+        shouldStopBeforeEnemy = IsJumpingTowardEnemyAtWall();
         UpdateAirborne();
     }
 
-    // Enemy 쪽으로 뛰어오를 때, 내 뒤에 벽이 붙어 있거나 Enemy가 벽에 붙어 있는지
-    // (이때는 점프로 Enemy를 넘어가서 좌우가 바뀌지 않도록 함)
-    private bool IsJumpingTowardEnemyNearWall()
+    // Enemy 쪽으로 뛰어오를 때, Enemy가 등 뒤의 벽에 붙어 있는지
+    // (예: [Player Enemy 벽]. 이때는 Enemy와 벽 사이로 넘어갈 수 없으므로 Enemy를 넘어가지 않도록 함.
+    //  내가 벽에 붙어 있는 [Enemy Player 벽]에서는 넘어가기 가능)
+    private bool IsJumpingTowardEnemyAtWall()
     {
-        if (enemy == null) return false;
+        if (enemy == null || enemyPushbox == null) return false;
 
         float facingSign = IsFacingRight ? 1f : -1f;
         if (airDistancePerFrame * facingSign <= 0f) return false; // 제자리 / 뒤로 점프
 
-        bool isSelfAtWall = selfPushbox != null && selfPushbox.IsTouchingWall(direction: -facingSign);
-        bool isEnemyAtWall = enemyPushbox != null && enemyPushbox.IsTouchingWall(direction: facingSign);
-        return isSelfAtWall || isEnemyAtWall;
+        return enemyPushbox.IsTouchingWall(direction: facingSign);
     }
 
     // 앞으로 간 x가 Enemy를 넘어가지 않도록 Enemy 바로 앞에서 멈춤 (x: 이번 프레임에 가려는 위치)
