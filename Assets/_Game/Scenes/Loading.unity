@@ -374,8 +374,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: "\uD234\uD301"
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 4a6357197fd6c8043b3acee0cf7fbbbe, type: 2}
-  m_sharedMaterial: {fileID: -815202500433089127, guid: 4a6357197fd6c8043b3acee0cf7fbbbe, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 43dcfe858b544cb4c9d1d582f2fabccb, type: 2}
+  m_sharedMaterial: {fileID: -5630455135265645896, guid: 43dcfe858b544cb4c9d1d582f2fabccb, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
