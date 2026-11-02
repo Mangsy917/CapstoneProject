@@ -5,7 +5,7 @@ namespace Game.UI.Setting
     // 연습 설정 패널(시작 사이드 줄과 시작 위치 줄의 부모)에 붙여서 사용
     // 두 스테퍼 값에 맞춰 Player와 Enemy를 다시 세움
     // - 시작 사이드(왼쪽 / 오른쪽): Player가 Enemy의 왼쪽 또는 오른쪽에 서도록 두 캐릭터의 x 위치를 맞바꿈
-    // - 시작 위치(중앙 / 왼쪽 끝 / 오른쪽 끝): 두 캐릭터를 스테이지의 그 위치에 다시 세움 (왼쪽 / 오른쪽 순서는 그대로)
+    // - 시작 위치(중앙 / 오른쪽 끝 / 왼쪽 끝): 두 캐릭터를 스테이지의 그 위치에 다시 세움 (왼쪽 / 오른쪽 순서는 그대로)
     // - 사이드를 먼저 맞춘 뒤 위치를 정함 (시작 위치는 지금의 왼쪽 / 오른쪽 순서를 그대로 쓰므로)
     // 스테퍼를 바꾼 순간에는 적용하지 않고, 설정창을 닫을 때(ESC 등) 적용함
     // 닫을 때 값이 달라져 있으면 화면이 순간 검게 변하고, 그동안 위치를 바꾼 뒤 서서히 원래 화면으로 돌아옴
@@ -35,8 +35,8 @@ namespace Game.UI.Setting
         [SerializeField] private float _characterGap = 1.9f;
         // 스테퍼 Options 순서 (0부터)
         [SerializeField] private int _centerIndex = 0;
-        [SerializeField] private int _leftEndIndex = 1;
-        [SerializeField] private int _rightEndIndex = 2;
+        [SerializeField] private int _rightEndIndex = 1;
+        [SerializeField] private int _leftEndIndex = 2;
 
         [Header("태그")]
         [SerializeField] private string SPS_playerTag = "Player";
