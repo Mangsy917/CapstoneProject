@@ -49,16 +49,22 @@ MonoBehaviour:
     _hitMotion: 0
   _shouldHideTopHitbox: 0
   _extraHitboxes: []
-  _startupFrames: 6
-  _activeFrames: 10
-  _followUpHits: []
-  _recoveryFrames: 30
+  _frames:
+  - _frameType: 0
+    AD_frameCount: 6
+  - _frameType: 1
+    AD_frameCount: 10
+  - _frameType: 2
+    AD_frameCount: 30
   _buttonFrames:
   - _button: 1
-    _startupFrames: 5
-    _activeFrames: 10
-    _followUpHits: []
-    _recoveryFrames: 21
+    _frames:
+    - _frameType: 0
+      AD_frameCount: 5
+    - _frameType: 1
+      AD_frameCount: 10
+    - _frameType: 2
+      AD_frameCount: 21
     AD_damage: 1100
     _projectileDistancePerFrame: 0
     AD_attackBoxSize: {x: 0, y: 0}
@@ -68,10 +74,13 @@ MonoBehaviour:
     _hitAdvantage: 38
     _blockAdvantage: -23
   - _button: 2
-    _startupFrames: 6
-    _activeFrames: 10
-    _followUpHits: []
-    _recoveryFrames: 30
+    _frames:
+    - _frameType: 0
+      AD_frameCount: 6
+    - _frameType: 1
+      AD_frameCount: 10
+    - _frameType: 2
+      AD_frameCount: 30
     AD_damage: 1200
     _projectileDistancePerFrame: 0
     AD_attackBoxSize: {x: 0, y: 0}
@@ -81,10 +90,13 @@ MonoBehaviour:
     _hitAdvantage: 34
     _blockAdvantage: -32
   - _button: 4
-    _startupFrames: 7
-    _activeFrames: 10
-    _followUpHits: []
-    _recoveryFrames: 34
+    _frames:
+    - _frameType: 0
+      AD_frameCount: 7
+    - _frameType: 1
+      AD_frameCount: 10
+    - _frameType: 2
+      AD_frameCount: 34
     AD_damage: 1400
     _projectileDistancePerFrame: 0
     AD_attackBoxSize: {x: 0, y: 0}
@@ -94,10 +106,13 @@ MonoBehaviour:
     _hitAdvantage: 37
     _blockAdvantage: -39
   - _button: 8
-    _startupFrames: 6
-    _activeFrames: 10
-    _followUpHits: []
-    _recoveryFrames: 37
+    _frames:
+    - _frameType: 0
+      AD_frameCount: 6
+    - _frameType: 1
+      AD_frameCount: 10
+    - _frameType: 2
+      AD_frameCount: 37
     AD_damage: 1600
     _projectileDistancePerFrame: 0
     AD_attackBoxSize: {x: 0, y: 0}
@@ -107,6 +122,7 @@ MonoBehaviour:
     _hitAdvantage: 29
     _blockAdvantage: -40
   _traitWindows: []
+  _isLaunchAttack: 1
   _launchFrame: 3
   _shouldLaunchAtStartup: 1
   _launchForwardDistance: 1.44
@@ -116,6 +132,7 @@ MonoBehaviour:
   _landingRecoveryFrames: 12
   _landingAnimationState: Sit
   _animationState: 623
+  _isProjectileAttack: 0
   _projectilePrefab: {fileID: 0}
   _projectileSpawnFrame: 1
   _projectileSpawnOffset: {x: 1, y: 0.3}

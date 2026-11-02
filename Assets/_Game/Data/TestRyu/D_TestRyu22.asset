@@ -23,11 +23,16 @@ MonoBehaviour:
     AD_offset: {x: 0.722, y: -0.644}
     _framesBeforeActive: 49
     _framesAfterActive: 1
-  _startupFrames: 50
-  _activeFrames: 1
-  _recoveryFrames: 1
+  _frames:
+  - _frameType: 0
+    AD_frameCount: 50
+  - _frameType: 1
+    AD_frameCount: 1
+  - _frameType: 2
+    AD_frameCount: 1
   _buttonFrames: []
   _traitWindows: []
+  _isLaunchAttack: 0
   _launchFrame: 0
   _shouldLaunchAtStartup: 0
   _launchForwardDistance: 1.44
@@ -37,6 +42,7 @@ MonoBehaviour:
   _landingRecoveryFrames: 0
   _landingAnimationState: 
   _animationState: 22
+  _isProjectileAttack: 0
   _projectilePrefab: {fileID: 0}
   _projectileSpawnFrame: 1
   _projectileSpawnOffset: {x: 1, y: 0.3}

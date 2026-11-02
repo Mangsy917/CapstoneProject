@@ -69,17 +69,26 @@ namespace Game.Character
             return result != null ? result.DamageRate : 1f;
         }
 
-        // 맞은 뒤 다시 움직일 수 있을 때까지의 전체 프레임 수 (피격 경직 + 다운)
-        private int GetTotalStunFrames(HitType hitType)
+        /// <summary>이 히트 종류로 맞았을 때 때린 쪽과 맞은 쪽이 멈추는 프레임 수 (히트 종류에 정해 두었으면 그 값, 아니면 기술의 히트스톱)</summary>
+        public int GetHitStopFrames(HitType hitType)
         {
             AttackData.HitTypeResult result = GetResult(hitType);
+            return result != null && result.ShouldOverrideHitStop ? result.AD_HitStopFrames : HitStopFrames;
+        }
+
+        // 맞은 뒤 다시 움직일 수 있을 때까지의 전체 프레임 수 (피격 경직 + 다운)
+        // 히트 종류에 피격 경직을 직접 정해 두었으면 땅 / 공중에 따라 그 값, 아니면 히트 시 유리 프레임 기준 경직 + 추가 경직
+        private int GetTotalStunFrames(HitType hitType, bool isAirborne)
+        {
+            AttackData.HitTypeResult result = GetResult(hitType);
+            if (result != null && result.ShouldOverrideHitStun) return isAirborne ? result.AirHitStunFrames : result.StandHitStunFrames;
             return HitStunFrames + (result != null ? result.ExtraHitStunFrames : 0);
         }
 
-        /// <summary>이 히트 종류로 맞았을 때의 피격 경직 프레임 수 (다운되면 쓰러지는 동안만)</summary>
-        public int GetHitStunFrames(HitType hitType)
+        /// <summary>이 히트 종류로 맞았을 때의 피격 경직 프레임 수 (다운되면 쓰러지는 동안만). isAirborne: 맞은 쪽이 공중에 있는지 (띄워지는 경우 포함)</summary>
+        public int GetHitStunFrames(HitType hitType, bool isAirborne = false)
         {
-            int totalFrames = GetTotalStunFrames(hitType);
+            int totalFrames = GetTotalStunFrames(hitType, isAirborne);
             AttackData.HitTypeResult result = GetResult(hitType);
             if (result == null || !result.ShouldKnockDown) return totalFrames;
             return Mathf.Min(result.FallFrames, totalFrames);
@@ -87,14 +96,14 @@ namespace Game.Character
 
         /// <summary>
         /// 이 히트 종류로 맞았을 때 피격 경직이 끝난 뒤 기상할 때까지 다운되어 있는 프레임 수 (다운되지 않으면 0)
-        /// 다운 프레임을 정해 두었으면 그 값, 0이면 기상이 히트 시 유리 프레임에 맞도록 남은 경직
+        /// 다운 프레임을 정해 두었으면 그 값, 0이면 기상이 히트 시 유리 프레임(또는 직접 정한 피격 경직)에 맞도록 남은 경직
         /// </summary>
-        public int GetKnockDownFrames(HitType hitType)
+        public int GetKnockDownFrames(HitType hitType, bool isAirborne = false)
         {
             AttackData.HitTypeResult result = GetResult(hitType);
             if (result == null || !result.ShouldKnockDown) return 0;
             if (result.DownFrames > 0) return result.DownFrames;
-            return GetTotalStunFrames(hitType) - GetHitStunFrames(hitType);
+            return GetTotalStunFrames(hitType, isAirborne) - GetHitStunFrames(hitType, isAirborne);
         }
 
         /// <summary>이 히트 종류로 맞았을 때 밀려나는 거리 (히트 종류에 정해 두었으면 그 값, 아니면 기술의 히트백)</summary>
@@ -243,8 +252,9 @@ namespace Game.Character
             // 타격감: 맞은 쪽과 때린 쪽을 잠깐 멈춤 (게임 시간은 그대로 흐름)
             if (shouldHitStop)
             {
-                HitStop.Stop(target, info.HitStopFrames);
-                if (attacker != null) HitStop.Stop(attacker.gameObject, info.HitStopFrames);
+                int hitStopFrames = info.GetHitStopFrames(hitType);
+                HitStop.Stop(target, hitStopFrames);
+                if (attacker != null) HitStop.Stop(attacker.gameObject, hitStopFrames);
             }
 
             var health = target.GetComponent<CharacterHealth>();
@@ -368,11 +378,14 @@ namespace Game.Character
             // 경직 마지막 프레임에 맞아도 아직 줄기 전이라 경직 중으로 봄
             ComboCount = IsInHitStun ? ComboCount + 1 : 1;
             LastHitType = hitType;
-            HitStunFramesLeft = info.GetHitStunFrames(hitType);
-            _pendingDownFrames = info.GetKnockDownFrames(hitType); // 콤보 중이면 마지막으로 맞은 공격이 다운을 정함
+
+            // 이미 공중에 있거나 띄우는 공격에 맞으면 공중 피격 경직을 씀 (히트 종류에 피격 경직을 직접 정해 두었을 때)
+            float airborneHeight = info.GetAirborneHeight(hitType);
+            bool isAirborne = airborneHeight > 0f || !IsGrounded();
+            HitStunFramesLeft = info.GetHitStunFrames(hitType, isAirborne);
+            _pendingDownFrames = info.GetKnockDownFrames(hitType, isAirborne); // 콤보 중이면 마지막으로 맞은 공격이 다운을 정함
 
             // 띄우는 공격이면 피격 경직(다운되면 쓰러지는 프레임) 동안 공중에 떴다가, 끝나는 프레임에 착지
-            float airborneHeight = info.GetAirborneHeight(hitType);
             if (airborneHeight > 0f)
             {
                 if (CHR_characterMove != null) CHR_characterMove.LaunchIntoAir(forwardDistance: 0f, height: airborneHeight, airFrames: HitStunFramesLeft);
@@ -386,6 +399,13 @@ namespace Game.Character
             // 맞으면 하던 공격은 취소됨
             if (CHR_characterAttack != null) CHR_characterAttack.CancelAttack();
             if (_dummyGuard != null) _dummyGuard.NotifyHit();
+        }
+
+        // 플레이어는 CharacterMove, 더미는 DummyAction으로 땅에 있는지 봄 (둘 다 없으면 땅에 있다고 봄)
+        private bool IsGrounded()
+        {
+            if (CHR_characterMove != null) return CHR_characterMove.IsGrounded;
+            return _dummyAction == null || _dummyAction.DA_IsGrounded;
         }
 
         /// <summary>가드했을 때 가드 경직, 가드백, 가드 모션을 정함 (보통은 HitTarget을 통해 호출)</summary>

@@ -185,7 +185,7 @@ namespace Game.Character
             Vector3 position = transform.position + new Vector3(isFacingRight ? offset.x : -offset.x, offset.y, 0f);
 
             Projectile projectile = Instantiate(attack.ProjectilePrefab, position, Quaternion.identity);
-            projectile.Launch(isFacingRight, owner: gameObject, targetTag: CA_opponentTag, damage: attack.GetDamage(_currentButton), hitInfo: attack.GetHitInfo(_currentButton), distancePerFrame: attack.GetProjectileDistancePerFrame(_currentButton));
+            projectile.Launch(isFacingRight, owner: gameObject, targetTag: CA_opponentTag, damage: attack.GetProjectileDamage(_currentButton), hitInfo: attack.GetHitInfo(_currentButton), distancePerFrame: attack.GetProjectileDistancePerFrame(_currentButton), count: attack.ProjectileCount);
         }
 
         // 이번 프레임의 공격 상자와 겹치는 상대(피격 상자)가 있으면 hitIndex번째 타의 데미지를 줌 (공격 상자가 없는 프레임이면 아무것도 안 함)
@@ -273,13 +273,16 @@ namespace Game.Character
             if (CA_characterState != null) CA_characterState.ClearAttack();
         }
 
-        // 발생의 마지막 프레임과 지속 첫 프레임은 같은 프레임이라서, 그 프레임은 지속(공격 판정)으로 봄
-        // 다단 공격에서 타와 타 사이(다음 타의 발생)는 준비로 봄
+        // 프레임 목록에 적은 종류대로 정함
+        // 발생의 마지막 프레임과 공격 판정 첫 프레임은 같은 프레임이라서, 그 프레임은 지속(공격 판정)으로 봄
         private AttackPhase GetPhaseAt(int frame)
         {
-            if (CurrentFrames.FindHitIndex(frame) >= 0) return AttackPhase.Active;
-            if (frame > CurrentFrames.LastActiveFrame) return AttackPhase.Recovery;
-            return AttackPhase.Startup;
+            switch (CurrentFrames.GetFrameType(frame))
+            {
+                case FrameType.Active: return AttackPhase.Active;
+                case FrameType.Recovery: return AttackPhase.Recovery;
+                default: return AttackPhase.Startup;
+            }
         }
 
         private void SetPhase(AttackPhase phase)
