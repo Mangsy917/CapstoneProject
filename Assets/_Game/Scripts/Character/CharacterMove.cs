@@ -206,6 +206,9 @@ public class CharacterMove : MonoBehaviour
         // 슬로우 모션 중에는 건너뛰는 프레임이 있음 (GameSpeed)
         if (!Game.Field.GameSpeed.IsTickFrame) return;
 
+        // 히트스톱 중에는 움직이지 않음 (점프 궤도, 달리기 등이 멈췄다가 풀리면 이어서 진행)
+        if (Game.Character.HitStop.IsStoppedNow(this)) return;
+
         frameCounter++;
 
         // Enemy 주기적 검색

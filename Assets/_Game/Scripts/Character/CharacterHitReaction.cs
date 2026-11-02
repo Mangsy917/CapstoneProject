@@ -26,13 +26,16 @@ namespace Game.Character
         public int CounterExtraHitStunFrames { get; }
         public float PunishCounterDamageRate { get; }
         public int PunishCounterExtraHitStunFrames { get; }
+        public int HitStopFrames { get; }
 
         public HitInfo(int hitStunFrames, float hitBackDistance, int hitBackFrames,
                        int blockStunFrames, float guardBackDistance, int guardBackFrames,
                        AttackHeight height, HitMotion motion, bool isThrow,
                        float counterDamageRate = 1f, int counterExtraHitStunFrames = 0,
-                       float punishCounterDamageRate = 1f, int punishCounterExtraHitStunFrames = 0)
+                       float punishCounterDamageRate = 1f, int punishCounterExtraHitStunFrames = 0,
+                       int hitStopFrames = 0)
         {
+            HitStopFrames = hitStopFrames;
             CounterDamageRate = counterDamageRate;
             CounterExtraHitStunFrames = counterExtraHitStunFrames;
             PunishCounterDamageRate = punishCounterDamageRate;
@@ -146,8 +149,9 @@ namespace Game.Character
         /// target에게 공격이 닿았을 때 호출. 가드하면 가드 경직 / 가드백, 슈퍼아머로 버티면 데미지만, 아니면 데미지와 피격 경직 / 히트백을 줌
         /// direction: 밀려나는 방향 (때린 쪽에서 맞은 쪽으로, 1: 오른쪽, -1: 왼쪽)
         /// shouldPushAttacker: 맞은 쪽이 벽에 붙어 있을 때 때린 쪽이 대신 밀려날지 (장풍은 false)
+        /// shouldStopAttacker: 맞혔을 때 때린 쪽도 히트스톱으로 멈출지 (장풍은 false, 맞은 쪽만 멈춤)
         /// </summary>
-        public static void HitTarget(GameObject target, int damage, HitInfo info, Hitbox hitbox, float direction, CharacterAttack attacker, bool shouldPushAttacker)
+        public static void HitTarget(GameObject target, int damage, HitInfo info, Hitbox hitbox, float direction, CharacterAttack attacker, bool shouldPushAttacker, bool shouldStopAttacker = true)
         {
             var reaction = target.GetComponent<CharacterHitReaction>();
             Transform pushedAttacker = shouldPushAttacker && attacker != null ? attacker.transform : null;
@@ -164,8 +168,26 @@ namespace Game.Character
             HitType hitType = !isAbsorbed && targetAttack != null ? targetAttack.GetHitTypeOnHit() : HitType.Normal;
             if (!isAbsorbed && reaction != null) reaction.ReceiveHit(info, hitbox, direction, pushedAttacker, hitType);
 
+            // 맞은 쪽의 판정 표시(StateUI)에 노말 히트 / 카운터 / 퍼니시 카운터를 넣음 (다음에 맞을 때까지 유지)
+            var targetState = target.GetComponent<CharactorState>();
+            if (targetState != null) SetCounterState(targetState, hitType);
+
+            // 타격감: 맞은 쪽과 때린 쪽을 잠깐 멈춤 (게임 시간은 그대로 흐름)
+            HitStop.Stop(target, info.HitStopFrames);
+            if (shouldStopAttacker && attacker != null) HitStop.Stop(attacker.gameObject, info.HitStopFrames);
+
             var health = target.GetComponent<CharacterHealth>();
             if (health != null) health.TakeDamage(Mathf.RoundToInt(damage * info.GetDamageRate(hitType)), attacker: attacker);
+        }
+
+        private static void SetCounterState(CharactorState state, HitType hitType)
+        {
+            switch (hitType)
+            {
+                case HitType.Counter: state.CounterHit = true; break;
+                case HitType.PunishCounter: state.PunishCounter = true; break;
+                default: state.NormalHit = true; break;
+            }
         }
 
         private void Awake()
@@ -183,6 +205,9 @@ namespace Game.Character
             // 슬로우 모션 중에는 건너뛰는 프레임이 있음 (GameSpeed)
             if (!Game.Field.GameSpeed.IsTickFrame) return;
             if (_reactionStartFrame == Time.frameCount) return;
+
+            // 히트스톱 중에는 경직이 줄지 않고 밀려나지도 않음 (풀린 프레임부터 경직 / 히트백 진행)
+            if (HitStop.IsStoppedNow(this)) return;
 
             if (_pushBackFramesLeft > 0)
             {

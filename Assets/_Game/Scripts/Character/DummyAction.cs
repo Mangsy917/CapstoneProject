@@ -75,6 +75,9 @@ namespace Game.Character
             // 슬로우 모션 중에는 건너뛰는 프레임이 있음 (GameSpeed)
             if (!Game.Field.GameSpeed.IsTickFrame) return;
 
+            // 히트스톱 중에는 움직이지 않음
+            if (HitStop.IsStoppedNow(this)) return;
+
             // 공중 프레임을 다 채웠으면 이번 프레임부터 땅에 있음
             if (!DA_IsGrounded && DA_airFrame >= DA_jumpAirFrames) Land();
 

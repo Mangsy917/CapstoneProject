@@ -48,6 +48,7 @@ namespace Game.Character
 
         private int _playedHitCount; // 마지막으로 트리거를 보낸 피격 / 가드 (새로 맞으면 같은 모션이어도 처음부터 다시 재생)
         private readonly List<int> _triggersToReset = new List<int>();
+        private float _animatorSpeed = 1f; // 히트스톱이 풀리면 되돌릴 Animator 재생 속도
 
         private void Awake()
         {
@@ -56,11 +57,19 @@ namespace Game.Character
             if (CAP_characterAttack == null) CAP_characterAttack = GetComponent<CharacterAttack>();
             if (CAP_hitReaction == null) CAP_hitReaction = GetComponent<CharacterHitReaction>();
             if (CAP_dummyAction == null) CAP_dummyAction = GetComponent<DummyAction>();
+            if (_animator != null) _animatorSpeed = _animator.speed;
         }
 
         private void LateUpdate()
         {
             if (_animator == null) return;
+
+            // 히트스톱: Animator는 여기서 정한 속도로 다음 프레임에 재생되므로, 다음 프레임에 멈추면 지금 속도를 0으로 둠
+            // (맞은 프레임의 피격 모션은 아래에서 바로 바꾼 뒤, 그 모습 그대로 멈춤)
+            _animator.speed = HitStop.IsStoppedNextFrame(this) ? 0f : _animatorSpeed;
+
+            // 멈춘 동안에는 파라미터를 넣지 않음 (공격 트리거가 다시 나가지 않도록)
+            if (HitStop.IsStoppedNow(this)) return;
 
             SetMoveParameters();
             SetAttackParameters();

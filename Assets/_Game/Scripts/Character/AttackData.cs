@@ -362,6 +362,10 @@ namespace Game.Character
         [Tooltip("히트백으로 밀려나는 데 걸리는 프레임 수")]
         [SerializeField] private int _hitBackFrames = 8;
 
+        [Tooltip("히트스톱: 맞혔을 때 때린 쪽과 맞은 쪽이 멈추는 프레임 수 (60프레임 = 1초, 6이면 0.1초). 0이면 멈추지 않음\n" +
+                 "게임 시간은 그대로 흐르고 두 캐릭터만 멈춤. 맞은 쪽의 피격 경직은 멈춤이 풀린 뒤부터 줄어듦 (장풍은 맞은 쪽만 멈춤)")]
+        [SerializeField] private int _hitStopFrames = 6;
+
         [Tooltip("맞은 쪽이 재생할 피격 모션. 자동이면 상단 공격은 MiddleHit, 중단 공격은 Top2Low, 하단 공격은 맞은 피격 상자 위치에 따라 정함")]
         [SerializeField] private HitMotion _hitMotion = HitMotion.Auto;
 
@@ -510,7 +514,8 @@ namespace Game.Character
                 blockStunFrames: GetBlockStunFrames(button, hitIndex), guardBackDistance: _guardBackDistance, guardBackFrames: _guardBackFrames,
                 height: _height, motion: _hitMotion, isThrow: HasTrait(AttackTrait.Throw),
                 counterDamageRate: _counterDamageRate, counterExtraHitStunFrames: _counterExtraHitStunFrames,
-                punishCounterDamageRate: _punishCounterDamageRate, punishCounterExtraHitStunFrames: _punishCounterExtraHitStunFrames);
+                punishCounterDamageRate: _punishCounterDamageRate, punishCounterExtraHitStunFrames: _punishCounterExtraHitStunFrames,
+                hitStopFrames: _hitStopFrames);
         }
 
         // 버튼별 프레임 목록에 없을 때 쓰는 기본 프레임
@@ -680,6 +685,7 @@ namespace Game.Character
             if (_hitBackFrames < 1) _hitBackFrames = 1;
             if (_guardBackDistance < 0f) _guardBackDistance = 0f;
             if (_guardBackFrames < 1) _guardBackFrames = 1;
+            if (_hitStopFrames < 0) _hitStopFrames = 0;
             if (_counterDamageRate < 0f) _counterDamageRate = 0f;
             if (_counterExtraHitStunFrames < 0) _counterExtraHitStunFrames = 0;
             if (_punishCounterDamageRate < 0f) _punishCounterDamageRate = 0f;

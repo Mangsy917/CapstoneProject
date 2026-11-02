@@ -107,6 +107,9 @@ namespace Game.Character
             // 슬로우 모션 중에는 건너뛰는 프레임이 있음 (GameSpeed)
             if (!Game.Field.GameSpeed.IsTickFrame) return;
 
+            // 히트스톱 중에는 공격 프레임이 진행되지 않음
+            if (HitStop.IsStoppedNow(this)) return;
+
             if (!IsAttacking)
             {
                 if (_pendingLandingAttack != null && IsGrounded())

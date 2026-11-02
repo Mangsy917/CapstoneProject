@@ -54,6 +54,7 @@ namespace Game.Field
             foreach (var command in FindObjectsByType<CharacterCommand>(FindObjectsSortMode.None)) command.ClearBuffer();
             foreach (var projectile in FindObjectsByType<Projectile>(FindObjectsSortMode.None)) Destroy(projectile.gameObject);
             foreach (var health in FindObjectsByType<CharacterHealth>(FindObjectsSortMode.None)) health.ResetHealth();
+            HitStop.ResetAll();
 
             bool isUp = direction >= 7;
             bool isDown = direction <= 3;
