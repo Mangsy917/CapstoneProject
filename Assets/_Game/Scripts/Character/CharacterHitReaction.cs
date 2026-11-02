@@ -27,15 +27,25 @@ namespace Game.Character
         public float PunishCounterDamageRate { get; }
         public int PunishCounterExtraHitStunFrames { get; }
         public int HitStopFrames { get; }
+        public int KnockDownFrames { get; }
+        public bool ShouldKnockDownOnNormalHit { get; }
+        public bool ShouldKnockDownOnCounter { get; }
+        public bool ShouldKnockDownOnPunishCounter { get; }
 
         public HitInfo(int hitStunFrames, float hitBackDistance, int hitBackFrames,
                        int blockStunFrames, float guardBackDistance, int guardBackFrames,
                        AttackHeight height, HitMotion motion, bool isThrow,
                        float counterDamageRate = 1f, int counterExtraHitStunFrames = 0,
                        float punishCounterDamageRate = 1f, int punishCounterExtraHitStunFrames = 0,
-                       int hitStopFrames = 0)
+                       int hitStopFrames = 0,
+                       int knockDownFrames = 0, bool shouldKnockDownOnNormalHit = false,
+                       bool shouldKnockDownOnCounter = false, bool shouldKnockDownOnPunishCounter = false)
         {
             HitStopFrames = hitStopFrames;
+            KnockDownFrames = knockDownFrames;
+            ShouldKnockDownOnNormalHit = shouldKnockDownOnNormalHit;
+            ShouldKnockDownOnCounter = shouldKnockDownOnCounter;
+            ShouldKnockDownOnPunishCounter = shouldKnockDownOnPunishCounter;
             CounterDamageRate = counterDamageRate;
             CounterExtraHitStunFrames = counterExtraHitStunFrames;
             PunishCounterDamageRate = punishCounterDamageRate;
@@ -72,6 +82,19 @@ namespace Game.Character
                 default: return HitStunFrames;
             }
         }
+
+        /// <summary>이 히트 종류로 맞았을 때 피격 경직이 끝난 뒤 다운되어 있는 프레임 수 (다운되지 않으면 0)</summary>
+        public int GetKnockDownFrames(HitType hitType)
+        {
+            bool shouldKnockDown;
+            switch (hitType)
+            {
+                case HitType.Counter: shouldKnockDown = ShouldKnockDownOnCounter; break;
+                case HitType.PunishCounter: shouldKnockDown = ShouldKnockDownOnPunishCounter; break;
+                default: shouldKnockDown = ShouldKnockDownOnNormalHit; break;
+            }
+            return shouldKnockDown ? KnockDownFrames : 0;
+        }
     }
 
     // 캐릭터(Player, Enemy)에 붙여서 사용하는 피격 / 가드 처리
@@ -85,7 +108,9 @@ namespace Game.Character
     //   피격 모션은 공격(AttackData)에 정한 모션, 자동이면 상단 공격은 MiddleHit, 중단 공격은 Top2Low, 하단 공격은 맞은 피격 상자 위치에 따라 정함
     // - 가드하면: 가드 경직 + 가드백 + 가드 모션 (가드한 피격 상자 위치에 따라 Top / Middle / Bottom), 데미지 없음
     // - 히트백 / 가드백: 정해진 프레임 동안 뒤로 밀려남. 벽에 붙어 있으면 대신 때린 쪽이 밀려남 (장풍은 제외)
-    // - 경직 중에는 움직이거나 공격할 수 없음 (CharacterMove, CharacterAttack이 IsInStun을 확인)
+    // - 다운: 공격(AttackData)에서 정한 히트 종류로 맞으면, 피격 경직이 끝난 뒤 정한 프레임 동안 다운됨
+    //   다운 중에는 피격 상자가 모두 꺼져서 무적이고(CharacterHitboxes), 움직이거나 공격할 수 없음
+    // - 경직 / 다운 중에는 움직이거나 공격할 수 없음 (CharacterMove, CharacterAttack이 IsInStun을 확인)
     // - 슈퍼아머로 버틴 공격은 데미지만 받고 경직 / 히트백이 없음
     // - 모션 재생은 CharacterAnimationPlayer가 함
     // 경직은 공격(CharacterAttack, 실행 순서 20)과 투사체가 처리된 뒤에 1프레임씩 줄임 (밀림 판정 Pushbox(50)보다는 먼저)
@@ -121,8 +146,14 @@ namespace Game.Character
         public bool IsInHitStun => HitStunFramesLeft > 0;
         public bool IsInGuardStun => GuardStunFramesLeft > 0;
 
-        /// <summary>피격 경직이나 가드 경직 중인지 (움직이거나 공격할 수 없음)</summary>
-        public bool IsInStun => IsInHitStun || IsInGuardStun;
+        /// <summary>남은 다운 프레임</summary>
+        public int DownFramesLeft { get; private set; }
+
+        /// <summary>다운 중인지 (무적이고 움직이거나 공격할 수 없음)</summary>
+        public bool IsDown => DownFramesLeft > 0;
+
+        /// <summary>피격 경직, 가드 경직, 다운 중인지 (움직이거나 공격할 수 없음)</summary>
+        public bool IsInStun => IsInHitStun || IsInGuardStun || IsDown;
 
         /// <summary>마지막으로 맞았을 때의 피격 모션 (자동은 들어가지 않음)</summary>
         public HitMotion CurrentMotion { get; private set; } = HitMotion.Middle;
@@ -139,6 +170,7 @@ namespace Game.Character
         /// <summary>마지막으로 맞았을 때의 히트 종류 (노말 히트 / 카운터 / 퍼니시 카운터)</summary>
         public HitType LastHitType { get; private set; } = HitType.Normal;
 
+        private int _pendingDownFrames; // 피격 경직이 끝나면 시작할 다운 프레임 (0이면 다운 안 함)
         private int _reactionStartFrame = -1; // 마지막으로 맞거나 가드한 프레임 (그 프레임에는 경직 / 밀림을 진행하지 않음)
         private int _pushBackFramesLeft;
         private float _pushBackDistancePerFrame;
@@ -149,11 +181,15 @@ namespace Game.Character
         /// target에게 공격이 닿았을 때 호출. 가드하면 가드 경직 / 가드백, 슈퍼아머로 버티면 데미지만, 아니면 데미지와 피격 경직 / 히트백을 줌
         /// direction: 밀려나는 방향 (때린 쪽에서 맞은 쪽으로, 1: 오른쪽, -1: 왼쪽)
         /// shouldPushAttacker: 맞은 쪽이 벽에 붙어 있을 때 때린 쪽이 대신 밀려날지 (장풍은 false)
-        /// shouldStopAttacker: 맞혔을 때 때린 쪽도 히트스톱으로 멈출지 (장풍은 false, 맞은 쪽만 멈춤)
+        /// shouldHitStop: 맞혔을 때 때린 쪽과 맞은 쪽을 히트스톱으로 멈출지 (장풍은 false)
         /// </summary>
-        public static void HitTarget(GameObject target, int damage, HitInfo info, Hitbox hitbox, float direction, CharacterAttack attacker, bool shouldPushAttacker, bool shouldStopAttacker = true)
+        public static void HitTarget(GameObject target, int damage, HitInfo info, Hitbox hitbox, float direction, CharacterAttack attacker, bool shouldPushAttacker, bool shouldHitStop = true)
         {
             var reaction = target.GetComponent<CharacterHitReaction>();
+
+            // 다운 중에는 무적 (피격 상자를 끄기 전 프레임에 닿은 공격도 맞지 않도록 여기서도 막음)
+            if (reaction != null && reaction.IsDown) return;
+
             Transform pushedAttacker = shouldPushAttacker && attacker != null ? attacker.transform : null;
             if (reaction != null && reaction.CanGuard(info))
             {
@@ -173,8 +209,11 @@ namespace Game.Character
             if (targetState != null) SetCounterState(targetState, hitType);
 
             // 타격감: 맞은 쪽과 때린 쪽을 잠깐 멈춤 (게임 시간은 그대로 흐름)
-            HitStop.Stop(target, info.HitStopFrames);
-            if (shouldStopAttacker && attacker != null) HitStop.Stop(attacker.gameObject, info.HitStopFrames);
+            if (shouldHitStop)
+            {
+                HitStop.Stop(target, info.HitStopFrames);
+                if (attacker != null) HitStop.Stop(attacker.gameObject, info.HitStopFrames);
+            }
 
             var health = target.GetComponent<CharacterHealth>();
             if (health != null) health.TakeDamage(Mathf.RoundToInt(damage * info.GetDamageRate(hitType)), attacker: attacker);
@@ -215,7 +254,19 @@ namespace Game.Character
                 MovePushBack();
             }
 
-            if (HitStunFramesLeft > 0) HitStunFramesLeft--;
+            if (DownFramesLeft > 0) DownFramesLeft--;
+
+            if (HitStunFramesLeft > 0)
+            {
+                HitStunFramesLeft--;
+
+                // 다운되는 공격에 맞았으면 피격 경직이 끝난 프레임부터 다운
+                if (HitStunFramesLeft == 0 && _pendingDownFrames > 0)
+                {
+                    DownFramesLeft = _pendingDownFrames;
+                    _pendingDownFrames = 0;
+                }
+            }
             if (GuardStunFramesLeft > 0) GuardStunFramesLeft--;
         }
 
@@ -286,6 +337,7 @@ namespace Game.Character
             ComboCount = IsInHitStun ? ComboCount + 1 : 1;
             LastHitType = hitType;
             HitStunFramesLeft = info.GetHitStunFrames(hitType);
+            _pendingDownFrames = info.GetKnockDownFrames(hitType); // 콤보 중이면 마지막으로 맞은 공격이 다운을 정함
             GuardStunFramesLeft = 0;
             CurrentMotion = GetHitMotion(info, hitbox);
             HitCount++;
@@ -311,6 +363,8 @@ namespace Game.Character
         public void ResetReaction()
         {
             HitStunFramesLeft = 0;
+            DownFramesLeft = 0;
+            _pendingDownFrames = 0;
             GuardStunFramesLeft = 0;
             ComboCount = 0;
             _reactionStartFrame = -1;

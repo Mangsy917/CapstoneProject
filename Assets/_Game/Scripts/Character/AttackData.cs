@@ -363,7 +363,7 @@ namespace Game.Character
         [SerializeField] private int _hitBackFrames = 8;
 
         [Tooltip("히트스톱: 맞혔을 때 때린 쪽과 맞은 쪽이 멈추는 프레임 수 (60프레임 = 1초, 6이면 0.1초). 0이면 멈추지 않음\n" +
-                 "게임 시간은 그대로 흐르고 두 캐릭터만 멈춤. 맞은 쪽의 피격 경직은 멈춤이 풀린 뒤부터 줄어듦 (장풍은 맞은 쪽만 멈춤)")]
+                 "게임 시간은 그대로 흐르고 두 캐릭터만 멈춤. 맞은 쪽의 피격 경직은 멈춤이 풀린 뒤부터 줄어듦 (장풍은 멈추지 않음)")]
         [SerializeField] private int _hitStopFrames = 6;
 
         [Tooltip("맞은 쪽이 재생할 피격 모션. 자동이면 상단 공격은 MiddleHit, 중단 공격은 Top2Low, 하단 공격은 맞은 피격 상자 위치에 따라 정함")]
@@ -391,6 +391,19 @@ namespace Game.Character
 
         [Tooltip("퍼니시 카운터일 때 노말 히트보다 늘어나는 피격 경직 프레임 수")]
         [SerializeField] private int _punishCounterExtraHitStunFrames = 4;
+
+        [Header("다운")]
+        [Tooltip("다운되는 프레임 수: 맞은 상대가 피격 경직이 끝난 뒤 다운되어 있는 프레임 수 (60프레임 = 1초).\n다운 중에는 피격 상자가 모두 꺼져 무적이고, 움직이거나 공격할 수 없음")]
+        [SerializeField] private int _knockDownFrames = 60;
+
+        [Tooltip("체크하면 노말 히트로 맞았을 때 다운됨")]
+        [SerializeField] private bool _shouldKnockDownOnNormalHit = false;
+
+        [Tooltip("체크하면 카운터로 맞았을 때 다운됨")]
+        [SerializeField] private bool _shouldKnockDownOnCounter = false;
+
+        [Tooltip("체크하면 퍼니시 카운터로 맞았을 때 다운됨")]
+        [SerializeField] private bool _shouldKnockDownOnPunishCounter = false;
 
         [Header("공격 중 피격 상자")]
         [Tooltip("체크하면 공격하는 동안 Top 피격 상자를 끔 (앉아서 쓰는 공격 등)")]
@@ -515,7 +528,9 @@ namespace Game.Character
                 height: _height, motion: _hitMotion, isThrow: HasTrait(AttackTrait.Throw),
                 counterDamageRate: _counterDamageRate, counterExtraHitStunFrames: _counterExtraHitStunFrames,
                 punishCounterDamageRate: _punishCounterDamageRate, punishCounterExtraHitStunFrames: _punishCounterExtraHitStunFrames,
-                hitStopFrames: _hitStopFrames);
+                hitStopFrames: _hitStopFrames,
+                knockDownFrames: _knockDownFrames, shouldKnockDownOnNormalHit: _shouldKnockDownOnNormalHit,
+                shouldKnockDownOnCounter: _shouldKnockDownOnCounter, shouldKnockDownOnPunishCounter: _shouldKnockDownOnPunishCounter);
         }
 
         // 버튼별 프레임 목록에 없을 때 쓰는 기본 프레임
@@ -686,6 +701,7 @@ namespace Game.Character
             if (_guardBackDistance < 0f) _guardBackDistance = 0f;
             if (_guardBackFrames < 1) _guardBackFrames = 1;
             if (_hitStopFrames < 0) _hitStopFrames = 0;
+            if (_knockDownFrames < 0) _knockDownFrames = 0;
             if (_counterDamageRate < 0f) _counterDamageRate = 0f;
             if (_counterExtraHitStunFrames < 0) _counterExtraHitStunFrames = 0;
             if (_punishCounterDamageRate < 0f) _punishCounterDamageRate = 0f;

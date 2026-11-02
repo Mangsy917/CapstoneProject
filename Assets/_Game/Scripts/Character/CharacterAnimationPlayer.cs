@@ -123,7 +123,8 @@ namespace Game.Character
         {
             if (CAP_hitReaction == null) return;
 
-            bool isHitStun = CAP_hitReaction.IsInHitStun;
+            // 다운 모션이 아직 없어서 다운 중에는 피격 모션을 그대로 유지
+            bool isHitStun = CAP_hitReaction.IsInHitStun || CAP_hitReaction.IsDown;
             bool isGuardStun = CAP_hitReaction.IsInGuardStun;
             _animator.SetBool(_isHitStunHash, isHitStun);
             _animator.SetBool(_isGuardStunHash, isGuardStun);
