@@ -141,6 +141,7 @@ public class CharacterMove : MonoBehaviour
     private int airFrame;                // 공중에 뜬 뒤 지난 프레임 (공중 첫 프레임 = 1)
     private int airFrames = 1;           // 공중에 떠 있는 전체 프레임 수
     private float airHeight;             // 가장 높은 곳까지의 높이
+    private float CM_airStartY;          // 뛰어오른 높이 (공중에서 맞아 다시 떠오를 때는 바닥이 아님). 마지막 프레임에 바닥에 닿음
     private float airDistancePerFrame;   // 1프레임에 움직이는 가로 거리 (오른쪽이 +)
     private bool shouldStopBeforeEnemy;  // 벽에 붙은 Enemy 쪽으로 뛰어서, Enemy를 넘어가지 않고 원래 쪽에 착지해야 하는지
 
@@ -556,9 +557,10 @@ public class CharacterMove : MonoBehaviour
     }
 
     /// <summary>
-    /// 공격(승룡권 등)으로 공중에 뛰어오름. 레버 점프와 같은 방식으로 airFrames 프레임 동안 포물선을 그림
+    /// 공격(승룡권 등)으로 공중에 뛰어오르거나, 띄우는 공격에 맞아 공중에 뜸 (CharacterHitReaction).
+    /// 레버 점프와 같은 방식으로 airFrames 프레임 동안 포물선을 그리고 마지막 프레임에 바닥에 닿음
     /// forwardDistance: 공중에 있는 동안 앞으로 가는 전체 거리 (바라보는 쪽이 +, 음수면 뒤로)
-    /// height: 가장 높은 곳까지의 높이 (바닥 기준)
+    /// height: 포물선이 더 올라가는 높이 (바닥에서 뜨면 바닥 기준, 공중에서 뜨면 그 높이에서 바닥까지 내려가는 선 기준)
     /// </summary>
     public void LaunchIntoAir(float forwardDistance, float height, int airFrames)
     {
@@ -589,6 +591,7 @@ public class CharacterMove : MonoBehaviour
         airFrame = 0;
         airFrames = frames;
         airHeight = height;
+        CM_airStartY = transform.position.y;
         airDistancePerFrame = xDistancePerFrame;
         shouldStopBeforeEnemy = IsJumpingTowardEnemyAtWall();
         UpdateAirborne();
@@ -648,7 +651,7 @@ public class CharacterMove : MonoBehaviour
         pos.x += airDistancePerFrame;
         if (shouldStopBeforeEnemy)
             pos.x = LimitBeforeEnemy(pos.x);
-        pos.y = groundY + 4f * airHeight * progress * (1f - progress);
+        pos.y = Mathf.Lerp(CM_airStartY, groundY, progress) + 4f * airHeight * progress * (1f - progress);
         transform.position = pos;
     }
 

@@ -91,6 +91,13 @@ namespace Game.Character
             return GetTotalStunFrames(hitType) - GetHitStunFrames(hitType);
         }
 
+        /// <summary>이 히트 종류로 맞았을 때 공중으로 띄울 높이 (0이면 띄우지 않음)</summary>
+        public float GetAirborneHeight(HitType hitType)
+        {
+            AttackData.HitTypeResult result = GetResult(hitType);
+            return result != null ? result.AirborneHeight : 0f;
+        }
+
         /// <summary>이 히트 종류로 맞았을 때의 피격 모션 (히트 종류에 정한 모션이 자동이면 기술의 피격 모션)</summary>
         public HitMotion GetMotion(HitType hitType)
         {
@@ -131,7 +138,7 @@ namespace Game.Character
         [Tooltip("더미의 가드 설정. 비워두면 같은 오브젝트에서 찾음 (없어도 됨)")]
         [SerializeField] private DummyGuard _dummyGuard;
 
-        [Tooltip("더미가 점프 중(공중)인지 알려줄 DummyAction. 비워두면 같은 오브젝트에서 찾음 (없어도 됨)")]
+        [Tooltip("더미가 점프 중(공중)인지 알려주고, 띄우는 공격에 맞으면 띄울 DummyAction. 비워두면 같은 오브젝트에서 찾음 (없어도 됨)")]
         [SerializeField] private DummyAction _dummyAction;
 
         [Tooltip("맞은 피격 상자로 피격 / 가드 모션을 정할 CharacterHitboxes. 비워두면 같은 오브젝트에서 찾음")]
@@ -343,6 +350,14 @@ namespace Game.Character
             LastHitType = hitType;
             HitStunFramesLeft = info.GetHitStunFrames(hitType);
             _pendingDownFrames = info.GetKnockDownFrames(hitType); // 콤보 중이면 마지막으로 맞은 공격이 다운을 정함
+
+            // 띄우는 공격이면 피격 경직(다운되면 쓰러지는 프레임) 동안 공중에 떴다가, 끝나는 프레임에 착지
+            float airborneHeight = info.GetAirborneHeight(hitType);
+            if (airborneHeight > 0f)
+            {
+                if (CHR_characterMove != null) CHR_characterMove.LaunchIntoAir(forwardDistance: 0f, height: airborneHeight, airFrames: HitStunFramesLeft);
+                else if (_dummyAction != null) _dummyAction.LaunchIntoAir(height: airborneHeight, frames: HitStunFramesLeft);
+            }
             GuardStunFramesLeft = 0;
             CurrentMotion = GetHitMotion(info, hitbox, hitType);
             HitCount++;

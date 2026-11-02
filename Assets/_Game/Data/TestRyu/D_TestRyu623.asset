@@ -31,18 +31,21 @@ MonoBehaviour:
     _extraHitStunFrames: 0
     _shouldKnockDown: 1
     _fallFrames: 30
+    _airborneHeight: 1.8
     _hitMotion: 0
   _counterHitResult:
     _damageRate: 1.2
     _extraHitStunFrames: 0
     _shouldKnockDown: 1
     _fallFrames: 30
+    _airborneHeight: 1.8
     _hitMotion: 0
   _punishCounterResult:
     _damageRate: 1.2
     _extraHitStunFrames: 0
     _shouldKnockDown: 1
     _fallFrames: 30
+    _airborneHeight: 1.8
     _hitMotion: 0
   _shouldHideTopHitbox: 0
   _extraHitboxes: []

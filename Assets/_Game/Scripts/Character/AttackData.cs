@@ -235,6 +235,9 @@ namespace Game.Character
             [Tooltip("다운될 때: 맞은 뒤 쓰러지는 동안의 피격 경직 프레임 수 (이 동안은 추가타를 맞을 수 있음).\n그 뒤 기상할 때까지는 다운")]
             [SerializeField] private int _fallFrames = 20;
 
+            [Tooltip("맞은 상대를 공중으로 띄울 높이 (0이면 띄우지 않음).\n피격 경직 동안(다운되면 쓰러지는 프레임 동안) 포물선을 그리고, 끝나는 프레임에 착지함")]
+            [SerializeField] private float _airborneHeight = 0f;
+
             [Tooltip("이 히트 종류로 맞았을 때 재생할 피격 모션. 자동이면 기술의 피격 모션(위의 Hit Motion)을 씀")]
             [SerializeField] private HitMotion _hitMotion = HitMotion.Auto;
 
@@ -250,10 +253,12 @@ namespace Game.Character
             public int ExtraHitStunFrames => _extraHitStunFrames;
             public bool ShouldKnockDown => _shouldKnockDown;
             public int FallFrames => _fallFrames;
+            public float AirborneHeight => _airborneHeight;
             public HitMotion HitMotion => _hitMotion;
 
             public void Validate()
             {
+                if (_airborneHeight < 0f) _airborneHeight = 0f;
                 if (_damageRate < 0f) _damageRate = 0f;
                 if (_extraHitStunFrames < 0) _extraHitStunFrames = 0;
                 if (_fallFrames < 1) _fallFrames = 1;

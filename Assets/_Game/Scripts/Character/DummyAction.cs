@@ -8,6 +8,7 @@ namespace Game.Character
     // - 점프: 땅에 닿으면 점프 준비 프레임 뒤에 다시 뛰어오르기를 계속함 (제자리 점프)
     // - 가드(DummyGuard)는 행동과 따로 정해지고, 공중에 있는 동안은 가드하지 못함 (CharacterHitReaction)
     // - 피격 / 가드 경직 중에는 다음 점프를 시작하지 않음. 공중에서 맞으면 점프 궤도는 그대로 이어짐
+    //   띄우는 공격(승룡권 등)에 맞으면 맞은 높이에서 새 포물선으로 떠올랐다가 쓰러지는 프레임이 끝날 때 착지함
     // - 자세는 CharactorState(서기 / 앉기 / 점프, 지상 / 공중)에도 넣음 (판정 표시용)
     // - 설정은 DummyActionSetting이 넣어줌. 다시 생성된 더미도 같은 설정을 씀
     public class DummyAction : MonoBehaviour
@@ -44,6 +45,11 @@ namespace Game.Character
 
         private float DA_groundY;
         private int DA_airFrame;  // 공중에 뜬 뒤 지난 프레임 (공중 첫 프레임 = 1)
+
+        // 지금 그리는 포물선 (점프, 띄우는 공격에 맞음 공통)
+        private int DA_airFrames = 1;   // 공중에 떠 있는 전체 프레임 수
+        private float DA_airHeight;     // 포물선이 더 올라가는 높이
+        private float DA_airStartY;     // 뜬 높이 (공중에서 맞아 다시 뜨면 바닥이 아님). 마지막 프레임에 바닥에 닿음
         private int _groundFrames; // 땅에 닿은 뒤 지난 프레임 (점프 준비)
 
         // Domain Reload를 꺼둔 상태로 플레이해도 이전 설정이 남지 않도록 초기화
@@ -79,7 +85,7 @@ namespace Game.Character
             if (HitStop.IsStoppedNow(this)) return;
 
             // 공중 프레임을 다 채웠으면 이번 프레임부터 땅에 있음
-            if (!DA_IsGrounded && DA_airFrame >= DA_jumpAirFrames) Land();
+            if (!DA_IsGrounded && DA_airFrame >= DA_airFrames) Land();
 
             if (!DA_IsGrounded)
             {
@@ -110,23 +116,40 @@ namespace Game.Character
             UpdateCharacterState();
         }
 
+        /// <summary>
+        /// 띄우는 공격에 맞았을 때 호출 (CharacterHitReaction). 지금 높이에서 frames 프레임 동안 포물선을 그리고 마지막 프레임에 바닥에 닿음
+        /// 이 프레임은 맞은 프레임이라 움직이지 않고, 다음 프레임부터 뜸
+        /// </summary>
+        public void LaunchIntoAir(float height, int frames)
+        {
+            StartAirArc(height, frames);
+        }
+
         // 이 프레임이 공중 첫 프레임이므로 바로 한 프레임만큼 움직임
         private void StartJump()
         {
-            DA_IsGrounded = false;
-            DA_airFrame = 0;
-            _groundFrames = 0;
+            StartAirArc(DA_jumpHeight, DA_jumpAirFrames);
             UpdateAirborne();
         }
 
-        // DA_jumpAirFrames 프레임 동안 포물선을 그리고, 마지막 프레임에 바닥 높이에 닿음
+        private void StartAirArc(float height, int frames)
+        {
+            DA_IsGrounded = false;
+            DA_airFrame = 0;
+            DA_airFrames = Mathf.Max(1, frames);
+            DA_airHeight = height;
+            DA_airStartY = transform.position.y;
+            _groundFrames = 0;
+        }
+
+        // DA_airFrames 프레임 동안 포물선을 그리고, 마지막 프레임에 바닥 높이에 닿음
         private void UpdateAirborne()
         {
             DA_airFrame++;
-            float progress = (float)DA_airFrame / DA_jumpAirFrames;
+            float progress = (float)DA_airFrame / DA_airFrames;
 
             Vector3 position = transform.position;
-            position.y = DA_groundY + 4f * DA_jumpHeight * progress * (1f - progress);
+            position.y = Mathf.Lerp(DA_airStartY, DA_groundY, progress) + 4f * DA_airHeight * progress * (1f - progress);
             transform.position = position;
         }
 
