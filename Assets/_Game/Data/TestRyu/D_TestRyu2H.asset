@@ -21,14 +21,34 @@ MonoBehaviour:
   _hitAdvantage: 40
   _hitBackDistance: 0.5
   _hitBackFrames: 8
+  _hitStopFrames: 6
   _hitMotion: 0
   _blockAdvantage: -12
   _guardBackDistance: 0.4
   _guardBackFrames: 8
+  _normalHitResult:
+    _damageRate: 1
+    _extraHitStunFrames: 0
+    _shouldKnockDown: 1
+    _fallFrames: 20
+    _hitMotion: 0
+  _counterHitResult:
+    _damageRate: 1.2
+    _extraHitStunFrames: 0
+    _shouldKnockDown: 1
+    _fallFrames: 20
+    _hitMotion: 0
+  _punishCounterResult:
+    _damageRate: 1.2
+    _extraHitStunFrames: 0
+    _shouldKnockDown: 1
+    _fallFrames: 20
+    _hitMotion: 0
   _shouldHideTopHitbox: 1
   _extraHitboxes: []
   _startupFrames: 9
   _activeFrames: 3
+  _followUpHits: []
   _recoveryFrames: 23
   _buttonFrames: []
   _traitWindows: []

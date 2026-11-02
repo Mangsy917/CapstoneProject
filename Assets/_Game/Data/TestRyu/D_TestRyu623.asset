@@ -21,19 +21,40 @@ MonoBehaviour:
   _hitAdvantage: 34
   _hitBackDistance: 0.5
   _hitBackFrames: 8
+  _hitStopFrames: 6
   _hitMotion: 5
   _blockAdvantage: -32
   _guardBackDistance: 0.4
   _guardBackFrames: 8
+  _normalHitResult:
+    _damageRate: 1
+    _extraHitStunFrames: 0
+    _shouldKnockDown: 1
+    _fallFrames: 30
+    _hitMotion: 0
+  _counterHitResult:
+    _damageRate: 1.2
+    _extraHitStunFrames: 0
+    _shouldKnockDown: 1
+    _fallFrames: 30
+    _hitMotion: 0
+  _punishCounterResult:
+    _damageRate: 1.2
+    _extraHitStunFrames: 0
+    _shouldKnockDown: 1
+    _fallFrames: 30
+    _hitMotion: 0
   _shouldHideTopHitbox: 0
   _extraHitboxes: []
   _startupFrames: 6
   _activeFrames: 10
+  _followUpHits: []
   _recoveryFrames: 30
   _buttonFrames:
   - _button: 1
     _startupFrames: 5
     _activeFrames: 10
+    _followUpHits: []
     _recoveryFrames: 21
     AD_damage: 1100
     _projectileDistancePerFrame: 0
@@ -46,6 +67,7 @@ MonoBehaviour:
   - _button: 2
     _startupFrames: 6
     _activeFrames: 10
+    _followUpHits: []
     _recoveryFrames: 30
     AD_damage: 1200
     _projectileDistancePerFrame: 0
@@ -58,6 +80,7 @@ MonoBehaviour:
   - _button: 4
     _startupFrames: 7
     _activeFrames: 10
+    _followUpHits: []
     _recoveryFrames: 34
     AD_damage: 1400
     _projectileDistancePerFrame: 0
@@ -70,6 +93,7 @@ MonoBehaviour:
   - _button: 8
     _startupFrames: 6
     _activeFrames: 10
+    _followUpHits: []
     _recoveryFrames: 37
     AD_damage: 1600
     _projectileDistancePerFrame: 0
