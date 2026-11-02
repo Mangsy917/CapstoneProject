@@ -314,6 +314,24 @@ namespace Game.Character
             if (CA_characterState != null) CA_characterState.SetDealtDamage(damage);
         }
 
+        /// <summary>
+        /// 지금 맞으면 어떤 히트가 되는지.
+        /// 공격의 발생 / 지속 중이면 카운터, 회수 / 착지 경직 중이면 퍼니시 카운터, 공격 중이 아니면 노말 히트
+        /// </summary>
+        public HitType GetHitTypeOnHit()
+        {
+            if (!IsAttacking) return HitType.Normal;
+
+            switch (CurrentPhase)
+            {
+                case AttackPhase.Recovery:
+                case AttackPhase.Landing:
+                    return HitType.PunishCounter;
+                default:
+                    return HitType.Counter; // 발생, 지속 (공격을 시작한 프레임에 아직 단계가 정해지기 전도 발생으로 봄)
+            }
+        }
+
         /// <summary>지금 프레임에 이 특성이 켜져 있는지 (예: HasTrait(AttackTrait.Invincible))</summary>
         public bool HasTrait(AttackTrait trait)
         {

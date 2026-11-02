@@ -2,6 +2,14 @@ using UnityEngine;
 
 namespace Game.Character
 {
+    // 맞았을 때 맞은 쪽이 무엇을 하고 있었는지에 따른 히트 종류
+    public enum HitType
+    {
+        Normal,        // 노말 히트: 공격하지 않을 때 (대기, 이동, 경직 중 등)
+        Counter,       // 카운터: 공격의 발생 / 지속 중
+        PunishCounter  // 퍼니시 카운터: 공격의 회수 / 착지 경직 중
+    }
+
     // 공격이 맞았을 때(또는 가드됐을 때) 맞은 쪽에 전하는 정보 (AttackData.GetHitInfo로 만듦)
     public readonly struct HitInfo
     {
@@ -14,11 +22,21 @@ namespace Game.Character
         public AttackHeight Height { get; }
         public HitMotion Motion { get; }
         public bool IsThrow { get; }
+        public float CounterDamageRate { get; }
+        public int CounterExtraHitStunFrames { get; }
+        public float PunishCounterDamageRate { get; }
+        public int PunishCounterExtraHitStunFrames { get; }
 
         public HitInfo(int hitStunFrames, float hitBackDistance, int hitBackFrames,
                        int blockStunFrames, float guardBackDistance, int guardBackFrames,
-                       AttackHeight height, HitMotion motion, bool isThrow)
+                       AttackHeight height, HitMotion motion, bool isThrow,
+                       float counterDamageRate = 1f, int counterExtraHitStunFrames = 0,
+                       float punishCounterDamageRate = 1f, int punishCounterExtraHitStunFrames = 0)
         {
+            CounterDamageRate = counterDamageRate;
+            CounterExtraHitStunFrames = counterExtraHitStunFrames;
+            PunishCounterDamageRate = punishCounterDamageRate;
+            PunishCounterExtraHitStunFrames = punishCounterExtraHitStunFrames;
             HitStunFrames = hitStunFrames;
             HitBackDistance = hitBackDistance;
             HitBackFrames = hitBackFrames;
@@ -29,6 +47,28 @@ namespace Game.Character
             Motion = motion;
             IsThrow = isThrow;
         }
+
+        /// <summary>이 히트 종류로 맞았을 때 데미지에 곱할 배율 (노말 히트는 1)</summary>
+        public float GetDamageRate(HitType hitType)
+        {
+            switch (hitType)
+            {
+                case HitType.Counter: return CounterDamageRate;
+                case HitType.PunishCounter: return PunishCounterDamageRate;
+                default: return 1f;
+            }
+        }
+
+        /// <summary>이 히트 종류로 맞았을 때의 피격 경직 프레임 수 (노말 히트 경직 + 추가 경직)</summary>
+        public int GetHitStunFrames(HitType hitType)
+        {
+            switch (hitType)
+            {
+                case HitType.Counter: return HitStunFrames + CounterExtraHitStunFrames;
+                case HitType.PunishCounter: return HitStunFrames + PunishCounterExtraHitStunFrames;
+                default: return HitStunFrames;
+            }
+        }
     }
 
     // 캐릭터(Player, Enemy)에 붙여서 사용하는 피격 / 가드 처리
@@ -37,6 +77,8 @@ namespace Game.Character
     //   더미: 설정창의 가드 설정대로 (DummyGuard)
     //   서서 가드는 하단을, 앉아 가드는 중단을 막지 못함. 잡기, 공중, 공격 중, 피격 경직 중에는 가드할 수 없음
     // - 맞으면: 하던 공격을 취소하고 피격 경직 + 히트백 + 피격 모션, 데미지는 CharacterHealth로
+    //   맞은 쪽이 공격의 발생 / 지속 중이면 카운터, 회수 / 착지 경직 중이면 퍼니시 카운터, 그 외는 노말 히트
+    //   카운터와 퍼니시 카운터는 공격(AttackData)에 정한 배율만큼 데미지가, 추가 경직만큼 피격 경직이 늘어남
     //   피격 모션은 공격(AttackData)에 정한 모션, 자동이면 상단 공격은 MiddleHit, 중단 공격은 Top2Low, 하단 공격은 맞은 피격 상자 위치에 따라 정함
     // - 가드하면: 가드 경직 + 가드백 + 가드 모션 (가드한 피격 상자 위치에 따라 Top / Middle / Bottom), 데미지 없음
     // - 히트백 / 가드백: 정해진 프레임 동안 뒤로 밀려남. 벽에 붙어 있으면 대신 때린 쪽이 밀려남 (장풍은 제외)
@@ -91,6 +133,9 @@ namespace Game.Character
         /// <summary>이번 콤보에서 맞은 횟수 (피격 경직 중에 또 맞으면 1씩 늘고, 경직이 풀린 뒤에 맞으면 1부터 다시 셈)</summary>
         public int ComboCount { get; private set; }
 
+        /// <summary>마지막으로 맞았을 때의 히트 종류 (노말 히트 / 카운터 / 퍼니시 카운터)</summary>
+        public HitType LastHitType { get; private set; } = HitType.Normal;
+
         private int _reactionStartFrame = -1; // 마지막으로 맞거나 가드한 프레임 (그 프레임에는 경직 / 밀림을 진행하지 않음)
         private int _pushBackFramesLeft;
         private float _pushBackDistancePerFrame;
@@ -114,10 +159,13 @@ namespace Game.Character
 
             var targetAttack = target.GetComponent<CharacterAttack>();
             bool isAbsorbed = targetAttack != null && targetAttack.TryAbsorbHit(info.Height);
-            if (!isAbsorbed && reaction != null) reaction.ReceiveHit(info, hitbox, direction, pushedAttacker);
+
+            // 맞은 쪽이 하던 공격은 ReceiveHit에서 취소되므로 그 전에 히트 종류를 정함 (슈퍼아머로 버티면 노말 히트)
+            HitType hitType = !isAbsorbed && targetAttack != null ? targetAttack.GetHitTypeOnHit() : HitType.Normal;
+            if (!isAbsorbed && reaction != null) reaction.ReceiveHit(info, hitbox, direction, pushedAttacker, hitType);
 
             var health = target.GetComponent<CharacterHealth>();
-            if (health != null) health.TakeDamage(damage, attacker: attacker);
+            if (health != null) health.TakeDamage(Mathf.RoundToInt(damage * info.GetDamageRate(hitType)), attacker: attacker);
         }
 
         private void Awake()
@@ -207,11 +255,12 @@ namespace Game.Character
         }
 
         /// <summary>맞았을 때 피격 경직, 히트백, 피격 모션을 정함 (보통은 HitTarget을 통해 호출)</summary>
-        public void ReceiveHit(HitInfo info, Hitbox hitbox, float direction, Transform pushedAttacker)
+        public void ReceiveHit(HitInfo info, Hitbox hitbox, float direction, Transform pushedAttacker, HitType hitType = HitType.Normal)
         {
             // 경직 마지막 프레임에 맞아도 아직 줄기 전이라 경직 중으로 봄
             ComboCount = IsInHitStun ? ComboCount + 1 : 1;
-            HitStunFramesLeft = info.HitStunFrames;
+            LastHitType = hitType;
+            HitStunFramesLeft = info.GetHitStunFrames(hitType);
             GuardStunFramesLeft = 0;
             CurrentMotion = GetHitMotion(info, hitbox);
             HitCount++;

@@ -375,6 +375,19 @@ namespace Game.Character
         [Tooltip("가드백으로 밀려나는 데 걸리는 프레임 수")]
         [SerializeField] private int _guardBackFrames = 8;
 
+        [Header("카운터")]
+        [Tooltip("상대가 공격의 발생 / 지속 중에 맞았을 때(카운터) 데미지에 곱할 배율. 1이면 노말 히트와 같음")]
+        [SerializeField] private float _counterDamageRate = 1.2f;
+
+        [Tooltip("카운터일 때 노말 히트보다 늘어나는 피격 경직 프레임 수")]
+        [SerializeField] private int _counterExtraHitStunFrames = 2;
+
+        [Tooltip("상대가 공격의 회수 / 착지 경직 중에 맞았을 때(퍼니시 카운터) 데미지에 곱할 배율. 1이면 노말 히트와 같음")]
+        [SerializeField] private float _punishCounterDamageRate = 1.2f;
+
+        [Tooltip("퍼니시 카운터일 때 노말 히트보다 늘어나는 피격 경직 프레임 수")]
+        [SerializeField] private int _punishCounterExtraHitStunFrames = 4;
+
         [Header("공격 중 피격 상자")]
         [Tooltip("체크하면 공격하는 동안 Top 피격 상자를 끔 (앉아서 쓰는 공격 등)")]
         [SerializeField] private bool _shouldHideTopHitbox = false;
@@ -495,7 +508,9 @@ namespace Game.Character
             return new HitInfo(
                 hitStunFrames: GetHitStunFrames(button, hitIndex), hitBackDistance: _hitBackDistance, hitBackFrames: _hitBackFrames,
                 blockStunFrames: GetBlockStunFrames(button, hitIndex), guardBackDistance: _guardBackDistance, guardBackFrames: _guardBackFrames,
-                height: _height, motion: _hitMotion, isThrow: HasTrait(AttackTrait.Throw));
+                height: _height, motion: _hitMotion, isThrow: HasTrait(AttackTrait.Throw),
+                counterDamageRate: _counterDamageRate, counterExtraHitStunFrames: _counterExtraHitStunFrames,
+                punishCounterDamageRate: _punishCounterDamageRate, punishCounterExtraHitStunFrames: _punishCounterExtraHitStunFrames);
         }
 
         // 버튼별 프레임 목록에 없을 때 쓰는 기본 프레임
@@ -665,6 +680,10 @@ namespace Game.Character
             if (_hitBackFrames < 1) _hitBackFrames = 1;
             if (_guardBackDistance < 0f) _guardBackDistance = 0f;
             if (_guardBackFrames < 1) _guardBackFrames = 1;
+            if (_counterDamageRate < 0f) _counterDamageRate = 0f;
+            if (_counterExtraHitStunFrames < 0) _counterExtraHitStunFrames = 0;
+            if (_punishCounterDamageRate < 0f) _punishCounterDamageRate = 0f;
+            if (_punishCounterExtraHitStunFrames < 0) _punishCounterExtraHitStunFrames = 0;
 
             if (_extraHitboxes != null)
             {
