@@ -219,6 +219,47 @@ namespace Game.Character
             }
         }
 
+        // 히트 종류(노말 히트 / 카운터 / 퍼니시 카운터)마다 맞은 쪽이 받는 결과
+        [Serializable]
+        public class HitTypeResult
+        {
+            [Tooltip("데미지에 곱할 배율 (1이면 기술의 데미지 그대로)")]
+            [SerializeField] private float _damageRate = 1f;
+
+            [Tooltip("히트 시 유리 프레임에 더할 피격 경직 프레임 수. 다운되면 기상이 이만큼 늦어짐")]
+            [SerializeField] private int _extraHitStunFrames = 0;
+
+            [Tooltip("체크하면 맞은 뒤 다운됨.\n다시 움직일 수 있는 시점(기상)은 히트 시 유리 프레임(위키의 KD 값) + 위의 추가 경직으로 정해지고,\n그중 아래의 쓰러지는 프레임 동안은 피격 경직(추가타 가능), 나머지는 다운(무적, 조작 불가)")]
+            [SerializeField] private bool _shouldKnockDown = false;
+
+            [Tooltip("다운될 때: 맞은 뒤 쓰러지는 동안의 피격 경직 프레임 수 (이 동안은 추가타를 맞을 수 있음).\n그 뒤 기상할 때까지는 다운")]
+            [SerializeField] private int _fallFrames = 20;
+
+            [Tooltip("이 히트 종류로 맞았을 때 재생할 피격 모션. 자동이면 기술의 피격 모션(위의 Hit Motion)을 씀")]
+            [SerializeField] private HitMotion _hitMotion = HitMotion.Auto;
+
+            public HitTypeResult() { }
+
+            public HitTypeResult(float damageRate, int extraHitStunFrames)
+            {
+                _damageRate = damageRate;
+                _extraHitStunFrames = extraHitStunFrames;
+            }
+
+            public float DamageRate => _damageRate;
+            public int ExtraHitStunFrames => _extraHitStunFrames;
+            public bool ShouldKnockDown => _shouldKnockDown;
+            public int FallFrames => _fallFrames;
+            public HitMotion HitMotion => _hitMotion;
+
+            public void Validate()
+            {
+                if (_damageRate < 0f) _damageRate = 0f;
+                if (_extraHitStunFrames < 0) _extraHitStunFrames = 0;
+                if (_fallFrames < 1) _fallFrames = 1;
+            }
+        }
+
         // 커맨드 한 번에 나가는 2타 이후의 공격 판정 (다단 공격)
         [Serializable]
         public class FollowUpHit
@@ -379,31 +420,15 @@ namespace Game.Character
         [Tooltip("가드백으로 밀려나는 데 걸리는 프레임 수")]
         [SerializeField] private int _guardBackFrames = 8;
 
-        [Header("카운터")]
-        [Tooltip("상대가 공격의 발생 / 지속 중에 맞았을 때(카운터) 데미지에 곱할 배율. 1이면 노말 히트와 같음")]
-        [SerializeField] private float _counterDamageRate = 1.2f;
+        [Header("히트 종류별 결과 (노말 히트 / 카운터 / 퍼니시 카운터)")]
+        [Tooltip("노말 히트: 상대가 공격 중이 아닐 때 맞았을 때 (콤보의 2타부터도 노말 히트)")]
+        [SerializeField] private HitTypeResult _normalHitResult = new HitTypeResult(damageRate: 1f, extraHitStunFrames: 0);
 
-        [Tooltip("카운터일 때 노말 히트보다 늘어나는 피격 경직 프레임 수")]
-        [SerializeField] private int _counterExtraHitStunFrames = 2;
+        [Tooltip("카운터: 콤보의 첫 타가 상대의 공격 발생 / 지속 중에 맞았을 때")]
+        [SerializeField] private HitTypeResult _counterHitResult = new HitTypeResult(damageRate: 1.2f, extraHitStunFrames: 2);
 
-        [Tooltip("상대가 공격의 회수 / 착지 경직 중에 맞았을 때(퍼니시 카운터) 데미지에 곱할 배율. 1이면 노말 히트와 같음")]
-        [SerializeField] private float _punishCounterDamageRate = 1.2f;
-
-        [Tooltip("퍼니시 카운터일 때 노말 히트보다 늘어나는 피격 경직 프레임 수")]
-        [SerializeField] private int _punishCounterExtraHitStunFrames = 4;
-
-        [Header("다운")]
-        [Tooltip("다운되는 프레임 수: 맞은 상대가 피격 경직이 끝난 뒤 다운되어 있는 프레임 수 (60프레임 = 1초).\n다운 중에는 피격 상자가 모두 꺼져 무적이고, 움직이거나 공격할 수 없음")]
-        [SerializeField] private int _knockDownFrames = 60;
-
-        [Tooltip("체크하면 노말 히트로 맞았을 때 다운됨")]
-        [SerializeField] private bool _shouldKnockDownOnNormalHit = false;
-
-        [Tooltip("체크하면 카운터로 맞았을 때 다운됨")]
-        [SerializeField] private bool _shouldKnockDownOnCounter = false;
-
-        [Tooltip("체크하면 퍼니시 카운터로 맞았을 때 다운됨")]
-        [SerializeField] private bool _shouldKnockDownOnPunishCounter = false;
+        [Tooltip("퍼니시 카운터: 콤보의 첫 타가 상대의 공격 회수 / 착지 경직 중에 맞았을 때")]
+        [SerializeField] private HitTypeResult _punishCounterResult = new HitTypeResult(damageRate: 1.2f, extraHitStunFrames: 4);
 
         [Header("공격 중 피격 상자")]
         [Tooltip("체크하면 공격하는 동안 Top 피격 상자를 끔 (앉아서 쓰는 공격 등)")]
@@ -526,11 +551,8 @@ namespace Game.Character
                 hitStunFrames: GetHitStunFrames(button, hitIndex), hitBackDistance: _hitBackDistance, hitBackFrames: _hitBackFrames,
                 blockStunFrames: GetBlockStunFrames(button, hitIndex), guardBackDistance: _guardBackDistance, guardBackFrames: _guardBackFrames,
                 height: _height, motion: _hitMotion, isThrow: HasTrait(AttackTrait.Throw),
-                counterDamageRate: _counterDamageRate, counterExtraHitStunFrames: _counterExtraHitStunFrames,
-                punishCounterDamageRate: _punishCounterDamageRate, punishCounterExtraHitStunFrames: _punishCounterExtraHitStunFrames,
                 hitStopFrames: _hitStopFrames,
-                knockDownFrames: _knockDownFrames, shouldKnockDownOnNormalHit: _shouldKnockDownOnNormalHit,
-                shouldKnockDownOnCounter: _shouldKnockDownOnCounter, shouldKnockDownOnPunishCounter: _shouldKnockDownOnPunishCounter);
+                normalHitResult: _normalHitResult, counterHitResult: _counterHitResult, punishCounterResult: _punishCounterResult);
         }
 
         // 버튼별 프레임 목록에 없을 때 쓰는 기본 프레임
@@ -701,11 +723,9 @@ namespace Game.Character
             if (_guardBackDistance < 0f) _guardBackDistance = 0f;
             if (_guardBackFrames < 1) _guardBackFrames = 1;
             if (_hitStopFrames < 0) _hitStopFrames = 0;
-            if (_knockDownFrames < 0) _knockDownFrames = 0;
-            if (_counterDamageRate < 0f) _counterDamageRate = 0f;
-            if (_counterExtraHitStunFrames < 0) _counterExtraHitStunFrames = 0;
-            if (_punishCounterDamageRate < 0f) _punishCounterDamageRate = 0f;
-            if (_punishCounterExtraHitStunFrames < 0) _punishCounterExtraHitStunFrames = 0;
+            _normalHitResult?.Validate();
+            _counterHitResult?.Validate();
+            _punishCounterResult?.Validate();
 
             if (_extraHitboxes != null)
             {
