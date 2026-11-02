@@ -41,9 +41,9 @@ public class CharacterMove : MonoBehaviour
         JumpNeutral,    // 제자리 점프
         JumpForward,    // 앞으로 점프
         JumpBack,       // 뒤로 점프
-        ForwardDash,    // 앞대쉬 (66)
+        ForwardDash,    // 사용 안 함 (앞대쉬는 달리기로 합침). Animator 전이가 MoveState 숫자를 쓰므로 뒤 값이 밀리지 않게 자리만 남겨 둠
         BackDash,       // 백대쉬 (44)
-        Run             // 달리기 (66 후 6 유지)
+        Run             // 달리기 (66, 6을 누르고 있는 동안 계속)
     }
 
     [Header("입력")]
@@ -87,14 +87,10 @@ public class CharacterMove : MonoBehaviour
     [SerializeField] private int jumpDirectionBufferFrames = 4;
 
     [Header("대쉬 / 달리기")]
-    [Tooltip("같은 방향을 두 번 누를 때(66, 44), 첫 입력 후 이 프레임 수 이내에 다시 눌러야 대쉬로 인정")]
+    [Tooltip("같은 방향을 두 번 누를 때(66은 달리기, 44는 백대쉬), 첫 입력 후 이 프레임 수 이내에 다시 눌러야 인정")]
     [SerializeField] private int dashInputWindowFrames = 12;
-    // 대쉬를 시작한 프레임(66의 두 번째 6을 누른 프레임)을 1로 세서 이 프레임 수만큼 움직이고, 그다음 프레임부터 다른 동작이 가능
-    [Tooltip("앞대쉬로 움직이는 전체 거리")]
-    [SerializeField] private float forwardDashDistance = 1.2f;
-    [Tooltip("앞대쉬 전체 프레임 수")]
-    [SerializeField] private int forwardDashFrames = 19;
-    [Tooltip("백대쉬로 움직이는 전체 거리 (앞대쉬보다 짧게)")]
+    // 백대쉬를 시작한 프레임(44의 두 번째 4를 누른 프레임)을 1로 세서 이 프레임 수만큼 움직이고, 그다음 프레임부터 다른 동작이 가능
+    [Tooltip("백대쉬로 움직이는 전체 거리")]
     [SerializeField] private float backDashDistance = 1f;
     [Tooltip("백대쉬 전체 프레임 수")]
     [SerializeField] private int backDashFrames = 23;
@@ -132,7 +128,6 @@ public class CharacterMove : MonoBehaviour
     public bool IsGrounded { get; private set; } = true;
     public bool IsCrouching => CurrentState == MoveState.Crouch || CurrentState == MoveState.CrouchGuard;
     public bool IsGuarding => CurrentState == MoveState.CrouchGuard || CurrentState == MoveState.WalkBackGuard;
-    public bool IsDashing => CurrentState == MoveState.ForwardDash;
     public bool IsBackDashing => CurrentState == MoveState.BackDash;
 
     // ===== 이동 내부 상태 =====
@@ -303,23 +298,23 @@ public class CharacterMove : MonoBehaviour
             return;
         }
 
-        // 대쉬 중이면 대쉬만 처리 (방향 입력 무시)
+        // 백대쉬 중이면 백대쉬만 처리 (방향 입력 무시)
         if (dashFramesLeft > 0)
         {
-            UpdateDash();
+            UpdateBackDash();
             return;
         }
 
-        // 대쉬 프레임을 다 채웠으면 이번 프레임부터 다른 동작 (앞대쉬 후 6을 누르고 있으면 달리기)
-        if (IsDashing || IsBackDashing)
-            EndDash();
+        // 백대쉬 프레임을 다 채웠으면 이번 프레임부터 다른 동작
+        if (IsBackDashing)
+            CurrentState = MoveState.Neutral;
 
         // 달리는 중이면 달리기 처리 (6을 놓으면 아래 일반 이동으로 넘어감)
         if (isRunning && UpdateRun())
             return;
 
         // 66 / 44 입력 확인
-        if (TryStartDash())
+        if (TryStartRunOrBackDash())
             return;
 
         float facingSign = IsFacingRight ? 1f : -1f;
@@ -382,10 +377,10 @@ public class CharacterMove : MonoBehaviour
     // =====================================================================
 
     /// <summary>
-    /// 66 / 44 사이에는 중립(5)만 거쳐야 대쉬로 인정되도록,
-    /// 레버가 6(또는 4)도 5도 아닌 방향으로 바뀌면 기다리던 대쉬 입력을 취소.
-    /// 예) 656은 대쉬, 636 / 6363636 / 414141은 대쉬가 아님
-    /// 대쉬, 점프, 공격 중에도 놓치지 않도록 매 프레임 확인
+    /// 66 / 44 사이에는 중립(5)만 거쳐야 달리기 / 백대쉬로 인정되도록,
+    /// 레버가 6(또는 4)도 5도 아닌 방향으로 바뀌면 기다리던 입력을 취소.
+    /// 예) 656은 달리기, 636 / 6363636 / 414141은 아님
+    /// 백대쉬, 점프, 공격 중에도 놓치지 않도록 매 프레임 확인
     /// </summary>
     private void CancelDashTapOnOtherDirection()
     {
@@ -396,11 +391,12 @@ public class CharacterMove : MonoBehaviour
     }
 
     /// <summary>
-    /// 6(또는 4)을 새로 누른 순간을 기록하고, dashInputWindowFrames 이내에 한 번 더 새로 누르면 대쉬 시작.
+    /// 6(또는 4)을 새로 누른 순간을 기록하고, dashInputWindowFrames 이내에 한 번 더 새로 누르면
+    /// 66은 바로 달리기(6을 누르고 있는 동안 계속), 44는 백대쉬 시작.
     /// "새로 누름" = 직전 프레임에는 그 방향이 아니었다가 이번 프레임에 그 방향이 된 것
     /// (그래서 66 사이에 레버를 한 번 놓아야 인정됨. 놓는 동안 중립 말고 다른 방향을 거치면 취소됨)
     /// </summary>
-    private bool TryStartDash()
+    private bool TryStartRunOrBackDash()
     {
         bool forwardTapped = RelativeDirection == 6 && previousRelativeDirection != 6;
         bool backTapped = RelativeDirection == 4 && previousRelativeDirection != 4;
@@ -409,9 +405,9 @@ public class CharacterMove : MonoBehaviour
         {
             if (frameCounter - lastForwardTapFrame <= dashInputWindowFrames)
             {
-                lastForwardTapFrame = int.MinValue / 2; // 666이 대쉬 두 번으로 읽히지 않도록 초기화
-                StartDash(MoveState.ForwardDash, forwardDashFrames);
-                return true;
+                lastForwardTapFrame = int.MinValue / 2; // 달리기를 멈춘 뒤 6 한 번만으로 다시 달리지 않도록 초기화
+                StartRun();
+                return UpdateRun(); // 이 프레임이 달리기 첫 프레임이므로 바로 한 프레임만큼 움직임
             }
             lastForwardTapFrame = frameCounter;
             lastBackTapFrame = int.MinValue / 2;
@@ -421,7 +417,7 @@ public class CharacterMove : MonoBehaviour
             if (frameCounter - lastBackTapFrame <= dashInputWindowFrames)
             {
                 lastBackTapFrame = int.MinValue / 2;
-                StartDash(MoveState.BackDash, backDashFrames);
+                StartBackDash();
                 return true;
             }
             lastBackTapFrame = frameCounter;
@@ -431,35 +427,21 @@ public class CharacterMove : MonoBehaviour
         return false;
     }
 
-    // 대쉬 시작. 이 프레임이 대쉬 첫 프레임이므로 바로 한 프레임만큼 움직임
-    private void StartDash(MoveState dashState, int frames)
+    // 백대쉬 시작. 이 프레임이 백대쉬 첫 프레임이므로 바로 한 프레임만큼 움직임
+    private void StartBackDash()
     {
-        CurrentState = dashState;
-        dashFramesLeft = frames;
+        CurrentState = MoveState.BackDash;
+        dashFramesLeft = backDashFrames;
         isRunning = false;
-        UpdateDash();
+        UpdateBackDash();
     }
 
     // 전체 거리를 프레임 수로 나눠서 매 프레임 같은 거리만큼 움직임
-    private void UpdateDash()
+    private void UpdateBackDash()
     {
         float facingSign = IsFacingRight ? 1f : -1f;
-
-        if (CurrentState == MoveState.ForwardDash)
-            MoveBy(facingSign * forwardDashDistance / forwardDashFrames);
-        else
-            MoveBy(-facingSign * backDashDistance / backDashFrames);
-
+        MoveBy(-facingSign * backDashDistance / backDashFrames);
         dashFramesLeft--;
-    }
-
-    private void EndDash()
-    {
-        // 앞대쉬가 끝났을 때 6을 계속 누르고 있으면 달리기로 이어짐
-        if (CurrentState == MoveState.ForwardDash && RelativeDirection == 6)
-            StartRun();
-        else
-            CurrentState = MoveState.Neutral;
     }
 
     private void StartRun()
@@ -743,9 +725,7 @@ public class CharacterMove : MonoBehaviour
         if (searchInterval < 0f) searchInterval = 0f;
         if (jumpDirectionBufferFrames < 0) jumpDirectionBufferFrames = 0;
         if (dashInputWindowFrames < 1) dashInputWindowFrames = 1;
-        if (forwardDashDistance < 0f) forwardDashDistance = 0f;
         if (backDashDistance < 0f) backDashDistance = 0f;
-        if (forwardDashFrames < 1) forwardDashFrames = 1;
         if (backDashFrames < 1) backDashFrames = 1;
         if (runDistancePerFrame < 0f) runDistancePerFrame = 0f;
         if (runStopFramesAfterOverlap < 0) runStopFramesAfterOverlap = 0;
