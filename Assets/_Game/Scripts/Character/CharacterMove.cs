@@ -147,6 +147,10 @@ public class CharacterMove : MonoBehaviour
     private int airFrames = 1;           // 공중에 떠 있는 전체 프레임 수
     private float airHeight;             // 가장 높은 곳까지의 높이
     private float airDistancePerFrame;   // 1프레임에 움직이는 가로 거리 (오른쪽이 +)
+    private bool shouldStopBeforeEnemy;  // 벽 근처에서 Enemy 쪽으로 뛰어서, Enemy를 넘어가지 않고 원래 쪽에 착지해야 하는지
+
+    // 벽 근처 앞 점프에서 Enemy 바로 앞에 멈출 때 남기는 x 거리 (같은 위치가 되어 좌우가 애매해지지 않도록)
+    private const float StopBeforeEnemyMargin = 0.05f;
 
     // ===== 대쉬 / 달리기 내부 상태 =====
     private int previousRelativeDirection = 5;          // 직전 프레임의 상대 방향 (66 / 44 판정용)
@@ -601,7 +605,47 @@ public class CharacterMove : MonoBehaviour
         airFrames = frames;
         airHeight = height;
         airDistancePerFrame = xDistancePerFrame;
+        shouldStopBeforeEnemy = IsJumpingTowardEnemyNearWall();
         UpdateAirborne();
+    }
+
+    // Enemy 쪽으로 뛰어오를 때, 내 뒤에 벽이 붙어 있거나 Enemy가 벽에 붙어 있는지
+    // (이때는 점프로 Enemy를 넘어가서 좌우가 바뀌지 않도록 함)
+    private bool IsJumpingTowardEnemyNearWall()
+    {
+        if (enemy == null) return false;
+
+        float facingSign = IsFacingRight ? 1f : -1f;
+        if (airDistancePerFrame * facingSign <= 0f) return false; // 제자리 / 뒤로 점프
+
+        bool isSelfAtWall = selfPushbox != null && selfPushbox.IsTouchingWall(direction: -facingSign);
+        bool isEnemyAtWall = enemyPushbox != null && enemyPushbox.IsTouchingWall(direction: facingSign);
+        return isSelfAtWall || isEnemyAtWall;
+    }
+
+    // 앞으로 간 x가 Enemy를 넘어가지 않도록 Enemy 바로 앞에서 멈춤 (x: 이번 프레임에 가려는 위치)
+    private float LimitBeforeEnemy(float x)
+    {
+        if (enemy == null) return x;
+
+        float facingSign = IsFacingRight ? 1f : -1f;
+
+        // 오브젝트 위치 기준 (좌우 판정 UpdateFacing과 같은 기준)
+        float limitX = enemy.position.x - facingSign * StopBeforeEnemyMargin;
+
+        // 밀림 상자 기준 (Pushbox가 좌우를 정하는 기준). 상자 중심이 오브젝트 위치와 다를 수 있으므로 같이 확인
+        if (selfPushbox != null && enemyPushbox != null)
+        {
+            float centerOffset = selfPushbox.CenterX - transform.position.x;
+            float pushboxLimitX = enemyPushbox.CenterX - centerOffset - facingSign * StopBeforeEnemyMargin;
+            limitX = IsFacingRight ? Mathf.Min(limitX, pushboxLimitX) : Mathf.Max(limitX, pushboxLimitX);
+        }
+
+        // 이미 그 위치보다 뒤에 있으면 그대로 (뒤로 끌어당기지 않음)
+        float currentX = transform.position.x;
+        if ((limitX - currentX) * facingSign < 0f) limitX = currentX;
+
+        return IsFacingRight ? Mathf.Min(x, limitX) : Mathf.Max(x, limitX);
     }
 
     /// <summary>
@@ -618,6 +662,8 @@ public class CharacterMove : MonoBehaviour
 
         Vector3 pos = transform.position;
         pos.x += airDistancePerFrame;
+        if (shouldStopBeforeEnemy)
+            pos.x = LimitBeforeEnemy(pos.x);
         pos.y = groundY + 4f * airHeight * progress * (1f - progress);
         transform.position = pos;
     }
