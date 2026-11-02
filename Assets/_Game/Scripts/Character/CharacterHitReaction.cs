@@ -85,10 +85,30 @@ namespace Game.Character
             return Mathf.Min(result.FallFrames, totalFrames);
         }
 
-        /// <summary>이 히트 종류로 맞았을 때 피격 경직이 끝난 뒤 기상할 때까지 다운되어 있는 프레임 수 (다운되지 않으면 0)</summary>
+        /// <summary>
+        /// 이 히트 종류로 맞았을 때 피격 경직이 끝난 뒤 기상할 때까지 다운되어 있는 프레임 수 (다운되지 않으면 0)
+        /// 다운 프레임을 정해 두었으면 그 값, 0이면 기상이 히트 시 유리 프레임에 맞도록 남은 경직
+        /// </summary>
         public int GetKnockDownFrames(HitType hitType)
         {
+            AttackData.HitTypeResult result = GetResult(hitType);
+            if (result == null || !result.ShouldKnockDown) return 0;
+            if (result.DownFrames > 0) return result.DownFrames;
             return GetTotalStunFrames(hitType) - GetHitStunFrames(hitType);
+        }
+
+        /// <summary>이 히트 종류로 맞았을 때 밀려나는 거리 (히트 종류에 정해 두었으면 그 값, 아니면 기술의 히트백)</summary>
+        public float GetHitBackDistance(HitType hitType)
+        {
+            AttackData.HitTypeResult result = GetResult(hitType);
+            return result != null && result.ShouldOverrideHitBack ? result.HitBackDistance : HitBackDistance;
+        }
+
+        /// <summary>이 히트 종류로 맞았을 때 히트백 프레임 수 (히트 종류에 정해 두었으면 그 값, 아니면 기술의 히트백)</summary>
+        public int GetHitBackFrames(HitType hitType)
+        {
+            AttackData.HitTypeResult result = GetResult(hitType);
+            return result != null && result.ShouldOverrideHitBack ? result.HitBackFrames : HitBackFrames;
         }
 
         /// <summary>이 히트 종류로 맞았을 때 공중으로 띄울 높이 (0이면 띄우지 않음)</summary>
@@ -118,7 +138,7 @@ namespace Game.Character
     // - 가드하면: 가드 경직 + 가드백 + 가드 모션 (가드한 피격 상자 위치에 따라 Top / Middle / Bottom), 데미지 없음
     // - 히트백 / 가드백: 정해진 프레임 동안 뒤로 밀려남. 벽에 붙어 있으면 대신 때린 쪽이 밀려남 (장풍은 제외)
     // - 다운: 다운되는 히트 종류로 맞으면, 쓰러지는 프레임 동안 피격 경직(추가타 가능) 뒤 기상할 때까지 다운됨
-    //   기상 시점은 히트 시 유리 프레임(위키의 KD 값)으로 정해짐 (피격 경직 + 다운 = 원래의 피격 경직)
+    //   다운 프레임을 정해 두면 그만큼 다운되고, 0이면 기상 시점이 히트 시 유리 프레임(위키의 KD 값)이 되도록 계산함
     //   다운 중에는 피격 상자가 모두 꺼져서 무적이고(CharacterHitboxes), 움직이거나 공격할 수 없음
     // - 경직 / 다운 중에는 움직이거나 공격할 수 없음 (CharacterMove, CharacterAttack이 IsInStun을 확인)
     // - 슈퍼아머로 버틴 공격은 데미지만 받고 경직 / 히트백이 없음
@@ -361,7 +381,7 @@ namespace Game.Character
             GuardStunFramesLeft = 0;
             CurrentMotion = GetHitMotion(info, hitbox, hitType);
             HitCount++;
-            StartPushBack(info.HitBackDistance, info.HitBackFrames, direction, pushedAttacker);
+            StartPushBack(info.GetHitBackDistance(hitType), info.GetHitBackFrames(hitType), direction, pushedAttacker);
 
             // 맞으면 하던 공격은 취소됨
             if (CHR_characterAttack != null) CHR_characterAttack.CancelAttack();

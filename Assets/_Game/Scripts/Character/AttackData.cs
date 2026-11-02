@@ -229,11 +229,24 @@ namespace Game.Character
             [Tooltip("히트 시 유리 프레임에 더할 피격 경직 프레임 수. 다운되면 기상이 이만큼 늦어짐")]
             [SerializeField] private int _extraHitStunFrames = 0;
 
-            [Tooltip("체크하면 맞은 뒤 다운됨.\n다시 움직일 수 있는 시점(기상)은 히트 시 유리 프레임(위키의 KD 값) + 위의 추가 경직으로 정해지고,\n그중 아래의 쓰러지는 프레임 동안은 피격 경직(추가타 가능), 나머지는 다운(무적, 조작 불가)")]
+            [Tooltip("체크하면 이 히트 종류로 맞았을 때 아래의 히트백을 씀 (끄면 기술의 히트백)")]
+            [SerializeField] private bool _shouldOverrideHitBack = false;
+
+            [Tooltip("이 히트 종류로 맞았을 때 뒤로 밀려나는 거리 (월드 단위)")]
+            [SerializeField] private float _hitBackDistance = 0.5f;
+
+            [Tooltip("이 히트 종류로 맞았을 때 히트백으로 밀려나는 데 걸리는 프레임 수")]
+            [SerializeField] private int _hitBackFrames = 8;
+
+            [Tooltip("체크하면 맞은 뒤 다운됨.\n아래의 쓰러지는 프레임 동안은 피격 경직(추가타 가능), 그 뒤 기상할 때까지는 다운(무적, 조작 불가)")]
             [SerializeField] private bool _shouldKnockDown = false;
 
             [Tooltip("다운될 때: 맞은 뒤 쓰러지는 동안의 피격 경직 프레임 수 (이 동안은 추가타를 맞을 수 있음).\n그 뒤 기상할 때까지는 다운")]
             [SerializeField] private int _fallFrames = 20;
+
+            [Tooltip("다운될 때: 쓰러진 뒤 기상할 때까지 다운되어 있는 프레임 수 (60프레임 = 1초).\n" +
+                     "0이면 자동: 기상 시점이 히트 시 유리 프레임(위키의 KD 값) + 위의 추가 경직이 되도록 계산함")]
+            [SerializeField] private int _downFrames = 0;
 
             [Tooltip("맞은 상대를 공중으로 띄울 높이 (0이면 띄우지 않음).\n피격 경직 동안(다운되면 쓰러지는 프레임 동안) 포물선을 그리고, 끝나는 프레임에 착지함")]
             [SerializeField] private float _airborneHeight = 0f;
@@ -251,13 +264,20 @@ namespace Game.Character
 
             public float DamageRate => _damageRate;
             public int ExtraHitStunFrames => _extraHitStunFrames;
+            public bool ShouldOverrideHitBack => _shouldOverrideHitBack;
+            public float HitBackDistance => _hitBackDistance;
+            public int HitBackFrames => _hitBackFrames;
             public bool ShouldKnockDown => _shouldKnockDown;
             public int FallFrames => _fallFrames;
+            public int DownFrames => _downFrames;
             public float AirborneHeight => _airborneHeight;
             public HitMotion HitMotion => _hitMotion;
 
             public void Validate()
             {
+                if (_hitBackDistance < 0f) _hitBackDistance = 0f;
+                if (_hitBackFrames < 1) _hitBackFrames = 1;
+                if (_downFrames < 0) _downFrames = 0;
                 if (_airborneHeight < 0f) _airborneHeight = 0f;
                 if (_damageRate < 0f) _damageRate = 0f;
                 if (_extraHitStunFrames < 0) _extraHitStunFrames = 0;
