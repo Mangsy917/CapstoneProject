@@ -4,8 +4,9 @@ using UnityEngine;
 
 namespace Game.UI
 {
-    // 화면 왼쪽 가운데의 콤보 표시에 붙여서 사용
-    // 태그로 찾은 캐릭터(맞는 쪽)가 피격 경직 중에 연속으로 맞으면 "(맞은 횟수)HIT"를 보여줌
+    // 화면 왼쪽 가운데의 콤보 표시(숫자 텍스트)에 붙여서 사용
+    // 태그로 찾은 캐릭터(맞는 쪽)가 피격 경직 중에 연속으로 맞으면 숫자 텍스트에 맞은 횟수를 보여주고, 옆의 HIT 텍스트도 같이 보여줌
+    // (숫자와 HIT를 다른 텍스트로 나눠서 색을 따로 정할 수 있음)
     // - 2번째 히트부터 표시 (한 번만 맞은 것은 콤보가 아님)
     // - 경직이 풀려서 콤보가 끝나면 잠시 남겨 두었다가 숨김. 그 사이에 새 콤보가 시작되면 바로 숨김
     // - 카운터 / 퍼니시 카운터로 맞으면 콤보 표시 아래에 그 판정을 보여줌 (첫 타부터)
@@ -15,11 +16,14 @@ namespace Game.UI
         [Tooltip("콤보를 셀 캐릭터(맞는 쪽)의 태그")]
         [SerializeField] private string CC_targetTag = "Enemy";
 
-        [Tooltip("콤보 수를 보여줄 텍스트. 비워두면 같은 오브젝트에서 찾음")]
+        [Tooltip("콤보 수(숫자)를 보여줄 텍스트. 비워두면 같은 오브젝트에서 찾음")]
         [SerializeField] private TextMeshProUGUI _comboText;
 
-        [Tooltip("표시할 글자. {0}에 맞은 횟수가 들어감")]
-        [SerializeField] private string _textFormat = "{0}HIT";
+        [Tooltip("숫자 텍스트에 표시할 글자. {0}에 맞은 횟수가 들어감")]
+        [SerializeField] private string _textFormat = "{0}";
+
+        [Tooltip("숫자 옆에서 같이 보였다 숨는 텍스트 (HIT 글자). 없으면 비워둠")]
+        [SerializeField] private TextMeshProUGUI _hitText;
 
         [Tooltip("콤보가 끝난 뒤 표시를 남겨 둘 시간 (초)")]
         [SerializeField] private float _hideDelay = 1f;
@@ -114,6 +118,7 @@ namespace Game.UI
         private void Show(int comboCount)
         {
             _hideTimeLeft = _hideDelay;
+            if (_hitText != null) _hitText.enabled = true;
             if (_comboText == null) return;
             if (comboCount != _shownComboCount)
             {
@@ -128,6 +133,7 @@ namespace Game.UI
             _hideTimeLeft = 0f;
             _shownComboCount = 0;
             if (_comboText != null) _comboText.enabled = false;
+            if (_hitText != null) _hitText.enabled = false;
         }
     }
 }
