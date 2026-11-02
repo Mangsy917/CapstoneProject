@@ -42,22 +42,68 @@ namespace Game.Character
     }
 
     // 공격 한 번의 프레임 (발생 / 지속 / 회수)
+    // - 발생 프레임의 마지막 프레임과 지속 첫 프레임은 같은 프레임 (겹침)
+    //   예) 발생 5 / 지속 3 / 회수 10 → 1~5 발생, 5~7 지속, 8~17 회수 (전체 17프레임)
+    // - 2타 이상이면 타마다 발생 / 지속이 있고, 회수는 마지막 타가 끝난 뒤에 한 번
+    //   2타부터의 발생은 앞 타의 지속이 끝난 다음 프레임부터 셈 (1이면 앞 타 바로 다음 프레임에 판정)
     public readonly struct AttackFrames
     {
-        public int Startup { get; }
-        public int Active { get; }
-        public int Recovery { get; }
+        public int Startup { get; }  // 1타 발생
+        public int Active { get; }   // 1타 지속
+        public int Recovery { get; } // 마지막 타 뒤 회수
 
-        public AttackFrames(int startup, int active, int recovery)
+        // 타마다 공격 판정이 나오는 첫 프레임과 마지막 프레임 (1타 = 0번)
+        private readonly int[] _firstActiveFrames;
+        private readonly int[] _lastActiveFrames;
+
+        /// <param name="followUpStartupAndActive">2타부터의 (발생, 지속) 목록. 없으면 1타만</param>
+        public AttackFrames(int startup, int active, int recovery, (int startup, int active)[] followUpStartupAndActive = null)
         {
             Startup = startup;
             Active = active;
             Recovery = recovery;
+
+            int count = 1 + (followUpStartupAndActive?.Length ?? 0);
+            _firstActiveFrames = new int[count];
+            _lastActiveFrames = new int[count];
+            _firstActiveFrames[0] = startup;
+            _lastActiveFrames[0] = startup + active - 1;
+            for (int i = 1; i < count; i++)
+            {
+                var (followUpStartup, followUpActive) = followUpStartupAndActive[i - 1];
+                _firstActiveFrames[i] = _lastActiveFrames[i - 1] + followUpStartup;
+                _lastActiveFrames[i] = _firstActiveFrames[i] + followUpActive - 1;
+            }
         }
 
-        // 공격 판정이 나오는 첫 프레임과 마지막 프레임
-        public int FirstActiveFrame => Startup;
-        public int LastActiveFrame => Startup + Active - 1;
+        /// <summary>공격 판정 횟수 (1타만 있으면 1)</summary>
+        public int AD_HitCount => _firstActiveFrames?.Length ?? 1;
+
+        /// <summary>hitIndex번째 타(1타 = 0)의 공격 판정 첫 프레임</summary>
+        public int GetFirstActiveFrame(int hitIndex)
+        {
+            return _firstActiveFrames != null ? _firstActiveFrames[hitIndex] : Startup;
+        }
+
+        /// <summary>hitIndex번째 타(1타 = 0)의 공격 판정 마지막 프레임</summary>
+        public int GetLastActiveFrame(int hitIndex)
+        {
+            return _lastActiveFrames != null ? _lastActiveFrames[hitIndex] : Startup + Active - 1;
+        }
+
+        /// <summary>frame이 몇 번째 타(1타 = 0)의 지속 프레임인지. 어느 타의 지속도 아니면 -1</summary>
+        public int FindHitIndex(int frame)
+        {
+            for (int i = 0; i < AD_HitCount; i++)
+            {
+                if (frame >= GetFirstActiveFrame(i) && frame <= GetLastActiveFrame(i)) return i;
+            }
+            return -1;
+        }
+
+        // 공격 판정이 나오는 첫 프레임(1타)과 마지막 프레임(마지막 타)
+        public int FirstActiveFrame => GetFirstActiveFrame(0);
+        public int LastActiveFrame => GetLastActiveFrame(AD_HitCount - 1);
 
         // 공격 시작부터 회수가 끝날 때까지의 전체 프레임 수
         public int TotalFrames => LastActiveFrame + Recovery;
@@ -173,6 +219,43 @@ namespace Game.Character
             }
         }
 
+        // 커맨드 한 번에 나가는 2타 이후의 공격 판정 (다단 공격)
+        [Serializable]
+        public class FollowUpHit
+        {
+            [Tooltip("발생 프레임: 앞 타의 지속이 끝난 다음 프레임을 1로 세서, 이 타의 공격 판정이 처음 나오는 프레임.\n" +
+                     "발생의 마지막 프레임 = 지속 첫 프레임. 예) 1이면 앞 타 바로 다음 프레임부터 판정, 3이면 2프레임 쉬고 판정")]
+            [SerializeField] private int _startupFrames = 1;
+
+            [Tooltip("지속 프레임: 이 타의 공격 판정이 유지되는 프레임 수")]
+            [SerializeField] private int _activeFrames = 2;
+
+            [Tooltip("이 타의 데미지. 0이면 기술의 데미지 (버튼별 데미지가 있으면 그 값)")]
+            [SerializeField] private int AD_damage = 0;
+
+            [Tooltip("이 타의 공격 상자 크기. 0이면 1타와 같은 공격 상자")]
+            [SerializeField] private Vector2 AD_attackBoxSize = Vector2.zero;
+
+            [Tooltip("이 타의 공격 상자 중심 위치 (크기가 0이 아닐 때만 사용)")]
+            [SerializeField] private Vector2 AD_attackBoxOffset = Vector2.zero;
+
+            public int StartupFrames => _startupFrames;
+            public int ActiveFrames => _activeFrames;
+            public int Damage => AD_damage;
+            public bool HasAttackBox => AD_attackBoxSize.x > 0f && AD_attackBoxSize.y > 0f;
+            public Vector2 AttackBoxSize => AD_attackBoxSize;
+            public Vector2 AttackBoxOffset => AD_attackBoxOffset;
+
+            public void Validate()
+            {
+                if (_startupFrames < 1) _startupFrames = 1;
+                if (_activeFrames < 1) _activeFrames = 1;
+                if (AD_damage < 0) AD_damage = 0;
+                if (AD_attackBoxSize.x < 0f) AD_attackBoxSize.x = 0f;
+                if (AD_attackBoxSize.y < 0f) AD_attackBoxSize.y = 0f;
+            }
+        }
+
         // 누른 버튼마다 따로 정하는 프레임 (예: 236L, 236M, 236H)
         [Serializable]
         public class ButtonFrames
@@ -180,13 +263,16 @@ namespace Game.Character
             [Tooltip("이 버튼으로 기술이 나갔을 때 아래 프레임을 사용 (하나만 고름)")]
             [SerializeField] private CharacterCommand.AttackButtonType _button = CharacterCommand.AttackButtonType.L;
 
-            [Tooltip("발생 프레임: 공격 판정이 처음 나오는 프레임")]
+            [Tooltip("발생 프레임: 1타의 공격 판정이 처음 나오는 프레임 (발생의 마지막 프레임 = 지속 첫 프레임)")]
             [SerializeField] private int _startupFrames = 5;
 
-            [Tooltip("지속 프레임: 공격 판정이 유지되는 프레임 수")]
+            [Tooltip("지속 프레임: 1타의 공격 판정이 유지되는 프레임 수")]
             [SerializeField] private int _activeFrames = 3;
 
-            [Tooltip("회수 프레임: 공격 판정이 끝난 뒤 다시 움직일 수 있을 때까지의 프레임 수")]
+            [Tooltip("이 버튼으로 나갔을 때 2타부터의 공격 판정. 비워두면 기술의 기본 2타 목록 사용")]
+            [SerializeField] private FollowUpHit[] _followUpHits = new FollowUpHit[0];
+
+            [Tooltip("회수 프레임: 마지막 타의 공격 판정이 끝난 뒤 다시 움직일 수 있을 때까지의 프레임 수")]
             [SerializeField] private int _recoveryFrames = 10;
 
             [Tooltip("이 버튼으로 나갔을 때의 데미지. 0이면 위의 기본 데미지 사용")]
@@ -217,7 +303,10 @@ namespace Game.Character
             public bool ShouldOverrideAdvantage => _shouldOverrideAdvantage;
             public int HitAdvantage => _hitAdvantage;
             public int BlockAdvantage => _blockAdvantage;
-            public AttackFrames Frames => new AttackFrames(_startupFrames, _activeFrames, _recoveryFrames);
+            public int StartupFrames => _startupFrames;
+            public int ActiveFrames => _activeFrames;
+            public int RecoveryFrames => _recoveryFrames;
+            public FollowUpHit[] FollowUpHits => _followUpHits;
             public int Damage => AD_damage;
             public float ProjectileDistancePerFrame => _projectileDistancePerFrame;
             public bool HasAttackBox => AD_attackBoxSize.x > 0f && AD_attackBoxSize.y > 0f;
@@ -235,6 +324,12 @@ namespace Game.Character
                 if (AD_attackBoxSize.x < 0f) AD_attackBoxSize.x = 0f;
                 if (AD_attackBoxSize.y < 0f) AD_attackBoxSize.y = 0f;
                 if (_invincibleFrames < 0) _invincibleFrames = 0;
+
+                if (_followUpHits == null) return;
+                foreach (var followUpHit in _followUpHits)
+                {
+                    followUpHit?.Validate();
+                }
             }
         }
 
@@ -254,7 +349,7 @@ namespace Game.Character
         [FormerlySerializedAs("AD_hitboxOffset")]
         [SerializeField] private Vector2 AD_attackBoxOffset = new Vector2(0.8f, 0.3f);
 
-        [Tooltip("지속 프레임 구간마다 다른 공격 상자 (공격 동작에 따라 상자가 움직이는 기술).\n비워두면 위의 공격 상자 하나를 지속 내내 씀 (버튼별 공격 상자보다 먼저 적용)")]
+        [Tooltip("지속 프레임 구간마다 다른 공격 상자 (공격 동작에 따라 상자가 움직이는 기술).\n비워두면 위의 공격 상자 하나를 지속 내내 씀 (버튼별 공격 상자보다 먼저 적용)\n다단 공격이면 타마다 그 타의 지속 첫 프레임을 1로 셈")]
         [SerializeField] private AttackBoxWindow[] _attackBoxWindows = new AttackBoxWindow[0];
 
         [Header("히트")]
@@ -288,13 +383,19 @@ namespace Game.Character
         [SerializeField] private ExtraHitbox[] _extraHitboxes = new ExtraHitbox[0];
 
         [Header("프레임")]
-        [Tooltip("발생 프레임: 공격 판정이 처음 나오는 프레임.\n예) 5면 1~4프레임은 준비, 5프레임부터 공격 판정")]
+        [Tooltip("발생 프레임: 1타의 공격 판정이 처음 나오는 프레임. 발생의 마지막 프레임과 지속 첫 프레임은 겹침.\n" +
+                 "예) 발생 5 / 지속 3 / 회수 10 → 1~5 발생, 5~7 지속, 8~17 회수")]
         [SerializeField] private int _startupFrames = 5;
 
-        [Tooltip("지속 프레임: 공격 판정이 유지되는 프레임 수")]
+        [Tooltip("지속 프레임: 1타의 공격 판정이 유지되는 프레임 수")]
         [SerializeField] private int _activeFrames = 3;
 
-        [Tooltip("회수 프레임: 공격 판정이 끝난 뒤 다시 움직일 수 있을 때까지의 프레임 수")]
+        [Tooltip("커맨드 한 번에 나가는 2타부터의 공격 판정 (다단 공격). 비워두면 1타만 나감.\n" +
+                 "예) 1타 발생 5 / 지속 2, 2타 발생 3 / 지속 2 → 5~6 1타, 7~8 쉼(2타 발생), 9~10 2타\n" +
+                 "타마다 한 번씩 맞힐 수 있음")]
+        [SerializeField] private FollowUpHit[] _followUpHits = new FollowUpHit[0];
+
+        [Tooltip("회수 프레임: 마지막 타의 공격 판정이 끝난 뒤 다시 움직일 수 있을 때까지의 프레임 수")]
         [SerializeField] private int _recoveryFrames = 10;
 
         [Tooltip("누른 버튼마다 프레임을 다르게 할 때 사용 (예: 236을 L / M / H / EX로 썼을 때).\n목록에 없는 버튼으로 나가면 위의 발생 / 지속 / 회수 프레임을 사용")]
@@ -359,55 +460,91 @@ namespace Game.Character
         public float GuardBackDistance => _guardBackDistance;
         public int GuardBackFrames => _guardBackFrames;
 
-        /// <summary>이 버튼으로 나갔을 때 맞은 상대의 피격 경직 프레임 수 (히트 시 유리 프레임 기준, 버튼별 값이 있으면 그 값)</summary>
-        public int GetHitStunFrames(CharacterCommand.AttackButtonType button)
+        /// <summary>이 버튼으로 나간 공격의 hitIndex번째 타(1타 = 0)에 맞은 상대의 피격 경직 프레임 수 (히트 시 유리 프레임 기준, 버튼별 값이 있으면 그 값)</summary>
+        public int GetHitStunFrames(CharacterCommand.AttackButtonType button, int hitIndex = 0)
         {
             ButtonFrames buttonFrames = FindButtonFrames(button);
             int advantage = buttonFrames != null && buttonFrames.ShouldOverrideAdvantage ? buttonFrames.HitAdvantage : _hitAdvantage;
-            return GetStunFrames(button, advantage);
+            return GetStunFrames(button, advantage, hitIndex);
         }
 
-        /// <summary>이 버튼으로 나갔을 때 가드한 상대의 가드 경직 프레임 수 (가드 시 유리 프레임 기준, 버튼별 값이 있으면 그 값)</summary>
-        public int GetBlockStunFrames(CharacterCommand.AttackButtonType button)
+        /// <summary>이 버튼으로 나간 공격의 hitIndex번째 타(1타 = 0)를 가드한 상대의 가드 경직 프레임 수 (가드 시 유리 프레임 기준, 버튼별 값이 있으면 그 값)</summary>
+        public int GetBlockStunFrames(CharacterCommand.AttackButtonType button, int hitIndex = 0)
         {
             ButtonFrames buttonFrames = FindButtonFrames(button);
             int advantage = buttonFrames != null && buttonFrames.ShouldOverrideAdvantage ? buttonFrames.BlockAdvantage : _blockAdvantage;
-            return GetStunFrames(button, advantage);
+            return GetStunFrames(button, advantage, hitIndex);
         }
 
-        // 지속 첫 프레임(투사체 공격이면 투사체가 가장 빨리 맞힐 수 있는 프레임)에 맞았을 때 "남은 공격 프레임 + 유리 프레임"이 되는 경직 프레임 수
+        // 그 타의 지속 첫 프레임(투사체 공격이면 투사체가 가장 빨리 맞힐 수 있는 프레임)에 맞았을 때 "남은 공격 프레임 + 유리 프레임"이 되는 경직 프레임 수
+        // - 다단 공격은 어느 타에 맞아도 공격이 끝난 뒤 같은 유리 프레임이 되도록, 맞은 타 기준으로 남은 프레임을 셈
         // - 공격은 전체 프레임이 지난 다음 프레임에 끝나서(CharacterAttack) 그 프레임까지 움직일 수 없으므로 1프레임을 더함
         // - 착지 경직이 있는 공격(승룡권, 점프 공격)은 위키 값이 착지 경직까지 포함한 값이므로 착지 경직도 더함
         // - 투사체는 나온 다음 프레임부터 날아가며 맞히므로, 바로 앞에서 맞으면 나온 프레임 + 1에 맞음 (위키 값은 바로 앞 기준)
-        private int GetStunFrames(CharacterCommand.AttackButtonType button, int advantage)
+        private int GetStunFrames(CharacterCommand.AttackButtonType button, int advantage, int hitIndex)
         {
             AttackFrames frames = GetFrames(button);
-            int hitFrame = _projectilePrefab != null ? GetProjectileSpawnFrame(frames) + 1 : frames.FirstActiveFrame;
+            hitIndex = Mathf.Clamp(hitIndex, 0, frames.AD_HitCount - 1);
+            int hitFrame = _projectilePrefab != null ? GetProjectileSpawnFrame(frames) + 1 : frames.GetFirstActiveFrame(hitIndex);
             return Mathf.Max(1, frames.TotalFrames - hitFrame + 1 + _landingRecoveryFrames + advantage);
         }
 
-        /// <summary>이 버튼으로 나간 공격이 맞았을 때(또는 가드됐을 때) 상대에게 줄 정보</summary>
-        public HitInfo GetHitInfo(CharacterCommand.AttackButtonType button)
+        /// <summary>이 버튼으로 나간 공격의 hitIndex번째 타(1타 = 0)가 맞았을 때(또는 가드됐을 때) 상대에게 줄 정보</summary>
+        public HitInfo GetHitInfo(CharacterCommand.AttackButtonType button, int hitIndex = 0)
         {
             return new HitInfo(
-                hitStunFrames: GetHitStunFrames(button), hitBackDistance: _hitBackDistance, hitBackFrames: _hitBackFrames,
-                blockStunFrames: GetBlockStunFrames(button), guardBackDistance: _guardBackDistance, guardBackFrames: _guardBackFrames,
+                hitStunFrames: GetHitStunFrames(button, hitIndex), hitBackDistance: _hitBackDistance, hitBackFrames: _hitBackFrames,
+                blockStunFrames: GetBlockStunFrames(button, hitIndex), guardBackDistance: _guardBackDistance, guardBackFrames: _guardBackFrames,
                 height: _height, motion: _hitMotion, isThrow: HasTrait(AttackTrait.Throw));
         }
 
         // 버튼별 프레임 목록에 없을 때 쓰는 기본 프레임
-        public AttackFrames DefaultFrames => new AttackFrames(_startupFrames, _activeFrames, _recoveryFrames);
+        public AttackFrames DefaultFrames => new AttackFrames(_startupFrames, _activeFrames, _recoveryFrames, ToStartupAndActive(_followUpHits));
 
         /// <summary>이 버튼으로 나갔을 때의 프레임 (버튼별 프레임 목록에 없으면 기본 프레임)</summary>
         public AttackFrames GetFrames(CharacterCommand.AttackButtonType button)
         {
             ButtonFrames buttonFrames = FindButtonFrames(button);
-            return buttonFrames != null ? buttonFrames.Frames : DefaultFrames;
+            if (buttonFrames == null) return DefaultFrames;
+            return new AttackFrames(buttonFrames.StartupFrames, buttonFrames.ActiveFrames, buttonFrames.RecoveryFrames, ToStartupAndActive(GetFollowUpHits(button)));
         }
 
-        /// <summary>이 버튼으로 나갔을 때의 데미지 (버튼별 데미지가 0이거나 없으면 기본 데미지)</summary>
-        public int GetDamage(CharacterCommand.AttackButtonType button)
+        // 이 버튼으로 나갔을 때 2타부터의 공격 판정 (버튼별 목록이 비어 있거나 없으면 기본 목록)
+        private FollowUpHit[] GetFollowUpHits(CharacterCommand.AttackButtonType button)
         {
+            ButtonFrames buttonFrames = FindButtonFrames(button);
+            if (buttonFrames != null && buttonFrames.FollowUpHits != null && buttonFrames.FollowUpHits.Length > 0)
+                return buttonFrames.FollowUpHits;
+            return _followUpHits ?? new FollowUpHit[0];
+        }
+
+        // hitIndex번째 타(1타 = 0)의 2타 이후 정보. 1타이거나 없으면 null
+        private FollowUpHit GetFollowUpHit(CharacterCommand.AttackButtonType button, int hitIndex)
+        {
+            if (hitIndex < 1) return null;
+            FollowUpHit[] followUpHits = GetFollowUpHits(button);
+            return hitIndex - 1 < followUpHits.Length ? followUpHits[hitIndex - 1] : null;
+        }
+
+        private static (int startup, int active)[] ToStartupAndActive(FollowUpHit[] followUpHits)
+        {
+            if (followUpHits == null) return null;
+
+            var startupAndActive = new (int startup, int active)[followUpHits.Length];
+            for (int i = 0; i < followUpHits.Length; i++)
+            {
+                // 목록에 빈 칸이 있으면 바로 다음 프레임에 1프레임 판정으로 둠
+                startupAndActive[i] = followUpHits[i] != null ? (followUpHits[i].StartupFrames, followUpHits[i].ActiveFrames) : (1, 1);
+            }
+            return startupAndActive;
+        }
+
+        /// <summary>이 버튼으로 나간 공격의 hitIndex번째 타(1타 = 0)의 데미지 (2타 이후 값이 0이면 기술의 데미지, 버튼별 데미지가 0이거나 없으면 기본 데미지)</summary>
+        public int GetDamage(CharacterCommand.AttackButtonType button, int hitIndex = 0)
+        {
+            FollowUpHit followUpHit = GetFollowUpHit(button, hitIndex);
+            if (followUpHit != null && followUpHit.Damage > 0) return followUpHit.Damage;
+
             ButtonFrames buttonFrames = FindButtonFrames(button);
             return buttonFrames != null && buttonFrames.Damage > 0 ? buttonFrames.Damage : AD_damage;
         }
@@ -435,17 +572,26 @@ namespace Game.Character
 
         /// <summary>
         /// 공격 시작부터 attackFrame번째 프레임의 공격 상자 (지속 프레임이 아니거나 공격 상자가 없으면 false)
-        /// 지속 구간별 공격 상자가 있으면 그것을, 없으면 버튼별 / 기본 공격 상자를 씀
+        /// 2타 이후에 정한 공격 상자가 있으면 그것을, 지속 구간별 공격 상자가 있으면 그것을(그 타의 지속 기준), 없으면 버튼별 / 기본 공격 상자를 씀
         /// </summary>
         public bool TryGetAttackBox(CharacterCommand.AttackButtonType button, int attackFrame, AttackFrames frames, out Vector2 offset, out Vector2 size)
         {
             offset = Vector2.zero;
             size = Vector2.zero;
-            if (attackFrame < frames.FirstActiveFrame || attackFrame > frames.LastActiveFrame) return false;
+            int hitIndex = frames.FindHitIndex(attackFrame);
+            if (hitIndex < 0) return false;
+
+            FollowUpHit followUpHit = GetFollowUpHit(button, hitIndex);
+            if (followUpHit != null && followUpHit.HasAttackBox)
+            {
+                offset = followUpHit.AttackBoxOffset;
+                size = followUpHit.AttackBoxSize;
+                return true;
+            }
 
             if (_attackBoxWindows != null && _attackBoxWindows.Length > 0)
             {
-                int activeFrame = attackFrame - frames.FirstActiveFrame + 1;
+                int activeFrame = attackFrame - frames.GetFirstActiveFrame(hitIndex) + 1;
                 foreach (var window in _attackBoxWindows)
                 {
                     if (window == null || !window.IsActiveAt(activeFrame)) continue;
@@ -468,10 +614,10 @@ namespace Game.Character
             return buttonFrames != null ? buttonFrames.ProjectileDistancePerFrame : 0f;
         }
 
-        /// <summary>공중에 떠 있는 프레임 수 (0으로 두었으면 이번 공격의 지속 + 회수 프레임)</summary>
+        /// <summary>공중에 떠 있는 프레임 수 (0으로 두었으면 이번 공격의 지속(1타 시작 ~ 마지막 타 끝) + 회수 프레임)</summary>
         public int GetLaunchAirFrames(AttackFrames frames)
         {
-            return _launchAirFrames > 0 ? _launchAirFrames : frames.Active + frames.Recovery;
+            return _launchAirFrames > 0 ? _launchAirFrames : frames.LastActiveFrame - frames.FirstActiveFrame + 1 + frames.Recovery;
         }
 
         private ButtonFrames FindButtonFrames(CharacterCommand.AttackButtonType button)
@@ -533,6 +679,14 @@ namespace Game.Character
                 foreach (var attackBoxWindow in _attackBoxWindows)
                 {
                     attackBoxWindow?.Validate();
+                }
+            }
+
+            if (_followUpHits != null)
+            {
+                foreach (var followUpHit in _followUpHits)
+                {
+                    followUpHit?.Validate();
                 }
             }
             if (_launchFrame < 0) _launchFrame = 0;
