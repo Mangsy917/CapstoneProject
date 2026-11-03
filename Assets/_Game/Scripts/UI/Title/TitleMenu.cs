@@ -3,32 +3,27 @@ using UnityEngine.UI;
 using UnityEngine.EventSystems;
 
 // 타이틀 화면의 UIManager에 붙여서 사용
-// 타이틀 버튼들(Start, Setting, Back Title, Exit)의 OnClick에 연결할 함수도 여기에 있음
+// 타이틀 버튼들(Start, Option, Exit)의 OnClick에 연결할 함수도 여기에 있음
+// (Option 버튼은 옵션 창(P_OptionWindow)의 Open에 바로 연결)
 // 키보드/컨트롤러(UIControl)와 마우스가 같은 선택 상태를 공유함
 // - 위/아래(W/S): 선택 이동 (끝에서 누르면 반대쪽 끝으로)
 // - 마우스 올리기: 그 버튼이 선택됨
 // - 선택 키(J) / 마우스 클릭: 선택된 버튼의 OnClick 실행
-// - 취소 키(K): 세팅 UI가 열려 있으면 닫음
+// 옵션 창이 열려 있는 동안에는 입력을 받지 않음 (취소 키로 닫는 것은 옵션 창이 처리)
 public class TitleMenu : MonoBehaviour
 {
     [SerializeField] private UIControl uiControl;
-    [SerializeField] private GameObject settingUI;
     // Start 버튼을 눌렀을 때 이동할 씬 이름
     [SerializeField] private string sceneName;
 
-    // 타이틀 메뉴 버튼 (위에서 아래 순서: Start, Setting, Exit)
+    // 타이틀 메뉴 버튼 (위에서 아래 순서: Start, Option, Exit)
     [SerializeField] private Button[] mainButtons;
-    // 세팅 UI 안의 버튼 (Back Title)
-    [SerializeField] private Button[] settingButtons;
 
     [SerializeField] private Color selectColor = new Color(0.5f, 0.5f, 0.5f, 1f);
     [SerializeField] private Color notSelectColor = Color.white;
 
-    // 각 화면에서 선택된 버튼 번호 (세팅 UI를 닫으면 원래 고르던 버튼으로 돌아감)
+    // 선택된 버튼 번호 (옵션 창을 닫으면 원래 고르던 버튼으로 돌아감)
     private int mainIndex = 0;
-    private int settingIndex = 0;
-
-    private bool wasSettingOpen;
 
     // 누르고 있는 동안 계속 넘어가지 않도록 이전 프레임 입력을 기억
     private bool prevSelect;
@@ -39,39 +34,28 @@ public class TitleMenu : MonoBehaviour
         for (int i = 0; i < mainButtons.Length; i++)
         {
             int index = i;
-            AddHover(mainButtons[i], () => { mainIndex = index; Refresh(); });
-        }
-        for (int i = 0; i < settingButtons.Length; i++)
-        {
-            int index = i;
-            AddHover(settingButtons[i], () => { settingIndex = index; Refresh(); });
+            AddHover(mainButtons[i], () =>
+            {
+                if (IsWindowOpen()) return;
+                mainIndex = index;
+                Refresh();
+            });
         }
     }
 
     void Start()
     {
-        settingUI.SetActive(false);
-        wasSettingOpen = IsSettingOpen();
         Refresh();
     }
 
     void Update()
     {
-        // 세팅 UI가 열리거나 닫히면 그 화면의 선택 표시를 다시 맞춤
-        bool settingOpen = IsSettingOpen();
-        if (settingOpen != wasSettingOpen)
-        {
-            wasSettingOpen = settingOpen;
-            if (settingOpen) settingIndex = 0;
-            Refresh();
-        }
-
         if (uiControl == null) return;
 
         bool select = uiControl.uiSelect;
 
-        // 컨트롤러 설정 팝업이 열려 있으면 입력만 기억하고 메뉴는 움직이지 않음
-        if (Game.UI.Setting.KeyBindingWindow.IsOpen)
+        // 옵션 창(공격 버튼 설정 창 포함)이 열려 있으면 입력만 기억하고 메뉴는 움직이지 않음
+        if (IsWindowOpen())
         {
             prevSelect = select;
             return;
@@ -82,11 +66,6 @@ public class TitleMenu : MonoBehaviour
         else if (uiControl.uiDownStep) Move(1, canWrap: !uiControl.isRepeating);
 
         if (select && !prevSelect) Submit();
-        else if (uiControl.uiCancelDown && settingOpen)
-        {
-            uiControl.uiCancelDown = false;
-            PressSettingBackBT();
-        }
 
         prevSelect = select;
     }
@@ -94,16 +73,6 @@ public class TitleMenu : MonoBehaviour
     public void PressStartBT()
     {
         LoadingScene.LoadScene(sceneName);
-    }
-
-    public void PressSettingBT()
-    {
-        settingUI.SetActive(true);
-    }
-
-    public void PressSettingBackBT()
-    {
-        settingUI.SetActive(false);
     }
 
     public void PressExitBT()
@@ -115,46 +84,30 @@ public class TitleMenu : MonoBehaviour
 #endif
     }
 
-    private bool IsSettingOpen()
+    private static bool IsWindowOpen()
     {
-        return settingUI != null && settingUI.activeSelf;
-    }
-
-    // 지금 화면의 버튼 목록
-    private Button[] CurrentButtons()
-    {
-        return IsSettingOpen() ? settingButtons : mainButtons;
-    }
-
-    private int CurrentIndex()
-    {
-        return IsSettingOpen() ? settingIndex : mainIndex;
+        return Game.UI.Setting.OptionWindow.OW_IsOpen || Game.UI.Setting.KeyBindingWindow.IsOpen;
     }
 
     // dir -1: 위, 1: 아래
     // canWrap: 끝에서 반대쪽 끝으로 넘어갈 수 있는지 (false면 끝에서 멈춤)
     private void Move(int dir, bool canWrap = true)
     {
-        Button[] buttons = CurrentButtons();
-        if (buttons.Length == 0) return;
+        if (mainButtons.Length == 0) return;
 
-        int next = CurrentIndex() + dir;
-        if (!canWrap && (next < 0 || next >= buttons.Length)) return;
+        int next = mainIndex + dir;
+        if (!canWrap && (next < 0 || next >= mainButtons.Length)) return;
 
-        int index = (next + buttons.Length) % buttons.Length;
-        if (IsSettingOpen()) settingIndex = index;
-        else mainIndex = index;
-
+        mainIndex = (next + mainButtons.Length) % mainButtons.Length;
         Refresh();
     }
 
     // 선택된 버튼 실행
     private void Submit()
     {
-        Button[] buttons = CurrentButtons();
-        if (buttons.Length == 0) return;
+        if (mainButtons.Length == 0) return;
 
-        Button button = buttons[CurrentIndex()];
+        Button button = mainButtons[mainIndex];
         if (button.interactable) button.onClick.Invoke();
     }
 
@@ -168,15 +121,12 @@ public class TitleMenu : MonoBehaviour
         trigger.triggers.Add(entry);
     }
 
-    // 지금 화면에서 선택된 버튼만 회색, 나머지는 원래 색
+    // 선택된 버튼만 회색, 나머지는 원래 색
     private void Refresh()
     {
-        Button[] buttons = CurrentButtons();
-        int selected = CurrentIndex();
-
-        for (int i = 0; i < buttons.Length; i++)
+        for (int i = 0; i < mainButtons.Length; i++)
         {
-            if (buttons[i].image != null) buttons[i].image.color = (i == selected) ? selectColor : notSelectColor;
+            if (mainButtons[i].image != null) mainButtons[i].image.color = (i == mainIndex) ? selectColor : notSelectColor;
         }
     }
 }

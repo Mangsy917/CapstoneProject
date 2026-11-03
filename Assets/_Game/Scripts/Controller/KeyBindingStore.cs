@@ -4,6 +4,7 @@ using UnityEngine.InputSystem;
 namespace Game.Controller
 {
     // 바꾼 키 설정(바인딩 오버라이드)을 기억하고 Input Actions 에셋에 적용
+    // - 키보드 바인딩은 KeyboardMapping(키보드 -> Xbox 표)에서 다시 만들어지므로, 실제로 의미 있는 것은 패드 쪽 설정
     // - 씬이 바뀌어도 유지됨: 값을 static에 기억해 두고, 각 씬의 InputReader / UIControl이 Awake에서 Apply를 부름
     // - 빌드에서는 PlayerPrefs에 저장해서 게임을 껐다 켜도 유지됨
     // - 에디터 플레이 모드에서는 저장하지 않음 (플레이를 멈추면 기본 키로 돌아감)
@@ -32,6 +33,9 @@ namespace Game.Controller
 
             asset.RemoveAllBindingOverrides();
             if (!string.IsNullOrEmpty(_overridesJson)) asset.LoadBindingOverridesFromJson(_overridesJson);
+
+            // 키보드 키는 패드 버튼을 따라가므로, 패드 쪽 키 설정을 넣은 뒤에 키보드 -> Xbox 표를 적용
+            KeyboardMapping.ApplyTo(asset);
         }
 
         // 에셋의 지금 키 설정을 기억하고, 빌드에서는 파일(PlayerPrefs)에도 저장
