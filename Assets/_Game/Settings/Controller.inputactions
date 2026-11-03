@@ -488,6 +488,26 @@
                     "interactions": "",
                     "initialStateCheck": false,
                     "priority": 0
+                },
+                {
+                    "name": "LeftStepSize",
+                    "type": "Button",
+                    "id": "1a0821f6-cfa0-4aef-8893-2c4bba0d36c8",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false,
+                    "priority": 0
+                },
+                {
+                    "name": "RightStepSize",
+                    "type": "Button",
+                    "id": "e0a93721-a923-43d3-9b8f-3bc9c7f13417",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false,
+                    "priority": 0
                 }
             ],
             "bindings": [
@@ -730,6 +750,28 @@
                     "processors": "",
                     "groups": ";GamePad",
                     "action": "RightPage",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "4e119459-e935-47b7-bf06-34b40ab3e655",
+                    "path": "<Gamepad>/leftTrigger",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": ";GamePad",
+                    "action": "LeftStepSize",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "e0016e8d-b0d2-472a-9ade-ed25a64f523e",
+                    "path": "<Gamepad>/rightTrigger",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": ";GamePad",
+                    "action": "RightStepSize",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },

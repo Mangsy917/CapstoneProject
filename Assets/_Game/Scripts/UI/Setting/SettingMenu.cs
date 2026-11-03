@@ -80,6 +80,10 @@ public class SettingMenu : MonoBehaviour
 
                 if (isLeftStep) stepper.Prev();
                 else if (isRightStep) stepper.Next();
+
+                // 슬라이더 줄에서 LT / RT로 조정 단위(10% / 1%)를 바꿈
+                if (isSlider && (uiControl.uiLeftStepSize || uiControl.uiRightStepSize))
+                    ((SettingSliderStepper)stepper).ToggleStepSize();
             }
 
             if (select && !prevSelect) Submit();

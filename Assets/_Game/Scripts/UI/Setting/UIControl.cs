@@ -8,6 +8,7 @@ public class UIControl : MonoBehaviour
 
     private InputAction Up, Down, Left, Right;
     private InputAction LeftPage, RightPage, Select, Cancel, Close;
+    private InputAction LeftStepSize, RightStepSize;
 
     [Header("방향 길게 누르기")]
     [Tooltip("처음 한 칸 이동한 뒤 연속 이동이 시작되기까지 기다리는 시간(초)")]
@@ -44,6 +45,9 @@ public class UIControl : MonoBehaviour
 
     public bool uiLeftPG;
     public bool uiRightPG;
+    // 슬라이더 조정 단위(10% / 1%) 바꾸기 키 (패드 LT / RT, 누른 순간 1프레임만 true)
+    public bool uiLeftStepSize;
+    public bool uiRightStepSize;
     public bool uiSelect;
     // 취소 키를 누른 그 프레임에만 true (창 닫기처럼 한 번만 처리할 때 사용, 처리한 쪽에서 false로 지움)
     public bool uiCancelDown;
@@ -74,6 +78,9 @@ public class UIControl : MonoBehaviour
         Cancel = map.FindAction("Cancel");
 
         Close = map.FindAction("BackToGame");
+
+        LeftStepSize = map.FindAction("LeftStepSize");
+        RightStepSize = map.FindAction("RightStepSize");
     }
 
     private void OnEnable()
@@ -110,6 +117,9 @@ public class UIControl : MonoBehaviour
         bool cancelDown = Cancel != null && Cancel.WasPressedThisFrame();
 
         bool close = Close != null && Close.WasPressedThisFrame();
+
+        uiLeftStepSize = LeftStepSize != null && LeftStepSize.WasPressedThisFrame();
+        uiRightStepSize = RightStepSize != null && RightStepSize.WasPressedThisFrame();
 
         UpdateButton(up, down, left, right, leftPage, rightPage, select, cancelDown, close);
     }
