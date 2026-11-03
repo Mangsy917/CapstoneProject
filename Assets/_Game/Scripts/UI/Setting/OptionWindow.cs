@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -6,12 +7,16 @@ using UnityEngine.UI;
 namespace Game.UI.Setting
 {
     // 옵션 창 (P_OptionWindow 프리팹)에 붙여서 사용. 타이틀과 연습 씬의 옵션 버튼이 같은 창을 엶
-    // 옵션 메뉴: 컨트롤러 설정, 키보드 매핑, 사운드 설정, 화면 설정, 닫기
-    // - 컨트롤러 설정: 공격 버튼에 연결할 패드 버튼을 바꾸는 창 (KeyBindingWindow)
-    // - 키보드 매핑: 키보드 키를 Xbox 버튼에 연결하는 창 (KeyboardMappingWindow, 오른쪽에 열림)
-    // - 사운드 설정, 화면 설정: 아직 없음 (줄의 Interactable을 꺼두면 고를 수 없음)
+    // 옵션을 열면 화면 전체가 옵션 배경으로 바뀜 (뒤의 게임 화면, 설정창은 보이지 않음, 씬 이동은 아님)
+    // 옵션 메뉴: 컨트롤러 설정, 키보드 매핑, 사운드 설정, 화면 설정, 그래픽 설정, 닫기
+    // - 메뉴에서 고른 페이지가 열리면 메뉴는 숨겨지고 그 페이지만 보임. 페이지를 닫으면 메뉴로 돌아감
+    //   - 컨트롤러 설정: 공격 버튼에 연결할 패드 버튼을 바꾸는 창 (KeyBindingWindow)
+    //   - 키보드 매핑: 키보드 키를 Xbox 버튼에 연결하는 창 (KeyboardMappingWindow, 오른쪽에 열림)
+    //   - 화면 설정, 그래픽 설정: OptionPage
+    //   - 사운드 설정: 아직 없음 (줄의 Interactable을 꺼두면 고를 수 없음)
+    // - 화면이 바뀔 때(옵션을 열 때, 페이지를 열고 닫을 때) 새 화면이 서서히 나타남
     // - 위/아래: 줄 이동 (잠긴 줄은 건너뜀), 선택 키 / 마우스 클릭: 실행
-    // - 취소 키 / ESC: 옵션 창 닫기 (하위 창이 열려 있으면 하위 창만 닫힘)
+    // - 취소 키 / ESC: 옵션 창 닫기 (페이지가 열려 있으면 페이지만 닫힘)
     public class OptionWindow : MonoBehaviour
     {
         // 창이 열려 있으면 뒤의 설정 메뉴, 타이틀 메뉴, 설정창 닫기는 입력을 받지 않음
@@ -30,22 +35,36 @@ namespace Game.UI.Setting
         // 비워두면 씬에서 찾음
         [SerializeField] private UIControl OW_uiControl;
 
+        [Tooltip("옵션 메뉴 창 (페이지가 열리면 숨김)")]
+        [SerializeField] private GameObject _menuWindow;
+
         [Header("메뉴 줄 (위에서 아래 순서)")]
         [SerializeField] private Button _controllerSettingButton;
         [SerializeField] private Button _keyboardMappingButton;
         [SerializeField] private Button _soundSettingButton;
         [SerializeField] private Button _displaySettingButton;
+        [SerializeField] private Button _graphicsSettingButton;
         [SerializeField] private Button OW_closeButton;
 
-        [Header("하위 창")]
+        [Header("페이지")]
         [SerializeField] private KeyBindingWindow _keyBindingWindow;
         [SerializeField] private KeyboardMappingWindow _keyboardMappingWindow;
+        [SerializeField] private OptionPage _displaySettingPage;
+        [SerializeField] private OptionPage _graphicsSettingPage;
+
+        [Tooltip("화면이 바뀔 때 새 화면이 나타나는 시간(초, 실제 시간 기준)")]
+        [SerializeField] private float OW_fadeTime = 0.2f;
 
         private static readonly Color OW_highlightColor = new Color(0.5f, 0.5f, 0.5f, 1f);
         private static readonly Color OW_normalColor = new Color(1f, 1f, 1f, 0f);
 
         private Button[] OW_menuButtons;
         private int OW_highlightIndex;
+
+        // 지금 보이는 화면 (메뉴 창 또는 열린 페이지)
+        private GameObject _shownScreen;
+        private Coroutine _fadeRoutine;
+        private CanvasGroup _fadingGroup;
 
         // 창을 연 그 프레임에는 메뉴 입력을 처리하지 않음
         private int OW_ignoreInputFrame = -1;
@@ -59,10 +78,12 @@ namespace Game.UI.Setting
 
             if (_controllerSettingButton != null && _keyBindingWindow != null) _controllerSettingButton.onClick.AddListener(_keyBindingWindow.Open);
             if (_keyboardMappingButton != null && _keyboardMappingWindow != null) _keyboardMappingButton.onClick.AddListener(_keyboardMappingWindow.Open);
+            if (_displaySettingButton != null && _displaySettingPage != null) _displaySettingButton.onClick.AddListener(_displaySettingPage.Open);
+            if (_graphicsSettingButton != null && _graphicsSettingPage != null) _graphicsSettingButton.onClick.AddListener(_graphicsSettingPage.Open);
             if (OW_closeButton != null) OW_closeButton.onClick.AddListener(Close);
 
             List<Button> menuButtons = new List<Button>();
-            foreach (Button button in new[] { _controllerSettingButton, _keyboardMappingButton, _soundSettingButton, _displaySettingButton, OW_closeButton })
+            foreach (Button button in new[] { _controllerSettingButton, _keyboardMappingButton, _soundSettingButton, _displaySettingButton, _graphicsSettingButton, OW_closeButton })
             {
                 if (button != null) menuButtons.Add(button);
             }
@@ -80,7 +101,7 @@ namespace Game.UI.Setting
                 trigger.triggers.Add(entry);
             }
 
-            CloseSubWindows();
+            ClosePages();
         }
 
         void OnEnable()
@@ -92,6 +113,11 @@ namespace Game.UI.Setting
             OW_ignoreInputFrame = Time.frameCount;
             RefreshHighlight();
 
+            // 옵션 화면 전체가 서서히 나타남
+            _shownScreen = null;
+            ShowCurrentScreen();
+            StartFade(gameObject);
+
             // 창을 연 키를 아직 누르고 있어도 바로 실행되지 않도록 현재 입력을 기억
             RememberInput();
         }
@@ -100,7 +126,11 @@ namespace Game.UI.Setting
         {
             OW_openCount--;
             OW_closedFrame = Time.frameCount;
-            CloseSubWindows();
+            ClosePages();
+            // 꺼지면 코루틴이 멈추므로 나타나는 중이던 화면은 다 나타난 상태로 둠
+            if (_fadingGroup != null) _fadingGroup.alpha = 1f;
+            _fadingGroup = null;
+            _fadeRoutine = null;
         }
 
         // 옵션 버튼의 OnClick에 연결
@@ -111,16 +141,19 @@ namespace Game.UI.Setting
 
         public void Close()
         {
-            if (IsSubWindowOpen()) return;
+            if (FindOpenPage() != null) return;
             gameObject.SetActive(false);
         }
 
         void Update()
         {
+            // 페이지가 열리거나 닫혔으면 보이는 화면을 바꿈
+            ShowCurrentScreen();
+
             if (OW_uiControl == null) return;
 
-            // 하위 창이 열려 있으면 그 창이 입력을 처리함 (닫힌 다음 프레임까지 포함)
-            if (IsSubWindowOpen() || Time.frameCount == OW_ignoreInputFrame)
+            // 페이지가 열려 있으면 그 페이지가 입력을 처리함 (닫힌 다음 프레임까지 포함)
+            if (IsPageOpen() || Time.frameCount == OW_ignoreInputFrame)
             {
                 RememberInput();
                 return;
@@ -148,16 +181,81 @@ namespace Game.UI.Setting
             RememberInput();
         }
 
-        private bool IsSubWindowOpen()
+        // ===== 페이지 =====
+
+        // 입력을 받는 페이지가 있는지 (닫힌 다음 프레임까지 포함)
+        private bool IsPageOpen()
         {
-            return KeyBindingWindow.IsOpen || KeyboardMappingWindow.KMW_IsOpen;
+            return KeyBindingWindow.IsOpen || KeyboardMappingWindow.KMW_IsOpen || OptionPage.OP_IsOpen;
         }
 
-        private void CloseSubWindows()
+        // 지금 켜져 있는 페이지 (없으면 null)
+        private GameObject FindOpenPage()
+        {
+            if (_keyBindingWindow != null && _keyBindingWindow.gameObject.activeSelf) return _keyBindingWindow.gameObject;
+            if (_keyboardMappingWindow != null && _keyboardMappingWindow.gameObject.activeSelf) return _keyboardMappingWindow.gameObject;
+            if (_displaySettingPage != null && _displaySettingPage.gameObject.activeSelf) return _displaySettingPage.gameObject;
+            if (_graphicsSettingPage != null && _graphicsSettingPage.gameObject.activeSelf) return _graphicsSettingPage.gameObject;
+            return null;
+        }
+
+        private void ClosePages()
         {
             if (_keyBindingWindow != null) _keyBindingWindow.gameObject.SetActive(false);
             if (_keyboardMappingWindow != null) _keyboardMappingWindow.gameObject.SetActive(false);
+            if (_displaySettingPage != null) _displaySettingPage.gameObject.SetActive(false);
+            if (_graphicsSettingPage != null) _graphicsSettingPage.gameObject.SetActive(false);
         }
+
+        // 페이지가 열려 있으면 메뉴를 숨기고, 없으면 메뉴를 보임. 화면이 바뀌면 새 화면이 서서히 나타남
+        private void ShowCurrentScreen()
+        {
+            GameObject page = FindOpenPage();
+            GameObject screen = page != null ? page : _menuWindow;
+            if (_menuWindow != null && _menuWindow.activeSelf != (page == null)) _menuWindow.SetActive(page == null);
+
+            if (screen == _shownScreen) return;
+
+            bool isFirst = _shownScreen == null;
+            _shownScreen = screen;
+            // 옵션을 처음 열 때는 옵션 화면 전체가 나타나므로 따로 하지 않음
+            if (!isFirst && screen != null) StartFade(screen);
+        }
+
+        // ===== 화면 전환 =====
+
+        private void StartFade(GameObject target)
+        {
+            // 나타나는 중이던 화면은 다 나타난 상태로 끝냄 (반투명으로 남지 않도록)
+            if (_fadeRoutine != null) StopCoroutine(_fadeRoutine);
+            _fadeRoutine = null;
+            if (_fadingGroup != null) _fadingGroup.alpha = 1f;
+            _fadingGroup = null;
+            if (!isActiveAndEnabled) return;
+
+            CanvasGroup group = target.GetComponent<CanvasGroup>();
+            if (group == null) group = target.AddComponent<CanvasGroup>();
+            _fadingGroup = group;
+            _fadeRoutine = StartCoroutine(FadeIn(group));
+        }
+
+        // 설정창이 열리면 게임 시간이 멈추므로 실제 시간 기준으로 나타나게 함
+        private IEnumerator FadeIn(CanvasGroup group)
+        {
+            float time = 0f;
+            group.alpha = 0f;
+            while (time < OW_fadeTime)
+            {
+                time += Time.unscaledDeltaTime;
+                group.alpha = Mathf.Clamp01(time / OW_fadeTime);
+                yield return null;
+            }
+            group.alpha = 1f;
+            _fadeRoutine = null;
+            _fadingGroup = null;
+        }
+
+        // ===== 메뉴 =====
 
         private void RememberInput()
         {
@@ -200,7 +298,7 @@ namespace Game.UI.Setting
 
         private void SelectButton(int index)
         {
-            if (IsSubWindowOpen() || !OW_menuButtons[index].IsInteractable()) return;
+            if (IsPageOpen() || !OW_menuButtons[index].IsInteractable()) return;
 
             OW_highlightIndex = index;
             RefreshHighlight();

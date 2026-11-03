@@ -457,6 +457,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1383415841}
     m_Modifications:
+    - target: {fileID: 458843816975630544, guid: 194fc534add97d549aed3580fb35cd46, type: 3}
+      propertyPath: OP_uiControl
+      value: 
+      objectReference: {fileID: 299426511}
     - target: {fileID: 772867870450014382, guid: 194fc534add97d549aed3580fb35cd46, type: 3}
       propertyPath: m_Name
       value: P_OptionWindow
@@ -555,6 +559,10 @@ PrefabInstance:
       objectReference: {fileID: 299426511}
     - target: {fileID: 5459570447515803494, guid: 194fc534add97d549aed3580fb35cd46, type: 3}
       propertyPath: KBW_uiControl
+      value: 
+      objectReference: {fileID: 299426511}
+    - target: {fileID: 8095490935239188584, guid: 194fc534add97d549aed3580fb35cd46, type: 3}
+      propertyPath: OP_uiControl
       value: 
       objectReference: {fileID: 299426511}
     - target: {fileID: 8639641496545386508, guid: 194fc534add97d549aed3580fb35cd46, type: 3}

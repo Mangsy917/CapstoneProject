@@ -13431,6 +13431,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1737168971}
     m_Modifications:
+    - target: {fileID: 458843816975630544, guid: 194fc534add97d549aed3580fb35cd46, type: 3}
+      propertyPath: OP_uiControl
+      value: 
+      objectReference: {fileID: 1949755787}
     - target: {fileID: 772867870450014382, guid: 194fc534add97d549aed3580fb35cd46, type: 3}
       propertyPath: m_Name
       value: P_OptionWindow
@@ -13529,6 +13533,10 @@ PrefabInstance:
       objectReference: {fileID: 1949755787}
     - target: {fileID: 5459570447515803494, guid: 194fc534add97d549aed3580fb35cd46, type: 3}
       propertyPath: KBW_uiControl
+      value: 
+      objectReference: {fileID: 1949755787}
+    - target: {fileID: 8095490935239188584, guid: 194fc534add97d549aed3580fb35cd46, type: 3}
+      propertyPath: OP_uiControl
       value: 
       objectReference: {fileID: 1949755787}
     - target: {fileID: 8639641496545386508, guid: 194fc534add97d549aed3580fb35cd46, type: 3}
@@ -15683,6 +15691,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 638170947}
+  - component: {fileID: 638170948}
   m_Layer: 5
   m_Name: GameGuide
   m_TagString: Untagged
@@ -15715,6 +15724,19 @@ RectTransform:
   m_AnchoredPosition: {x: 130, y: 70}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &638170948
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 638170946}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bd3d95c48e4e0bb41b4dbd60542f5243, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Game.UI.HudDisplay
+  _area: 1
 --- !u!1 &647093850
 GameObject:
   m_ObjectHideFlags: 0
@@ -41756,6 +41778,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1915645120}
+  - component: {fileID: 1915645121}
   m_Layer: 5
   m_Name: HealthBars
   m_TagString: Untagged
@@ -41784,6 +41807,19 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &1915645121
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1915645119}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bd3d95c48e4e0bb41b4dbd60542f5243, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Game.UI.HudDisplay
+  _area: 0
 --- !u!1 &1917823188
 GameObject:
   m_ObjectHideFlags: 0

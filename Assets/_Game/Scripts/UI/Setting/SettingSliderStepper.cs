@@ -105,6 +105,13 @@ public class SettingSliderStepper : MonoBehaviour, ISettingStepper
         onValueChanged?.Invoke(Value);
     }
 
+    // 저장해 둔 값을 보여줄 때 사용 (작은 단위로 맞추므로 37%도 그대로 보임, OnValueChanged는 부르지 않음)
+    public void SetSavedValue(float value)
+    {
+        Value = Snap(value, fineStep);
+        RefreshUI();
+    }
+
     // 범위 안으로 맞추고 snapStep 단위로 반올림
     private float Snap(float value, float snapStep)
     {

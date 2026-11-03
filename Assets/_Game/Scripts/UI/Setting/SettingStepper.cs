@@ -65,6 +65,16 @@ public class SettingStepper : MonoBehaviour, ISettingStepper
         onValueChanged?.Invoke(Index);
     }
 
+    // 선택지 목록을 바꾸고 index를 고름 (OnValueChanged는 부르지 않음)
+    // 실행 중에 선택지가 정해지는 줄에서 사용 (예: 해상도 목록)
+    public void SetOptions(string[] newOptions, int index)
+    {
+        options = newOptions;
+        Index = ClampIndex(index);
+        isIndexSet = true;
+        RefreshText();
+    }
+
     private void Step(int dir)
     {
         if (options == null || options.Length == 0) return;
