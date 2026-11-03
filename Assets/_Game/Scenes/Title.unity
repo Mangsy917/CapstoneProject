@@ -465,6 +465,10 @@ PrefabInstance:
       propertyPath: m_IsActive
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 1429693310032110561, guid: 194fc534add97d549aed3580fb35cd46, type: 3}
+      propertyPath: OW_uiControl
+      value: 
+      objectReference: {fileID: 299426511}
     - target: {fileID: 3988784075450303610, guid: 194fc534add97d549aed3580fb35cd46, type: 3}
       propertyPath: m_Pivot.x
       value: 0.5
@@ -553,6 +557,10 @@ PrefabInstance:
       propertyPath: KBW_uiControl
       value: 
       objectReference: {fileID: 299426511}
+    - target: {fileID: 8639641496545386508, guid: 194fc534add97d549aed3580fb35cd46, type: 3}
+      propertyPath: KMW_uiControl
+      value: 
+      objectReference: {fileID: 299426511}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -565,7 +573,7 @@ RectTransform:
   m_PrefabAsset: {fileID: 0}
 --- !u!114 &571859944 stripped
 MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 4258178481129292197, guid: 194fc534add97d549aed3580fb35cd46, type: 3}
+  m_CorrespondingSourceObject: {fileID: 1429693310032110561, guid: 194fc534add97d549aed3580fb35cd46, type: 3}
   m_PrefabInstance: {fileID: 571859942}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 0}
