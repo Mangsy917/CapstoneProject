@@ -470,16 +470,6 @@
                     "priority": 0
                 },
                 {
-                    "name": "New action",
-                    "type": "Button",
-                    "id": "98d1c5ad-8d1f-41db-a435-1301ebfc644a",
-                    "expectedControlType": "",
-                    "processors": "",
-                    "interactions": "",
-                    "initialStateCheck": false,
-                    "priority": 0
-                },
-                {
                     "name": "BackToGame",
                     "type": "Button",
                     "id": "160875e6-480e-48fa-82dc-8ccbb445bb4e",
@@ -503,6 +493,16 @@
                     "name": "RightStepSize",
                     "type": "Button",
                     "id": "e0a93721-a923-43d3-9b8f-3bc9c7f13417",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false,
+                    "priority": 0
+                },
+                {
+                    "name": "New action",
+                    "type": "Button",
+                    "id": "98d1c5ad-8d1f-41db-a435-1301ebfc644a",
                     "expectedControlType": "",
                     "processors": "",
                     "interactions": "",
@@ -679,10 +679,21 @@
                 {
                     "name": "",
                     "id": "4fe0a0ff-69b6-4548-9a54-30d30df7645c",
-                    "path": "<Gamepad>/start",
+                    "path": "<DualShockGamepad>/start",
                     "interactions": "",
                     "processors": "",
                     "groups": ";GamePad",
+                    "action": "BackToGame",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "8ba422f6-1cfa-4915-a193-74344f9169c7",
+                    "path": "<XInputController>/start",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
                     "action": "BackToGame",
                     "isComposite": false,
                     "isPartOfComposite": false
