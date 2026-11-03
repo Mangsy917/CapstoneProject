@@ -31,6 +31,8 @@ namespace Game.UI
             if (HD_canvasGroup == null) HD_canvasGroup = gameObject.AddComponent<CanvasGroup>();
         }
 
+        public HudArea Area => _area;
+
         private void OnEnable()
         {
             DisplaySettings.Changed += Apply;
@@ -45,7 +47,9 @@ namespace Game.UI
         private void Apply()
         {
             bool isTop = _area == HudArea.Top;
-            bool isVisible = isTop ? DisplaySettings.IsTopHudVisible : DisplaySettings.IsBottomHudVisible;
+            // 위치를 조절하는 중이면 꺼져 있어도 보임
+            bool isVisible = (isTop ? DisplaySettings.IsTopHudVisible : DisplaySettings.IsBottomHudVisible) ||
+                             DisplaySettings.EditingHudArea == _area;
             float offset = (isTop ? DisplaySettings.TopHudOffset : DisplaySettings.BottomHudOffset) / 100f * DisplaySettings.MaxHudOffset;
 
             HD_canvasGroup.alpha = isVisible ? 1f : 0f;

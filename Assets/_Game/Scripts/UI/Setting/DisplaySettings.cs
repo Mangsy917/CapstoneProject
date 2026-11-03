@@ -9,6 +9,7 @@ namespace Game.UI.Setting
     // - 씬이 바뀌어도 유지되고, 빌드에서는 PlayerPrefs에 저장해서 껐다 켜도 유지됨
     //   (에디터 플레이 모드에서는 저장하지 않음, 키 설정과 같은 규칙)
     // - HUD는 각 HUD 오브젝트의 HudDisplay가 Changed를 받아서 맞춤
+    // - HUD 위치는 멈춘 게임 화면에서 HUD를 직접 위아래로 옮겨서 정함 (HudPositionEditor)
     // - 감마는 여기서 만든 전역 Volume(Lift Gamma Gain)으로 게임 화면에 적용 (UI는 바뀌지 않음)
     public static class DisplaySettings
     {
@@ -64,6 +65,37 @@ namespace Game.UI.Setting
             set { LoadOnce(); _gamma = Mathf.Clamp(value, 0f, 100f); OnChanged(); }
         }
 
+        // 지금 위치를 조절하고 있는 HUD (없으면 null). 조절하는 동안에는 HUD가 꺼져 있어도 보임
+        private static HudDisplay.HudArea? _editingHudArea;
+
+        public static HudDisplay.HudArea? EditingHudArea
+        {
+            get { return _editingHudArea; }
+            set { _editingHudArea = value; Changed?.Invoke(); }
+        }
+
+        // HUD 위치를 저장하지 않고 화면에만 바꿈 (위치 조절 중 미리 보기, 취소할 때 되돌리기)
+        // 확정할 때는 TopHudOffset / BottomHudOffset에 넣어서 저장
+        public static void PreviewHudOffset(HudDisplay.HudArea area, float offset)
+        {
+            LoadOnce();
+            offset = Mathf.Clamp(offset, 0f, 100f);
+            if (area == HudDisplay.HudArea.Top) _topHudOffset = offset;
+            else _bottomHudOffset = offset;
+            Changed?.Invoke();
+        }
+
+        public static float GetHudOffset(HudDisplay.HudArea area)
+        {
+            return area == HudDisplay.HudArea.Top ? TopHudOffset : BottomHudOffset;
+        }
+
+        public static void SetHudOffset(HudDisplay.HudArea area, float offset)
+        {
+            if (area == HudDisplay.HudArea.Top) TopHudOffset = offset;
+            else BottomHudOffset = offset;
+        }
+
         // 모든 값을 처음 값으로 되돌림 (HUD 보이기, 위치 0, 감마 50)
         public static void ResetToDefault()
         {
@@ -85,6 +117,7 @@ namespace Game.UI.Setting
             _isBottomHudVisible = true;
             _bottomHudOffset = 0f;
             _gamma = 50f;
+            _editingHudArea = null;
             DS_isLoaded = false;
             _gammaVolume = null;
             _liftGammaGain = null;

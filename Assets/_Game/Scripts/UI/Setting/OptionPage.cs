@@ -96,6 +96,13 @@ namespace Game.UI.Setting
         {
             if (OP_uiControl == null || _rowButtons.Length == 0) return;
 
+            // HUD 위치 조절 중에는 그 화면이 입력을 처리함 (닫힌 다음 프레임까지 포함)
+            if (HudPositionEditor.HPE_IsOpen)
+            {
+                RememberInput();
+                return;
+            }
+
             if (Time.frameCount == OP_ignoreInputFrame)
             {
                 // 같은 프레임의 취소 / 닫기 입력은 지워서 옵션 메뉴까지 닫히지 않게 함
@@ -200,6 +207,7 @@ namespace Game.UI.Setting
             // 마우스 버튼을 누르고 있는 동안(슬라이더를 끄는 중 등)에는 다른 줄 위를 지나가도 선택을 바꾸지 않음
             Mouse mouse = Mouse.current;
             if (mouse != null && (mouse.leftButton.isPressed || mouse.rightButton.isPressed || mouse.middleButton.isPressed)) return;
+            if (HudPositionEditor.HPE_IsOpen) return;
             if (index == OP_selectedIndex || !_rowButtons[index].IsInteractable()) return;
 
             OP_selectedIndex = index;
