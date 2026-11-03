@@ -470,9 +470,9 @@
                     "priority": 0
                 },
                 {
-                    "name": "New action",
+                    "name": "BackToGame",
                     "type": "Button",
-                    "id": "98d1c5ad-8d1f-41db-a435-1301ebfc644a",
+                    "id": "160875e6-480e-48fa-82dc-8ccbb445bb4e",
                     "expectedControlType": "",
                     "processors": "",
                     "interactions": "",
@@ -480,9 +480,29 @@
                     "priority": 0
                 },
                 {
-                    "name": "BackToGame",
+                    "name": "LeftStepSize",
                     "type": "Button",
-                    "id": "160875e6-480e-48fa-82dc-8ccbb445bb4e",
+                    "id": "1a0821f6-cfa0-4aef-8893-2c4bba0d36c8",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false,
+                    "priority": 0
+                },
+                {
+                    "name": "RightStepSize",
+                    "type": "Button",
+                    "id": "e0a93721-a923-43d3-9b8f-3bc9c7f13417",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false,
+                    "priority": 0
+                },
+                {
+                    "name": "New action",
+                    "type": "Button",
+                    "id": "98d1c5ad-8d1f-41db-a435-1301ebfc644a",
                     "expectedControlType": "",
                     "processors": "",
                     "interactions": "",
@@ -659,10 +679,21 @@
                 {
                     "name": "",
                     "id": "4fe0a0ff-69b6-4548-9a54-30d30df7645c",
-                    "path": "<Gamepad>/start",
+                    "path": "<DualShockGamepad>/start",
                     "interactions": "",
                     "processors": "",
                     "groups": ";GamePad",
+                    "action": "BackToGame",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "8ba422f6-1cfa-4915-a193-74344f9169c7",
+                    "path": "<XInputController>/start",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
                     "action": "BackToGame",
                     "isComposite": false,
                     "isPartOfComposite": false
@@ -730,6 +761,50 @@
                     "processors": "",
                     "groups": ";GamePad",
                     "action": "RightPage",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "38558c20-e228-4f34-b29f-172ebf2ca05a",
+                    "path": "<Keyboard>/o",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": ";PC",
+                    "action": "LeftStepSize",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "485e37c0-350b-4286-a3b4-70ed56c5629b",
+                    "path": "<Keyboard>/p",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": ";PC",
+                    "action": "RightStepSize",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "4e119459-e935-47b7-bf06-34b40ab3e655",
+                    "path": "<Gamepad>/leftTrigger",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": ";GamePad",
+                    "action": "LeftStepSize",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "e0016e8d-b0d2-472a-9ade-ed25a64f523e",
+                    "path": "<Gamepad>/rightTrigger",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": ";GamePad",
+                    "action": "RightStepSize",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },

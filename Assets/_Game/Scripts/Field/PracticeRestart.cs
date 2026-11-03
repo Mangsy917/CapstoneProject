@@ -25,6 +25,9 @@ namespace Game.Field
         [Tooltip("연습 설정의 시작 사이드 / 위치 설정. 비워두면 씬에서 찾음")]
         [SerializeField] private StartPositionSetting _startPositionSetting;
 
+        [Tooltip("재시작한 뒤 컨트롤러 입력을 받지 않는 시간(초). 재시작 순간 누르고 있던 레버나 버튼으로 캐릭터가 바로 움직이지 않게 함")]
+        [SerializeField] private float _inputBlockTime = 0.7f;
+
         private void Awake()
         {
             if (PR_inputReader == null) PR_inputReader = FindAnyObjectByType<InputReader>(FindObjectsInactive.Include);
@@ -54,6 +57,10 @@ namespace Game.Field
             foreach (var command in FindObjectsByType<CharacterCommand>(FindObjectsSortMode.None)) command.ClearBuffer();
             foreach (var projectile in FindObjectsByType<Projectile>(FindObjectsSortMode.None)) Destroy(projectile.gameObject);
             foreach (var health in FindObjectsByType<CharacterHealth>(FindObjectsSortMode.None)) health.ResetHealth();
+            HitStop.ResetAll();
+
+            // 재시작 직후 잠깐 입력을 받지 않음
+            foreach (var reader in FindObjectsByType<InputReader>(FindObjectsSortMode.None)) reader.BlockInput(seconds: _inputBlockTime);
 
             bool isUp = direction >= 7;
             bool isDown = direction <= 3;

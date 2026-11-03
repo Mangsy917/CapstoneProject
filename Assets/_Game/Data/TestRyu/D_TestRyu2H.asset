@@ -21,17 +21,80 @@ MonoBehaviour:
   _hitAdvantage: 40
   _hitBackDistance: 0.5
   _hitBackFrames: 8
+  _hitStopFrames: 6
   _hitMotion: 0
   _blockAdvantage: -12
   _guardBackDistance: 0.4
   _guardBackFrames: 8
+  _normalHitResult:
+    _damageRate: 1
+    _shouldOverrideHitStop: 0
+    AD_hitStopFrames: 6
+    _extraHitStunFrames: 0
+    _shouldOverrideHitStun: 0
+    _standHitStunFrames: 20
+    _airHitStunFrames: 20
+    _shouldOverrideHitBack: 0
+    _hitBackDistance: 0.5
+    _hitBackFrames: 8
+    _shouldKnockDown: 1
+    _fallFrames: 20
+    _downFrames: 0
+    _airborneHeight: 0
+    _hitMotion: 0
+  _counterHitResult:
+    _damageRate: 1.2
+    _shouldOverrideHitStop: 0
+    AD_hitStopFrames: 6
+    _extraHitStunFrames: 0
+    _shouldOverrideHitStun: 0
+    _standHitStunFrames: 20
+    _airHitStunFrames: 20
+    _shouldOverrideHitBack: 0
+    _hitBackDistance: 0.5
+    _hitBackFrames: 8
+    _shouldKnockDown: 1
+    _fallFrames: 20
+    _downFrames: 0
+    _airborneHeight: 0
+    _hitMotion: 0
+  _punishCounterResult:
+    _damageRate: 1.2
+    _shouldOverrideHitStop: 0
+    AD_hitStopFrames: 6
+    _extraHitStunFrames: 0
+    _shouldOverrideHitStun: 0
+    _standHitStunFrames: 20
+    _airHitStunFrames: 20
+    _shouldOverrideHitBack: 0
+    _hitBackDistance: 0.5
+    _hitBackFrames: 8
+    _shouldKnockDown: 1
+    _fallFrames: 20
+    _downFrames: 0
+    _airborneHeight: 0
+    _hitMotion: 0
   _shouldHideTopHitbox: 1
   _extraHitboxes: []
-  _startupFrames: 9
-  _activeFrames: 3
-  _recoveryFrames: 23
+  _frames:
+  - _frameType: 0
+    AD_frameCount: 9
+    AD_damage: 0
+    AD_attackBoxSize: {x: 0, y: 0}
+    AD_attackBoxOffset: {x: 0, y: 0}
+  - _frameType: 1
+    AD_frameCount: 3
+    AD_damage: 0
+    AD_attackBoxSize: {x: 0, y: 0}
+    AD_attackBoxOffset: {x: 0, y: 0}
+  - _frameType: 2
+    AD_frameCount: 23
+    AD_damage: 0
+    AD_attackBoxSize: {x: 0, y: 0}
+    AD_attackBoxOffset: {x: 0, y: 0}
   _buttonFrames: []
   _traitWindows: []
+  _isLaunchAttack: 0
   _launchFrame: 0
   _shouldLaunchAtStartup: 0
   _launchForwardDistance: 1.44
@@ -41,6 +104,10 @@ MonoBehaviour:
   _landingRecoveryFrames: 0
   _landingAnimationState: 
   _animationState: 2H
+  _isProjectileAttack: 0
   _projectilePrefab: {fileID: 0}
   _projectileSpawnFrame: 1
   _projectileSpawnOffset: {x: 1, y: 0.3}
+  _projectileDamage: 0
+  _projectileDistancePerFrame: 0
+  _projectileCount: 1

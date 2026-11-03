@@ -7,7 +7,7 @@ namespace Game.Character
     // - Top / Middle / Bottom: 평소 피격 상자. 앉아 있으면 Top을 끔
     //   (공격 중에는 CharacterMove가 앉기 상태가 아니므로, 앉아서 쓰는 공격은 AttackData의 Should Hide Top Hitbox로 끔)
     // - 공격 중에는 AttackData의 Extra Hitboxes(뻗은 팔, 다리 등)를 정한 프레임 구간에만 켬
-    // - 완전 무적인 동안(CharacterAttack.IsInvincible)은 모든 피격 상자를 끔
+    // - 완전 무적인 동안(CharacterAttack.IsInvincible)과 다운 중(CharacterHitReaction.IsDown)에는 모든 피격 상자를 끔
     // 이동과 공격 처리가 모두 끝난 뒤에 맞추도록 실행 순서를 뒤로 미룸
     [DefaultExecutionOrder(30)]
     public class CharacterHitboxes : MonoBehaviour
@@ -29,6 +29,9 @@ namespace Game.Character
         [Tooltip("더미의 앉기 상태를 알려줄 DummyAction. 비워두면 같은 오브젝트에서 찾음 (없어도 됨)")]
         [SerializeField] private DummyAction CH_dummyAction;
 
+        [Tooltip("다운 중인지 알려줄 CharacterHitReaction. 다운 중에는 피격 상자를 모두 끔. 비워두면 같은 오브젝트에서 찾음 (없어도 됨)")]
+        [SerializeField] private CharacterHitReaction CH_hitReaction;
+
         // 공격 모션에 따라 켜고 끄는 피격 상자 (필요한 만큼 만들어 두고 다시 씀)
         private readonly List<Hitbox> _extraHitboxPool = new List<Hitbox>();
 
@@ -37,6 +40,7 @@ namespace Game.Character
             if (CH_characterMove == null) CH_characterMove = GetComponent<CharacterMove>();
             if (CH_characterAttack == null) CH_characterAttack = GetComponent<CharacterAttack>();
             if (CH_dummyAction == null) CH_dummyAction = GetComponent<DummyAction>();
+            if (CH_hitReaction == null) CH_hitReaction = GetComponent<CharacterHitReaction>();
             if (_extraHitboxParent == null && _topHitbox != null) _extraHitboxParent = _topHitbox.transform.parent;
             if (_extraHitboxParent == null) _extraHitboxParent = transform;
         }
@@ -48,8 +52,8 @@ namespace Game.Character
 
             AttackData attack = GetCurrentAttack();
 
-            // 완전 무적인 동안(예: EX 승룡권 1~8프레임)은 피격 상자를 모두 끔
-            bool isInvincible = attack != null && CH_characterAttack.IsInvincible;
+            // 완전 무적인 동안(예: EX 승룡권 1~8프레임)과 다운 중에는 피격 상자를 모두 끔
+            bool isInvincible = (attack != null && CH_characterAttack.IsInvincible) || (CH_hitReaction != null && CH_hitReaction.IsDown);
 
             bool isCrouching = (CH_characterMove != null && CH_characterMove.IsCrouching) || (CH_dummyAction != null && CH_dummyAction.DA_IsCrouching);
             bool shouldHideTop = isCrouching || (attack != null && attack.ShouldHideTopHitbox);

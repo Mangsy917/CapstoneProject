@@ -27,11 +27,14 @@ MonoBehaviour:
   _guardBackFrames: 8
   _shouldHideTopHitbox: 0
   _extraHitboxes: []
-  _startupFrames: 9
-  _activeFrames: 6
-  _recoveryFrames: 0
+  _frames:
+  - _frameType: 0
+    AD_frameCount: 9
+  - _frameType: 1
+    AD_frameCount: 6
   _buttonFrames: []
   _traitWindows: []
+  _isLaunchAttack: 0
   _launchFrame: 0
   _shouldLaunchAtStartup: 0
   _launchForwardDistance: 1.44
@@ -41,6 +44,7 @@ MonoBehaviour:
   _landingRecoveryFrames: 3
   _landingAnimationState: Sit
   _animationState: JH
+  _isProjectileAttack: 0
   _projectilePrefab: {fileID: 0}
   _projectileSpawnFrame: 1
   _projectileSpawnOffset: {x: 1, y: 0.3}

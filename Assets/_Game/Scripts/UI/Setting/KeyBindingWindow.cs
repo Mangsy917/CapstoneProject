@@ -13,7 +13,10 @@ namespace Game.UI.Setting
     // 컨트롤러 설정 팝업 (P_KeyBindingWindow 프리팹)에 붙여서 사용
     // 왼쪽에 공격 버튼 이름, 오른쪽에 지금 쓰는 컨트롤러(키보드 / 플레이스테이션 / Xbox)에 연결된 키를
     // 버튼 스프라이트로 보여줌 (스프라이트가 없는 키는 글자로). 컨트롤러가 바뀌면 바로 그 컨트롤러 쪽으로 바뀜
-    // 줄을 고른 뒤 새 키를 누르면 그 키로 바뀜 (누른 기기에 맞춰 키보드 또는 게임패드 쪽이 바뀜)
+    // 줄을 고른 뒤 새 버튼을 누르면 그 패드 버튼으로 바뀜
+    // - 키보드 키를 누르면 옵션 창의 키보드 -> Xbox 표에서 그 키의 Xbox 버튼으로 바뀜 (KeyboardMapping)
+    //   키보드 쪽 표시는 그 패드 버튼에 연결된 키보드 키로 따라 바뀜
+    // - 옵션 창(OptionWindow) 메뉴의 "컨트롤러 설정"으로 열림
     // - 위/아래: 줄 이동, 선택 키 / 마우스 클릭: 키 바꾸기 시작 (줄) 또는 실행 (기본값, 닫기)
     // - 취소 키 / ESC: 팝업 닫기, 키 입력 대기 중에는 ESC(게임패드 Start)로 바꾸기 취소
     // - 다른 공격 버튼이 이미 쓰는 키를 고르면 두 버튼의 키를 서로 바꿈
@@ -69,6 +72,7 @@ namespace Game.UI.Setting
         [SerializeField] private string _waitingMessage = "새 키를 누르세요  (ESC: 취소)";
         [SerializeField] private string _testingMessage = "버튼을 눌러 확인하세요";
         [SerializeField] private string _reservedMessage = "이동 키와 설정창 열기 키는 사용할 수 없습니다";
+        [SerializeField] private string _notMappedMessage = "Xbox 버튼에 연결되지 않은 키입니다 (옵션에서 연결)";
         [SerializeField] private string _waitingKeyText = "...";
 
         private static readonly Color _highlightColor = new Color(0.5f, 0.5f, 0.5f, 1f);
@@ -86,7 +90,8 @@ namespace Game.UI.Setting
         private int _ignoreInputFrame = -1;
 
         // 누르고 있는 동안 계속 넘어가지 않도록 이전 프레임 입력을 기억
-        private bool _lastUp, _lastDown, _lastSelect;
+        // (위/아래 이동은 UIControl의 Step으로 처리하므로 선택 키만 기억)
+        private bool _lastSelect;
 
         void Awake()
         {
@@ -220,12 +225,11 @@ namespace Game.UI.Setting
                 return;
             }
 
-            bool up = KBW_uiControl.uiUp;
-            bool down = KBW_uiControl.uiDown;
             bool select = KBW_uiControl.uiSelect;
 
-            if (up && !_lastUp) MoveHighlight(-1);
-            else if (down && !_lastDown) MoveHighlight(1);
+            // 길게 눌러 연속 이동 중이면 맨 위/맨 아래에서 멈춤
+            if (KBW_uiControl.uiUpStep) MoveHighlight(-1, canWrap: !KBW_uiControl.isRepeating);
+            else if (KBW_uiControl.uiDownStep) MoveHighlight(1, canWrap: !KBW_uiControl.isRepeating);
 
             if (select && !_lastSelect)
             {
@@ -246,14 +250,16 @@ namespace Game.UI.Setting
         {
             if (KBW_uiControl == null) return;
 
-            _lastUp = KBW_uiControl.uiUp;
-            _lastDown = KBW_uiControl.uiDown;
             _lastSelect = KBW_uiControl.uiSelect;
         }
 
-        private void MoveHighlight(int direction)
+        // canWrap: 끝에서 반대쪽 끝으로 넘어갈 수 있는지 (false면 끝에서 멈춤)
+        private void MoveHighlight(int direction, bool canWrap = true)
         {
-            _highlightIndex = (_highlightIndex + direction + _menuButtons.Length) % _menuButtons.Length;
+            int next = _highlightIndex + direction;
+            if (!canWrap && (next < 0 || next >= _menuButtons.Length)) return;
+
+            _highlightIndex = (next + _menuButtons.Length) % _menuButtons.Length;
             RefreshHighlight();
         }
 
@@ -294,32 +300,32 @@ namespace Game.UI.Setting
         {
             if (!_isWaitingForKey) return;
 
-            string group;
             string layoutName;
-            if (control.device is Keyboard)
-            {
-                group = ControllerTypeDetector.KeyboardGroup;
-                layoutName = "<Keyboard>";
-            }
-            else if (control.device is Gamepad)
-            {
-                group = ControllerTypeDetector.GamepadGroup;
-                layoutName = "<Gamepad>";
-            }
-            else
-            {
-                // 마우스 등 다른 기기는 무시하고 계속 기다림
-                return;
-            }
+            if (control.device is Keyboard) layoutName = "<Keyboard>";
+            else if (control.device is Gamepad) layoutName = "<Gamepad>";
+            else return; // 마우스 등 다른 기기는 무시하고 계속 기다림
 
             // "/Keyboard/u" -> "<Keyboard>/u", "/XInputControllerWindows/buttonSouth" -> "<Gamepad>/buttonSouth"
             string path = layoutName + "/" + control.path.Substring(control.device.path.Length + 1);
 
-            if (IsSamePath(path, "<Keyboard>/escape") || IsSamePath(path, "<Gamepad>/start"))
+            if (IsSamePath(path, KeyboardMapping.CancelKeyPath) || IsSamePath(path, "<Gamepad>/start"))
             {
                 FinishWaitingForKey();
                 return;
             }
+
+            // 키보드 키는 옵션의 키보드 -> Xbox 표에서 그 키가 연결된 Xbox 버튼으로 바꿔서 넣음
+            // (공격 버튼은 항상 패드 버튼에 연결되고, 키보드는 그 패드 버튼의 키를 따라감)
+            if (control.device is Keyboard)
+            {
+                path = KeyboardMapping.FindGamepadPath(path);
+                if (path == null)
+                {
+                    SetGuide(_notMappedMessage);
+                    return;
+                }
+            }
+            string group = ControllerTypeDetector.GamepadGroup;
 
             if (IsReservedPath(path))
             {
@@ -329,6 +335,7 @@ namespace Game.UI.Setting
 
             AssignKey(_bindingRows[_waitingRowIndex].KBW_actionName, group, path);
             KeyBindingStore.Save(KBW_inputActions);
+            KeyboardMapping.ApplyTo(KBW_inputActions);
             FinishWaitingForKey();
         }
 
@@ -384,6 +391,7 @@ namespace Game.UI.Setting
             }
 
             KeyBindingStore.Save(KBW_inputActions);
+            KeyboardMapping.ApplyTo(KBW_inputActions);
             RefreshKeyTexts();
         }
 

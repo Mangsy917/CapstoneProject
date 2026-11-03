@@ -62,7 +62,7 @@ namespace Game.Character
         private int[] _remainingArmorHits = new int[0];
 
         private bool _isAirAttack; // 점프 중에 시작한 공격인지 (착지하면 끝남)
-        private bool _hasHit;      // 이번 공격이 이미 상대를 맞혔는지 (한 번 맞히면 지속 프레임이 남아도 다시 맞히지 않음)
+        private int _lastHitIndex; // 이번 공격에서 마지막으로 상대를 맞힌 타 (1타 = 0, 아직 안 맞혔으면 -1). 타마다 한 번만 맞힘
         private CharacterCommand.AttackButtonType _currentButton; // 이번 공격을 낸 버튼 (버튼별 데미지, 투사체 속도에 사용)
         private int _landingFrame;  // 착지 경직이 시작된 뒤 지난 프레임 (착지한 프레임 = 1)
 
@@ -106,6 +106,9 @@ namespace Game.Character
         {
             // 슬로우 모션 중에는 건너뛰는 프레임이 있음 (GameSpeed)
             if (!Game.Field.GameSpeed.IsTickFrame) return;
+
+            // 히트스톱 중에는 공격 프레임이 진행되지 않음
+            if (HitStop.IsStoppedNow(this)) return;
 
             if (!IsAttacking)
             {
@@ -156,9 +159,13 @@ namespace Game.Character
                 _isAirAttack = true; // 뛰어오른 뒤 착지하면 공격이 끝남
             }
 
-            // 지속 프레임 동안 공격 상자가 상대의 피격 상자에 닿으면 데미지 (공격 한 번에 한 번만)
-            if (CurrentPhase == AttackPhase.Active && !_hasHit)
-                TryHitOpponent(CurrentAttack);
+            // 지속 프레임 동안 공격 상자가 상대의 피격 상자에 닿으면 데미지 (다단 공격은 타마다 한 번씩)
+            if (CurrentPhase == AttackPhase.Active)
+            {
+                int hitIndex = CurrentFrames.FindHitIndex(AttackFrame);
+                if (hitIndex > _lastHitIndex)
+                    TryHitOpponent(CurrentAttack, hitIndex);
+            }
         }
 
         private bool IsGrounded()
@@ -178,11 +185,11 @@ namespace Game.Character
             Vector3 position = transform.position + new Vector3(isFacingRight ? offset.x : -offset.x, offset.y, 0f);
 
             Projectile projectile = Instantiate(attack.ProjectilePrefab, position, Quaternion.identity);
-            projectile.Launch(isFacingRight, owner: gameObject, targetTag: CA_opponentTag, damage: attack.GetDamage(_currentButton), hitInfo: attack.GetHitInfo(_currentButton), distancePerFrame: attack.GetProjectileDistancePerFrame(_currentButton));
+            projectile.Launch(isFacingRight, owner: gameObject, targetTag: CA_opponentTag, damage: attack.GetProjectileDamage(_currentButton), hitInfo: attack.GetHitInfo(_currentButton), distancePerFrame: attack.GetProjectileDistancePerFrame(_currentButton), count: attack.ProjectileCount);
         }
 
-        // 이번 프레임의 공격 상자와 겹치는 상대(피격 상자)가 있으면 데미지를 줌 (공격 상자가 없는 프레임이면 아무것도 안 함)
-        private void TryHitOpponent(AttackData attack)
+        // 이번 프레임의 공격 상자와 겹치는 상대(피격 상자)가 있으면 hitIndex번째 타의 데미지를 줌 (공격 상자가 없는 프레임이면 아무것도 안 함)
+        private void TryHitOpponent(AttackData attack, int hitIndex)
         {
             if (!attack.TryGetAttackBox(_currentButton, AttackFrame, CurrentFrames, out Vector2 offset, out Vector2 size)) return;
 
@@ -195,8 +202,8 @@ namespace Game.Character
                 Hitbox hitbox = Hitbox.FindHitHitbox(opponent, attackBoxCenter, size);
                 if (hitbox == null) continue;
 
-                _hasHit = true;
-                CharacterHitReaction.HitTarget(opponent, attack.GetDamage(_currentButton), attack.GetHitInfo(_currentButton), hitbox, direction: facingSign, attacker: this, shouldPushAttacker: true);
+                _lastHitIndex = hitIndex;
+                CharacterHitReaction.HitTarget(opponent, attack.GetDamage(_currentButton, hitIndex), attack.GetHitInfo(_currentButton, hitIndex), hitbox, direction: facingSign, attacker: this, shouldPushAttacker: true);
                 return;
             }
         }
@@ -227,7 +234,7 @@ namespace Game.Character
             _currentButton = button;
             AttackFrame = 0; // 이번 프레임 Update에서 1이 됨
             _isAirAttack = !IsGrounded();
-            _hasHit = false;
+            _lastHitIndex = -1;
             _pendingLandingAttack = null; // 공중에서 다시 공격하면 새 공격의 착지 경직을 따름
 
             var windows = attack.TraitWindows;
@@ -266,11 +273,16 @@ namespace Game.Character
             if (CA_characterState != null) CA_characterState.ClearAttack();
         }
 
+        // 프레임 목록에 적은 종류대로 정함
+        // 발생의 마지막 프레임과 공격 판정 첫 프레임은 같은 프레임이라서, 그 프레임은 지속(공격 판정)으로 봄
         private AttackPhase GetPhaseAt(int frame)
         {
-            if (frame < CurrentFrames.FirstActiveFrame) return AttackPhase.Startup;
-            if (frame <= CurrentFrames.LastActiveFrame) return AttackPhase.Active;
-            return AttackPhase.Recovery;
+            switch (CurrentFrames.GetFrameType(frame))
+            {
+                case FrameType.Active: return AttackPhase.Active;
+                case FrameType.Recovery: return AttackPhase.Recovery;
+                default: return AttackPhase.Startup;
+            }
         }
 
         private void SetPhase(AttackPhase phase)
@@ -306,6 +318,24 @@ namespace Game.Character
         public void NotifyDamageDealt(int damage)
         {
             if (CA_characterState != null) CA_characterState.SetDealtDamage(damage);
+        }
+
+        /// <summary>
+        /// 지금 맞으면 어떤 히트가 되는지.
+        /// 공격의 발생 / 지속 중이면 카운터, 회수 / 착지 경직 중이면 퍼니시 카운터, 공격 중이 아니면 노말 히트
+        /// </summary>
+        public HitType GetHitTypeOnHit()
+        {
+            if (!IsAttacking) return HitType.Normal;
+
+            switch (CurrentPhase)
+            {
+                case AttackPhase.Recovery:
+                case AttackPhase.Landing:
+                    return HitType.PunishCounter;
+                default:
+                    return HitType.Counter; // 발생, 지속 (공격을 시작한 프레임에 아직 단계가 정해지기 전도 발생으로 봄)
+            }
         }
 
         /// <summary>지금 프레임에 이 특성이 켜져 있는지 (예: HasTrait(AttackTrait.Invincible))</summary>

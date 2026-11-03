@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
+using UnityEngine.InputSystem;
 
 // SettingWindow에 붙여서 사용
 // 키보드/컨트롤러(UIControl)와 마우스가 같은 선택 상태를 공유함
@@ -24,7 +25,8 @@ public class SettingMenu : MonoBehaviour
     private int selectedIndex = 0;
 
     // 누르고 있는 동안 계속 넘어가지 않도록 이전 프레임 입력을 기억
-    private bool prevUp, prevDown, prevLeft, prevRight, prevSelect;
+    // (위/아래와 슬라이더 좌우는 UIControl의 Step으로 처리)
+    private bool prevLeft, prevRight, prevSelect;
 
     void Awake()
     {
@@ -55,8 +57,6 @@ public class SettingMenu : MonoBehaviour
         CheckPanelChanged();
         if (!HasButtons() || uiControl == null) return;
 
-        bool up = uiControl.uiUp;
-        bool down = uiControl.uiDown;
         bool left = uiControl.uiLeft;
         bool right = uiControl.uiRight;
         bool select = uiControl.uiSelect;
@@ -64,23 +64,31 @@ public class SettingMenu : MonoBehaviour
         // 팝업이 열려 있으면 입력만 기억하고 메뉴는 움직이지 않음
         if (!SettingPopup.IsAnyOpen)
         {
-            if (up && !prevUp) MoveUp();
-            else if (down && !prevDown) MoveDown();
+            // 길게 누르면 연속 이동, 연속 이동 중이면 맨 위/맨 아래에서 멈춤
+            if (uiControl.uiUpStep) MoveStep(-1, canWrap: !uiControl.isRepeating);
+            else if (uiControl.uiDownStep) MoveStep(1, canWrap: !uiControl.isRepeating);
 
             // 선택된 줄에 스테퍼가 있으면 좌우로 값 변경
             // 오른쪽 = 증가, 왼쪽 = 감소
             ISettingStepper stepper = buttons[selectedIndex].GetComponent<ISettingStepper>();
             if (stepper != null && CanSelect(buttons[selectedIndex]))
             {
-                if (left && !prevLeft) stepper.Prev();
-                else if (right && !prevRight) stepper.Next();
+                // 슬라이더는 길게 누르면 연속으로 바뀌고, 그 외 스테퍼는 누를 때마다 한 번씩만 바뀜
+                bool isSlider = stepper is SettingSliderStepper;
+                bool isLeftStep = isSlider ? uiControl.uiLeftStep : left && !prevLeft;
+                bool isRightStep = isSlider ? uiControl.uiRightStep : right && !prevRight;
+
+                if (isLeftStep) stepper.Prev();
+                else if (isRightStep) stepper.Next();
+
+                // 슬라이더 줄에서 O / P(패드 LT / RT)로 조정 단위(10% / 1%)를 바꿈
+                if (isSlider && (uiControl.uiLeftStepSize || uiControl.uiRightStepSize))
+                    ((SettingSliderStepper)stepper).ToggleStepSize();
             }
 
             if (select && !prevSelect) Submit();
         }
 
-        prevUp = up;
-        prevDown = down;
         prevLeft = left;
         prevRight = right;
         prevSelect = select;
@@ -161,6 +169,29 @@ public class SettingMenu : MonoBehaviour
         Refresh();
     }
 
+    // dir 방향으로 한 칸 이동 (canWrap이 false면 끝에서 반대쪽 끝으로 넘어가지 않고 멈춤)
+    private void MoveStep(int dir, bool canWrap)
+    {
+        if (!HasButtons()) return;
+
+        if (!canWrap)
+        {
+            // 끝까지 선택할 수 있는 줄이 없으면 그 자리에 멈춤 (잠긴 줄은 건너뜀)
+            for (int i = selectedIndex + dir; i >= 0 && i < buttons.Length; i += dir)
+            {
+                if (!CanSelect(buttons[i])) continue;
+
+                selectedIndex = i;
+                Refresh();
+                return;
+            }
+            return;
+        }
+
+        Move(dir);
+        Refresh();
+    }
+
     // dir 방향으로 선택할 수 있는 다음 줄을 찾아 이동 (잠긴 줄은 건너뜀)
     private void Move(int dir)
     {
@@ -179,7 +210,15 @@ public class SettingMenu : MonoBehaviour
         Button button = buttons[selectedIndex];
         if (!CanSelect(button)) return;
 
-        // 스테퍼 줄은 선택 키로 바꾸지 않음 (값은 레버 좌우로만 바꿈)
+        // 슬라이더 줄은 선택 키로 조정 단위(10% / 1%)를 바꿈
+        SettingSliderStepper slider = button.GetComponent<SettingSliderStepper>();
+        if (slider != null)
+        {
+            slider.ToggleStepSize();
+            return;
+        }
+
+        // 그 외 스테퍼 줄은 선택 키로 바꾸지 않음 (값은 레버 좌우로만 바꿈)
         if (button.GetComponent<ISettingStepper>() != null) return;
         button.onClick.Invoke();
     }
@@ -188,6 +227,10 @@ public class SettingMenu : MonoBehaviour
     private void SelectButton(Button button)
     {
         if (!HasButtons()) return;
+
+        // 마우스 버튼을 누르고 있는 동안(슬라이더를 끄는 중 등)에는 다른 줄 위를 지나가도 선택을 바꾸지 않음
+        Mouse mouse = Mouse.current;
+        if (mouse != null && (mouse.leftButton.isPressed || mouse.rightButton.isPressed || mouse.middleButton.isPressed)) return;
 
         int index = System.Array.IndexOf(buttons, button);
         if (index < 0 || index == selectedIndex || !CanSelect(button)) return;
