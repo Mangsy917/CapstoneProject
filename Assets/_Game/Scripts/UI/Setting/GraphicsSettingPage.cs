@@ -9,6 +9,7 @@ namespace Game.UI.Setting
     // 값을 바꾸면 바로 적용됨. 화면 모드와 해상도는 Unity가 알아서 저장함 (빌드에서 껐다 켜도 유지)
     // 에디터에서는 Game 창 크기가 바뀌지 않으므로 빌드에서 확인해야 함
     // 그림자 / 텍스처 / 이펙트 / 배경 품질은 아직 없음 (줄의 Interactable을 꺼둠)
+    // 기본값으로 되돌리기: 전체 창 모드 + 모니터 해상도 (ResetToDefault)
     public class GraphicsSettingPage : MonoBehaviour
     {
         [SerializeField] private SettingStepper _screenModeStepper;
@@ -45,11 +46,29 @@ namespace Game.UI.Setting
             if (_isStarted) ShowCurrentValues();
         }
 
+        // 기본값으로 되돌리기 줄의 OnClick에 연결
+        // 전체 창 모드 + 모니터 해상도 (Unity 빌드의 처음 설정과 같음)
+        public void ResetToDefault()
+        {
+            Vector2Int monitorSize = new Vector2Int(Display.main.systemWidth, Display.main.systemHeight);
+            Screen.SetResolution(monitorSize.x, monitorSize.y, DefaultScreenMode);
+
+            // 화면 크기는 다음 프레임에 바뀌므로 지금 값 대신 바꿀 값을 보여줌
+            ShowValues(DefaultScreenMode, monitorSize);
+        }
+
+        private const FullScreenMode DefaultScreenMode = FullScreenMode.FullScreenWindow;
+
         private void ShowCurrentValues()
+        {
+            ShowValues(Screen.fullScreenMode, new Vector2Int(Screen.width, Screen.height));
+        }
+
+        private void ShowValues(FullScreenMode screenMode, Vector2Int current)
         {
             if (_screenModeStepper != null)
             {
-                int modeIndex = System.Array.IndexOf(_screenModes, Screen.fullScreenMode);
+                int modeIndex = System.Array.IndexOf(_screenModes, screenMode);
                 // 맥의 최대화 창 등 목록에 없는 모드는 전체 창 모드로 보여줌
                 if (modeIndex < 0) modeIndex = 1;
                 _screenModeStepper.SetOptions(_screenModeStepper.options, modeIndex);
@@ -59,7 +78,6 @@ namespace Game.UI.Setting
             {
                 FindResolutions();
 
-                Vector2Int current = new Vector2Int(Screen.width, Screen.height);
                 int currentIndex = _resolutions.IndexOf(current);
                 if (currentIndex < 0)
                 {

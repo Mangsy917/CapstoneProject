@@ -64,6 +64,18 @@ namespace Game.UI.Setting
             set { LoadOnce(); _gamma = Mathf.Clamp(value, 0f, 100f); OnChanged(); }
         }
 
+        // 모든 값을 처음 값으로 되돌림 (HUD 보이기, 위치 0, 감마 50)
+        public static void ResetToDefault()
+        {
+            LoadOnce();
+            _isTopHudVisible = true;
+            _topHudOffset = 0f;
+            _isBottomHudVisible = true;
+            _bottomHudOffset = 0f;
+            _gamma = 50f;
+            OnChanged();
+        }
+
         // Domain Reload를 꺼둔 상태로 플레이해도 이전 값이 남지 않도록 초기화
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         private static void ResetState()

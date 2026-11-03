@@ -3,10 +3,10 @@ using UnityEngine;
 
 namespace Game.UI
 {
-    // 상단 / 하단 HUD 오브젝트(예: HealthBars, GameGuide)에 붙여서 사용
+    // 상단 / 하단 HUD 오브젝트에 붙여서 사용 (지금은 상단 = HealthBars, 하단 HUD는 아직 없음)
     // 옵션의 화면 설정(DisplaySettings)에 맞춰 HUD를 보이거나 숨기고, 위치를 화면 안쪽으로 옮김
     // - 숨길 때는 오브젝트를 끄지 않고 CanvasGroup 투명도로 숨김
-    //   (다른 스크립트가 이 오브젝트를 켜고 끄는 것과 겹치지 않도록, 예: 설정창이 열리면 GameGuide를 끔)
+    //   (다른 스크립트가 이 오브젝트를 켜고 끄는 것과 겹치지 않도록)
     // - 위치는 처음 위치에서 상단은 아래로, 하단은 위로 옮김
     public class HudDisplay : MonoBehaviour
     {

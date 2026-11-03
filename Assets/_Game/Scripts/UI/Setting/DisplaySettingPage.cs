@@ -6,6 +6,7 @@ namespace Game.UI.Setting
     // 줄의 스테퍼 / 슬라이더를 DisplaySettings 값에 연결함. 값을 바꾸면 바로 적용됨
     // - 상단 HUD / 하단 HUD: OFF, ON 스테퍼 (ON이 1번)
     // - 상단 HUD 위치 / 하단 HUD 위치 / 감마: 0~100 슬라이더
+    // - 기본값으로 되돌리기: 모든 값을 처음 값으로 (ResetToDefault)
     public class DisplaySettingPage : MonoBehaviour
     {
         [SerializeField] private SettingStepper _topHudStepper;
@@ -38,6 +39,13 @@ namespace Game.UI.Setting
         private void OnEnable()
         {
             if (_isStarted) ShowSavedValues();
+        }
+
+        // 기본값으로 되돌리기 줄의 OnClick에 연결
+        public void ResetToDefault()
+        {
+            DisplaySettings.ResetToDefault();
+            ShowSavedValues();
         }
 
         private void ShowSavedValues()
