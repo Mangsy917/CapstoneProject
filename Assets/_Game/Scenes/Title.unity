@@ -508,6 +508,8 @@ MonoBehaviour:
   isRepeating: 0
   uiLeftPG: 0
   uiRightPG: 0
+  uiLeftStepSize: 0
+  uiRightStepSize: 0
   uiSelect: 0
   uiCancelDown: 0
   uiClose: 0

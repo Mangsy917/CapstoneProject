@@ -755,6 +755,28 @@
                 },
                 {
                     "name": "",
+                    "id": "38558c20-e228-4f34-b29f-172ebf2ca05a",
+                    "path": "<Keyboard>/o",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": ";PC",
+                    "action": "LeftStepSize",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "485e37c0-350b-4286-a3b4-70ed56c5629b",
+                    "path": "<Keyboard>/p",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": ";PC",
+                    "action": "RightStepSize",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
                     "id": "4e119459-e935-47b7-bf06-34b40ab3e655",
                     "path": "<Gamepad>/leftTrigger",
                     "interactions": "",

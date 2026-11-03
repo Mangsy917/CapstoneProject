@@ -45,7 +45,7 @@ public class UIControl : MonoBehaviour
 
     public bool uiLeftPG;
     public bool uiRightPG;
-    // 슬라이더 조정 단위(10% / 1%) 바꾸기 키 (패드 LT / RT, 누른 순간 1프레임만 true)
+    // 슬라이더 조정 단위(10% / 1%) 바꾸기 키 (키보드 O / P, 패드 LT / RT, 누른 순간 1프레임만 true)
     public bool uiLeftStepSize;
     public bool uiRightStepSize;
     public bool uiSelect;
