@@ -64,8 +64,9 @@ public class SettingMenu : MonoBehaviour
         // 팝업이 열려 있으면 입력만 기억하고 메뉴는 움직이지 않음
         if (!SettingPopup.IsAnyOpen)
         {
-            if (up && !prevUp) MoveUp();
-            else if (down && !prevDown) MoveDown();
+            // 길게 눌러 연속 이동 중이면 맨 위/맨 아래에서 멈춤
+            if (up && !prevUp) MoveStep(-1, canWrap: !uiControl.isRepeating);
+            else if (down && !prevDown) MoveStep(1, canWrap: !uiControl.isRepeating);
 
             // 선택된 줄에 스테퍼가 있으면 좌우로 값 변경
             // 오른쪽 = 증가, 왼쪽 = 감소
@@ -158,6 +159,29 @@ public class SettingMenu : MonoBehaviour
         if (!HasButtons()) return;
 
         Move(1);
+        Refresh();
+    }
+
+    // dir 방향으로 한 칸 이동 (canWrap이 false면 끝에서 반대쪽 끝으로 넘어가지 않고 멈춤)
+    private void MoveStep(int dir, bool canWrap)
+    {
+        if (!HasButtons()) return;
+
+        if (!canWrap)
+        {
+            // 끝까지 선택할 수 있는 줄이 없으면 그 자리에 멈춤 (잠긴 줄은 건너뜀)
+            for (int i = selectedIndex + dir; i >= 0 && i < buttons.Length; i += dir)
+            {
+                if (!CanSelect(buttons[i])) continue;
+
+                selectedIndex = i;
+                Refresh();
+                return;
+            }
+            return;
+        }
+
+        Move(dir);
         Refresh();
     }
 

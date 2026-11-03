@@ -224,8 +224,9 @@ namespace Game.UI.Setting
             bool down = KBW_uiControl.uiDown;
             bool select = KBW_uiControl.uiSelect;
 
-            if (up && !_lastUp) MoveHighlight(-1);
-            else if (down && !_lastDown) MoveHighlight(1);
+            // 길게 눌러 연속 이동 중이면 맨 위/맨 아래에서 멈춤
+            if (up && !_lastUp) MoveHighlight(-1, canWrap: !KBW_uiControl.isRepeating);
+            else if (down && !_lastDown) MoveHighlight(1, canWrap: !KBW_uiControl.isRepeating);
 
             if (select && !_lastSelect)
             {
@@ -251,9 +252,13 @@ namespace Game.UI.Setting
             _lastSelect = KBW_uiControl.uiSelect;
         }
 
-        private void MoveHighlight(int direction)
+        // canWrap: 끝에서 반대쪽 끝으로 넘어갈 수 있는지 (false면 끝에서 멈춤)
+        private void MoveHighlight(int direction, bool canWrap = true)
         {
-            _highlightIndex = (_highlightIndex + direction + _menuButtons.Length) % _menuButtons.Length;
+            int next = _highlightIndex + direction;
+            if (!canWrap && (next < 0 || next >= _menuButtons.Length)) return;
+
+            _highlightIndex = (next + _menuButtons.Length) % _menuButtons.Length;
             RefreshHighlight();
         }
 

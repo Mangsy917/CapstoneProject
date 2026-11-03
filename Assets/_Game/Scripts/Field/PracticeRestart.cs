@@ -26,7 +26,7 @@ namespace Game.Field
         [SerializeField] private StartPositionSetting _startPositionSetting;
 
         [Tooltip("재시작한 뒤 컨트롤러 입력을 받지 않는 시간(초). 재시작 순간 누르고 있던 레버나 버튼으로 캐릭터가 바로 움직이지 않게 함")]
-        [SerializeField] private float _inputBlockTime = 0.15f;
+        [SerializeField] private float _inputBlockTime = 0.7f;
 
         private void Awake()
         {

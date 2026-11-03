@@ -81,8 +81,9 @@ public class TitleMenu : MonoBehaviour
             return;
         }
 
-        if (up && !prevUp) Move(-1);
-        else if (down && !prevDown) Move(1);
+        // 길게 눌러 연속 이동 중이면 맨 위/맨 아래에서 멈춤
+        if (up && !prevUp) Move(-1, canWrap: !uiControl.isRepeating);
+        else if (down && !prevDown) Move(1, canWrap: !uiControl.isRepeating);
 
         if (select && !prevSelect) Submit();
         else if (uiControl.uiCancelDown && settingOpen)
@@ -137,12 +138,16 @@ public class TitleMenu : MonoBehaviour
     }
 
     // dir -1: 위, 1: 아래
-    private void Move(int dir)
+    // canWrap: 끝에서 반대쪽 끝으로 넘어갈 수 있는지 (false면 끝에서 멈춤)
+    private void Move(int dir, bool canWrap = true)
     {
         Button[] buttons = CurrentButtons();
         if (buttons.Length == 0) return;
 
-        int index = (CurrentIndex() + dir + buttons.Length) % buttons.Length;
+        int next = CurrentIndex() + dir;
+        if (!canWrap && (next < 0 || next >= buttons.Length)) return;
+
+        int index = (next + buttons.Length) % buttons.Length;
         if (IsSettingOpen()) settingIndex = index;
         else mainIndex = index;
 
