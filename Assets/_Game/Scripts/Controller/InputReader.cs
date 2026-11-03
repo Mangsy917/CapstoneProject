@@ -49,6 +49,15 @@ public class InputReader : MonoBehaviour
     /// <summary>현재 방향을 넘버패드 숫자(1~9)로 표현한 값. 5 = 중립</summary>
     public int Direction { get; private set; } = 5;
 
+    // 이 시각(실제 시간 기준)까지는 모든 입력을 누르지 않은 것으로 처리 (재시작 직후 등)
+    private float blockedUntilTime;
+
+    /// <summary>seconds(초) 동안 모든 입력을 누르지 않은 것으로 처리합니다. (방향은 중립)</summary>
+    public void BlockInput(float seconds)
+    {
+        blockedUntilTime = Mathf.Max(blockedUntilTime, Time.unscaledTime + seconds);
+    }
+
     private void Awake()
     {
         if (inputActions == null)
@@ -94,6 +103,14 @@ public class InputReader : MonoBehaviour
 
     private void ReadAndApply()
     {
+        if (Time.unscaledTime < blockedUntilTime)
+        {
+            UpdateDirectionState(false, false, false, false);
+            UpdateAttackButtonStates(false, false, false, false, false, false, false, false, false);
+            restartDown = false;
+            return;
+        }
+
         bool up = moveUp != null && moveUp.IsPressed();
         bool down = moveDown != null && moveDown.IsPressed();
         bool left = moveLeft != null && moveLeft.IsPressed();

@@ -9,6 +9,21 @@ public class UIControl : MonoBehaviour
     private InputAction Up, Down, Left, Right;
     private InputAction LeftPage, RightPage, Select, Cancel, Close;
 
+    [Header("위/아래 길게 누르기")]
+    [Tooltip("처음 한 칸 이동한 뒤 연속 이동이 시작되기까지 기다리는 시간(초)")]
+    [SerializeField] private float repeatDelay = 0.4f;
+    [Tooltip("연속 이동할 때 한 칸씩 넘어가는 간격(초)")]
+    [SerializeField] private float repeatInterval = 0.08f;
+
+    // 다음에 한 칸 더 넘어갈 시각 (실제 시간 기준, 일시정지나 슬로우와 상관없이 동작)
+    private float nextUpRepeatTime;
+    private float nextDownRepeatTime;
+    // 이전 프레임에 위/아래를 누르고 있었는지
+    private bool wasUpHeld;
+    private bool wasDownHeld;
+
+    // 위/아래는 누른 순간 1프레임 true, 계속 누르고 있으면 repeatDelay 뒤부터 repeatInterval마다 1프레임씩 true
+    // (메뉴는 false -> true로 바뀌는 순간 한 칸 이동하므로, 길게 누르면 주르륵 넘어감)
     public bool uiUp;
     public bool uiDown;
     public bool uiLeft;
@@ -64,8 +79,8 @@ public class UIControl : MonoBehaviour
 
     private void ReadAndApply()
     {
-        bool up = Up != null && Up.IsPressed();
-        bool down = Down != null && Down.IsPressed();
+        bool up = GetRepeatPulse(Up != null && Up.IsPressed(), wasPulsed: uiUp, ref wasUpHeld, ref nextUpRepeatTime);
+        bool down = GetRepeatPulse(Down != null && Down.IsPressed(), wasPulsed: uiDown, ref wasDownHeld, ref nextDownRepeatTime);
         bool left = Left != null && Left.IsPressed();
         bool right = Right != null && Right.IsPressed();
 
@@ -77,6 +92,31 @@ public class UIControl : MonoBehaviour
         bool close = Close != null && Close.WasPressedThisFrame();
 
         UpdateButton(up, down, left, right, leftPage, rightPage, select, cancelDown, close);
+    }
+
+    // 누른 순간 true, 계속 누르면 repeatDelay 뒤부터 repeatInterval마다 한 프레임씩 true, 그 사이는 false
+    // wasPulsed: 이전 프레임에 true를 냈는지 (true 다음 프레임은 꼭 false로 해서 메뉴가 새로 누른 것으로 보게 함)
+    private bool GetRepeatPulse(bool isHeld, bool wasPulsed, ref bool wasHeld, ref float nextRepeatTime)
+    {
+        float now = Time.unscaledTime;
+
+        if (!isHeld)
+        {
+            wasHeld = false;
+            return false;
+        }
+
+        if (!wasHeld)
+        {
+            wasHeld = true;
+            nextRepeatTime = now + repeatDelay;
+            return true;
+        }
+
+        if (wasPulsed || now < nextRepeatTime) return false;
+
+        nextRepeatTime = now + repeatInterval;
+        return true;
     }
 
     private void UpdateButton(bool up, bool down, bool left, bool right,
