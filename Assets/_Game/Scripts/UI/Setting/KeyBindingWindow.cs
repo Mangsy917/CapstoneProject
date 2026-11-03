@@ -86,7 +86,8 @@ namespace Game.UI.Setting
         private int _ignoreInputFrame = -1;
 
         // 누르고 있는 동안 계속 넘어가지 않도록 이전 프레임 입력을 기억
-        private bool _lastUp, _lastDown, _lastSelect;
+        // (위/아래 이동은 UIControl의 Step으로 처리하므로 선택 키만 기억)
+        private bool _lastSelect;
 
         void Awake()
         {
@@ -220,13 +221,11 @@ namespace Game.UI.Setting
                 return;
             }
 
-            bool up = KBW_uiControl.uiUp;
-            bool down = KBW_uiControl.uiDown;
             bool select = KBW_uiControl.uiSelect;
 
             // 길게 눌러 연속 이동 중이면 맨 위/맨 아래에서 멈춤
-            if (up && !_lastUp) MoveHighlight(-1, canWrap: !KBW_uiControl.isRepeating);
-            else if (down && !_lastDown) MoveHighlight(1, canWrap: !KBW_uiControl.isRepeating);
+            if (KBW_uiControl.uiUpStep) MoveHighlight(-1, canWrap: !KBW_uiControl.isRepeating);
+            else if (KBW_uiControl.uiDownStep) MoveHighlight(1, canWrap: !KBW_uiControl.isRepeating);
 
             if (select && !_lastSelect)
             {
@@ -247,8 +246,6 @@ namespace Game.UI.Setting
         {
             if (KBW_uiControl == null) return;
 
-            _lastUp = KBW_uiControl.uiUp;
-            _lastDown = KBW_uiControl.uiDown;
             _lastSelect = KBW_uiControl.uiSelect;
         }
 

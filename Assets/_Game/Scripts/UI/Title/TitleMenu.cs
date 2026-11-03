@@ -31,7 +31,7 @@ public class TitleMenu : MonoBehaviour
     private bool wasSettingOpen;
 
     // 누르고 있는 동안 계속 넘어가지 않도록 이전 프레임 입력을 기억
-    private bool prevUp, prevDown, prevSelect;
+    private bool prevSelect;
 
     void Awake()
     {
@@ -68,22 +68,18 @@ public class TitleMenu : MonoBehaviour
 
         if (uiControl == null) return;
 
-        bool up = uiControl.uiUp;
-        bool down = uiControl.uiDown;
         bool select = uiControl.uiSelect;
 
         // 컨트롤러 설정 팝업이 열려 있으면 입력만 기억하고 메뉴는 움직이지 않음
         if (Game.UI.Setting.KeyBindingWindow.IsOpen)
         {
-            prevUp = up;
-            prevDown = down;
             prevSelect = select;
             return;
         }
 
         // 길게 눌러 연속 이동 중이면 맨 위/맨 아래에서 멈춤
-        if (up && !prevUp) Move(-1, canWrap: !uiControl.isRepeating);
-        else if (down && !prevDown) Move(1, canWrap: !uiControl.isRepeating);
+        if (uiControl.uiUpStep) Move(-1, canWrap: !uiControl.isRepeating);
+        else if (uiControl.uiDownStep) Move(1, canWrap: !uiControl.isRepeating);
 
         if (select && !prevSelect) Submit();
         else if (uiControl.uiCancelDown && settingOpen)
@@ -92,8 +88,6 @@ public class TitleMenu : MonoBehaviour
             PressSettingBackBT();
         }
 
-        prevUp = up;
-        prevDown = down;
         prevSelect = select;
     }
 
