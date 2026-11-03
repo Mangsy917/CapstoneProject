@@ -9,8 +9,7 @@ namespace Game.UI.Setting
     // HUD 위치 조절 화면 (P_OptionWindow 안의 HudPositionEditor)에 붙여서 사용
     // 화면 설정의 "상단 HUD 위치" / "하단 HUD 위치"를 고르면 열림
     // - 옵션 창과 뒤의 설정창을 숨겨서 멈춘 게임 화면이 보이게 하고, 그 위에서 실제 HUD를 위아래로 옮김
-    // - 위/아래 (마우스 휠): HUD를 한 칸씩 옮김 (길게 누르면 연속으로)
-    // - 패드 LT / RT, 키보드 O / P: 한 번에 옮기는 양 바꾸기 (10 / 1)
+    // - 위/아래 (마우스 휠): HUD를 한 칸(위치 값 10)씩 옮김 (길게 누르면 연속으로)
     // - 선택 키 / 마우스 왼쪽 클릭: 확인 (저장), 취소 키 / ESC / 마우스 오른쪽 클릭: 처음 위치로 되돌리고 나감
     // - 위치 조절 중에는 HUD가 꺼져 있어도 보임
     public class HudPositionEditor : MonoBehaviour
@@ -38,16 +37,14 @@ namespace Game.UI.Setting
         [SerializeField] private TMP_Text HPE_guideText;
         [SerializeField] private string _topHudName = "상단 HUD 위치";
         [SerializeField] private string _bottomHudName = "하단 HUD 위치";
-        [SerializeField] private string _guideMessage = "위 / 아래: 이동   LT / RT (O / P): 이동 단위 {0}\n결정: 확인   취소: 되돌리기";
+        [SerializeField] private string _guideMessage = "위 / 아래: 이동\n결정: 확인   취소: 되돌리기";
 
         // 한 번에 옮기는 양 (위치 값 0~100 기준)
-        [SerializeField] private float _bigStep = 10f;
-        [SerializeField] private float _smallStep = 1f;
+        [SerializeField] private float _moveAmount = 10f;
 
         private HudDisplay.HudArea _editingArea;
         private float _startOffset;
         private float _offset;
-        private bool _isSmallStep = true;
 
         // 열 때 키를 아직 누르고 있어도 바로 확인되지 않도록 기억
         private bool HPE_prevSelect;
@@ -77,7 +74,6 @@ namespace Game.UI.Setting
             _editingArea = area;
             _startOffset = DisplaySettings.GetHudOffset(area);
             _offset = _startOffset;
-            _isSmallStep = true;
 
             gameObject.SetActive(true);
         }
@@ -124,16 +120,10 @@ namespace Game.UI.Setting
 
             if (direction != 0)
             {
-                float step = _isSmallStep ? _smallStep : _bigStep;
-                float change = _editingArea == HudDisplay.HudArea.Top ? -direction * step : direction * step;
-                _offset = Mathf.Clamp(_offset + change, 0f, 100f);
+                float change = _editingArea == HudDisplay.HudArea.Top ? -direction * _moveAmount : direction * _moveAmount;
+                // 예전에 1 단위로 저장된 값(예: 37)도 10 단위 눈금(40, 30)으로 맞춰서 옮김
+                _offset = Mathf.Clamp(Mathf.Round((_offset + change) / _moveAmount) * _moveAmount, 0f, 100f);
                 DisplaySettings.PreviewHudOffset(_editingArea, _offset);
-                RefreshGuide();
-            }
-
-            if (HPE_uiControl.uiLeftStepSize || HPE_uiControl.uiRightStepSize)
-            {
-                _isSmallStep = !_isSmallStep;
                 RefreshGuide();
             }
 
@@ -223,8 +213,7 @@ namespace Game.UI.Setting
             if (HPE_guideText == null) return;
 
             string areaName = _editingArea == HudDisplay.HudArea.Top ? _topHudName : _bottomHudName;
-            float step = _isSmallStep ? _smallStep : _bigStep;
-            HPE_guideText.text = areaName + "  " + Mathf.RoundToInt(_offset) + "\n" + string.Format(_guideMessage, step);
+            HPE_guideText.text = areaName + "  " + Mathf.RoundToInt(_offset) + "\n" + _guideMessage;
         }
     }
 }

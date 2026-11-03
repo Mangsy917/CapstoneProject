@@ -8,8 +8,9 @@ namespace Game.UI.Setting
     // 줄의 스테퍼 / 슬라이더를 DisplaySettings 값에 연결함. 값을 바꾸면 바로 적용됨
     // - 상단 HUD / 하단 HUD: OFF, ON 스테퍼 (ON이 1번)
     // - 상단 HUD 위치 / 하단 HUD 위치: 고르면 멈춘 게임 화면에서 HUD를 직접 위아래로 옮김 (HudPositionEditor)
-    //   씬에 그 HUD가 없으면(타이틀 화면, 아직 없는 하단 HUD) 고를 수 없음
-    // - 감마: 0~100 슬라이더
+    //   씬에 그 HUD가 없으면(타이틀 화면) 고를 수 없음
+    // - 하단 HUD는 아직 만드는 중이라 두 줄 모두 "제작 중"만 보임 (프리팹에서 연결하지 않음)
+    // - 감마: -3 ~ +3 슬라이더 (1 단위)
     // - 기본값으로 되돌리기: 모든 값을 처음 값으로 (ResetToDefault)
     public class DisplaySettingPage : MonoBehaviour
     {
@@ -41,7 +42,7 @@ namespace Game.UI.Setting
         {
             if (_topHudStepper != null) _topHudStepper.onValueChanged.AddListener(index => DisplaySettings.IsTopHudVisible = index == OnIndex);
             if (_bottomHudStepper != null) _bottomHudStepper.onValueChanged.AddListener(index => DisplaySettings.IsBottomHudVisible = index == OnIndex);
-            if (_gammaSlider != null) _gammaSlider.onValueChanged.AddListener(value => DisplaySettings.Gamma = value);
+            if (_gammaSlider != null) _gammaSlider.onValueChanged.AddListener(value => DisplaySettings.Gamma = Mathf.RoundToInt(value));
 
             if (_topHudPositionButton != null) _topHudPositionButton.onClick.AddListener(() => EditHudPosition(HudDisplay.HudArea.Top));
             if (_bottomHudPositionButton != null) _bottomHudPositionButton.onClick.AddListener(() => EditHudPosition(HudDisplay.HudArea.Bottom));

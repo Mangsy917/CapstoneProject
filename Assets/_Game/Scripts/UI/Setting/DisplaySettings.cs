@@ -15,10 +15,13 @@ namespace Game.UI.Setting
     {
         // HUD 위치 값(0~100)이 100일 때 화면 안쪽으로 들어가는 거리 (기준 해상도 1920x1080의 픽셀)
         public const float MaxHudOffset = 150f;
-        // 감마 값(0~100)이 0 / 100일 때의 Lift Gamma Gain 감마 세기 (50이 기본, 0)
+        // 감마 값의 범위 (-3 ~ +3, 1 단위, 0이 기본)
+        public const int MaxGamma = 3;
+        // 감마 값이 -3 / +3일 때의 Lift Gamma Gain 감마 세기
         private const float MaxGammaStrength = 0.5f;
 
-        private const string DS_SaveKey = "DisplaySettings";
+        // 감마 범위가 바뀌어서(0~100 -> -3~+3) 예전 저장 값을 읽지 않도록 이름을 바꿈
+        private const string DS_SaveKey = "DisplaySettingsV2";
 
         public static event Action Changed;
 
@@ -26,7 +29,7 @@ namespace Game.UI.Setting
         private static float _topHudOffset;
         private static bool _isBottomHudVisible = true;
         private static float _bottomHudOffset;
-        private static float _gamma = 50f;
+        private static int _gamma;
         private static bool DS_isLoaded;
 
         private static Volume _gammaVolume;
@@ -58,11 +61,11 @@ namespace Game.UI.Setting
             set { LoadOnce(); _bottomHudOffset = Mathf.Clamp(value, 0f, 100f); OnChanged(); }
         }
 
-        // 0~100 (50: 기본, 작을수록 어둡게, 클수록 밝게)
-        public static float Gamma
+        // -3 ~ +3 (0: 기본, 작을수록 어둡게, 클수록 밝게)
+        public static int Gamma
         {
             get { LoadOnce(); return _gamma; }
-            set { LoadOnce(); _gamma = Mathf.Clamp(value, 0f, 100f); OnChanged(); }
+            set { LoadOnce(); _gamma = Mathf.Clamp(value, -MaxGamma, MaxGamma); OnChanged(); }
         }
 
         // 지금 위치를 조절하고 있는 HUD (없으면 null). 조절하는 동안에는 HUD가 꺼져 있어도 보임
@@ -96,7 +99,7 @@ namespace Game.UI.Setting
             else BottomHudOffset = offset;
         }
 
-        // 모든 값을 처음 값으로 되돌림 (HUD 보이기, 위치 0, 감마 50)
+        // 모든 값을 처음 값으로 되돌림 (HUD 보이기, 위치 0, 감마 0)
         public static void ResetToDefault()
         {
             LoadOnce();
@@ -104,7 +107,7 @@ namespace Game.UI.Setting
             _topHudOffset = 0f;
             _isBottomHudVisible = true;
             _bottomHudOffset = 0f;
-            _gamma = 50f;
+            _gamma = 0;
             OnChanged();
         }
 
@@ -116,7 +119,7 @@ namespace Game.UI.Setting
             _topHudOffset = 0f;
             _isBottomHudVisible = true;
             _bottomHudOffset = 0f;
-            _gamma = 50f;
+            _gamma = 0;
             _editingHudArea = null;
             DS_isLoaded = false;
             _gammaVolume = null;
@@ -156,7 +159,7 @@ namespace Game.UI.Setting
                 _gammaVolume.sharedProfile = profile;
             }
 
-            float strength = (_gamma - 50f) / 50f * MaxGammaStrength;
+            float strength = (float)_gamma / MaxGamma * MaxGammaStrength;
             _liftGammaGain.gamma.value = new Vector4(1f, 1f, 1f, strength);
             _liftGammaGain.gamma.overrideState = true;
         }
@@ -176,7 +179,7 @@ namespace Game.UI.Setting
             float.TryParse(values[1], System.Globalization.NumberStyles.Float, culture, out _topHudOffset);
             _isBottomHudVisible = values[2] == "1";
             float.TryParse(values[3], System.Globalization.NumberStyles.Float, culture, out _bottomHudOffset);
-            if (!float.TryParse(values[4], System.Globalization.NumberStyles.Float, culture, out _gamma)) _gamma = 50f;
+            if (int.TryParse(values[4], System.Globalization.NumberStyles.Integer, culture, out int gamma)) _gamma = Mathf.Clamp(gamma, -MaxGamma, MaxGamma);
 #endif
         }
 
