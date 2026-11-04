@@ -11,12 +11,14 @@ namespace Game.UI.Setting
     //   씬에 그 HUD가 없으면(타이틀 화면) 고를 수 없음
     // - 하단 HUD는 아직 만드는 중이라 두 줄 모두 "제작 중"만 보임 (프리팹에서 연결하지 않음)
     // - 감마: -3 ~ +3 슬라이더 (1 단위)
+    // - FPS 표시: OFF, ON 스테퍼 (켜면 화면 왼쪽 위에 지금 FPS가 보임, FrameRateDisplay)
     // - 기본값으로 되돌리기: 모든 값을 처음 값으로 (ResetToDefault)
     public class DisplaySettingPage : MonoBehaviour
     {
         [SerializeField] private SettingStepper _topHudStepper;
         [SerializeField] private SettingStepper _bottomHudStepper;
         [SerializeField] private SettingSliderStepper _gammaSlider;
+        [SerializeField] private SettingStepper _frameRateStepper;
 
         [Header("HUD 위치 조절")]
         [SerializeField] private HudPositionEditor _hudPositionEditor;
@@ -43,6 +45,7 @@ namespace Game.UI.Setting
             if (_topHudStepper != null) _topHudStepper.onValueChanged.AddListener(index => DisplaySettings.IsTopHudVisible = index == OnIndex);
             if (_bottomHudStepper != null) _bottomHudStepper.onValueChanged.AddListener(index => DisplaySettings.IsBottomHudVisible = index == OnIndex);
             if (_gammaSlider != null) _gammaSlider.onValueChanged.AddListener(value => DisplaySettings.Gamma = Mathf.RoundToInt(value));
+            if (_frameRateStepper != null) _frameRateStepper.onValueChanged.AddListener(index => DisplaySettings.IsFrameRateVisible = index == OnIndex);
 
             if (_topHudPositionButton != null) _topHudPositionButton.onClick.AddListener(() => EditHudPosition(HudDisplay.HudArea.Top));
             if (_bottomHudPositionButton != null) _bottomHudPositionButton.onClick.AddListener(() => EditHudPosition(HudDisplay.HudArea.Bottom));
@@ -83,6 +86,7 @@ namespace Game.UI.Setting
             if (_topHudStepper != null) _topHudStepper.SetOptions(_topHudStepper.options, DisplaySettings.IsTopHudVisible ? OnIndex : 0);
             if (_bottomHudStepper != null) _bottomHudStepper.SetOptions(_bottomHudStepper.options, DisplaySettings.IsBottomHudVisible ? OnIndex : 0);
             if (_gammaSlider != null) _gammaSlider.SetSavedValue(DisplaySettings.Gamma);
+            if (_frameRateStepper != null) _frameRateStepper.SetOptions(_frameRateStepper.options, DisplaySettings.IsFrameRateVisible ? OnIndex : 0);
             ShowHudPositions();
         }
 

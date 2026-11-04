@@ -5,7 +5,7 @@ using UnityEngine.Rendering.Universal;
 
 namespace Game.UI.Setting
 {
-    // 옵션의 화면 설정 값 (상단 / 하단 HUD 보이기와 위치, 감마)
+    // 옵션의 화면 설정 값 (상단 / 하단 HUD 보이기와 위치, 감마, FPS 표시)
     // - 씬이 바뀌어도 유지되고, 빌드에서는 PlayerPrefs에 저장해서 껐다 켜도 유지됨
     //   (에디터 플레이 모드에서는 저장하지 않음, 키 설정과 같은 규칙)
     // - HUD는 각 HUD 오브젝트의 HudDisplay가 Changed를 받아서 맞춤
@@ -30,6 +30,7 @@ namespace Game.UI.Setting
         private static bool _isBottomHudVisible = true;
         private static float _bottomHudOffset;
         private static int _gamma;
+        private static bool _isFrameRateVisible;
         private static bool DS_isLoaded;
 
         private static Volume _gammaVolume;
@@ -68,6 +69,13 @@ namespace Game.UI.Setting
             set { LoadOnce(); _gamma = Mathf.Clamp(value, -MaxGamma, MaxGamma); OnChanged(); }
         }
 
+        // 화면 왼쪽 위에 지금 FPS를 보여줄지 (FrameRateDisplay)
+        public static bool IsFrameRateVisible
+        {
+            get { LoadOnce(); return _isFrameRateVisible; }
+            set { LoadOnce(); _isFrameRateVisible = value; OnChanged(); }
+        }
+
         // 지금 위치를 조절하고 있는 HUD (없으면 null). 조절하는 동안에는 HUD가 꺼져 있어도 보임
         private static HudDisplay.HudArea? _editingHudArea;
 
@@ -99,7 +107,7 @@ namespace Game.UI.Setting
             else BottomHudOffset = offset;
         }
 
-        // 모든 값을 처음 값으로 되돌림 (HUD 보이기, 위치 0, 감마 0)
+        // 모든 값을 처음 값으로 되돌림 (HUD 보이기, 위치 0, 감마 0, FPS 표시 끄기)
         public static void ResetToDefault()
         {
             LoadOnce();
@@ -108,6 +116,7 @@ namespace Game.UI.Setting
             _isBottomHudVisible = true;
             _bottomHudOffset = 0f;
             _gamma = 0;
+            _isFrameRateVisible = false;
             OnChanged();
         }
 
@@ -120,6 +129,7 @@ namespace Game.UI.Setting
             _isBottomHudVisible = true;
             _bottomHudOffset = 0f;
             _gamma = 0;
+            _isFrameRateVisible = false;
             _editingHudArea = null;
             DS_isLoaded = false;
             _gammaVolume = null;
@@ -170,9 +180,10 @@ namespace Game.UI.Setting
             DS_isLoaded = true;
 
 #if !UNITY_EDITOR
-            // 저장 형식: "상단 보이기|상단 위치|하단 보이기|하단 위치|감마"
+            // 저장 형식: "상단 보이기|상단 위치|하단 보이기|하단 위치|감마|FPS 표시"
+            // FPS 표시가 생기기 전에 저장한 값(5칸)도 그대로 읽음
             string[] values = PlayerPrefs.GetString(DS_SaveKey, "").Split('|');
-            if (values.Length != 5) return;
+            if (values.Length < 5) return;
 
             var culture = System.Globalization.CultureInfo.InvariantCulture;
             _isTopHudVisible = values[0] == "1";
@@ -180,6 +191,7 @@ namespace Game.UI.Setting
             _isBottomHudVisible = values[2] == "1";
             float.TryParse(values[3], System.Globalization.NumberStyles.Float, culture, out _bottomHudOffset);
             if (int.TryParse(values[4], System.Globalization.NumberStyles.Integer, culture, out int gamma)) _gamma = Mathf.Clamp(gamma, -MaxGamma, MaxGamma);
+            _isFrameRateVisible = values.Length > 5 && values[5] == "1";
 #endif
         }
 
@@ -192,7 +204,8 @@ namespace Game.UI.Setting
                 _topHudOffset.ToString(culture),
                 _isBottomHudVisible ? "1" : "0",
                 _bottomHudOffset.ToString(culture),
-                _gamma.ToString(culture));
+                _gamma.ToString(culture),
+                _isFrameRateVisible ? "1" : "0");
             PlayerPrefs.SetString(DS_SaveKey, saved);
             PlayerPrefs.Save();
 #endif
