@@ -589,9 +589,10 @@ namespace Game.Character
         [ShowIf(nameof(_isLaunchAttack))]
         [SerializeField] private bool _holdUntilLanding = false;
 
-        [Header("체인 캔슬")]
-        [Tooltip("이 공격이 상대에게 닿은 뒤(히트 또는 가드) 끝나기 전에 입력하면 바로 이어서 낼 수 있는 공격 (예: 약 -> 약, 2L)\n" +
-                 "횟수 제한은 없고, 밀려난 상대에게 공격이 닿지 않으면 체인도 끊김")]
+        [Header("캔슬")]
+        [Tooltip("이 공격이 상대에게 닿았을 때(히트 또는 가드) 캔슬해서 낼 수 있는 공격 (예: 약 -> 약, 2L, 236). 비워두면 캔슬되지 않음\n" +
+                 "지속이 끝나고 회수 프레임에 들어갈 때 회수 대신 새 공격이 시작됨. 헛치면 캔슬되지 않음\n" +
+                 "횟수 제한은 없고, 밀려난 상대에게 공격이 닿지 않으면 연타도 끊김")]
         [SerializeField] private AttackData[] _chainAttacks = new AttackData[0];
 
         [Header("착지 경직")]

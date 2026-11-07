@@ -252,13 +252,19 @@ namespace Game.Character
         }
 
         // 지금 이 커맨드의 공격을 시작할 수 있는지
-        // 공격 중이면 이번 공격이 상대에게 닿았고(히트 또는 가드) 체인 목록에 있는 공격일 때만 가능
+        // 공격 중이면 캔슬할 수 있을 때만 가능: 캔슬 목록에 있는 공격이고, 다음 프레임이 회수 프레임일 때 (지속이 끝나고 회수 대신 새 공격이 시작됨)
         private bool CanStartCommand(CharacterCommand.CommandData command)
         {
             if (!CanUseCommand(command)) return false;
             if (CA_hitReaction != null && CA_hitReaction.IsInStun) return false;
             if (!IsAttacking) return true;
-            return _lastHitIndex >= 0 && !IsLanding && CurrentAttack.CanChainTo(command.attack);
+            return CanCancelInto(command.attack) && CurrentFrames.GetFrameType(AttackFrame + 1) == FrameType.Recovery;
+        }
+
+        // 이번 공격이 상대에게 닿았고(히트 또는 가드) 캔슬 목록에 attack이 있는지
+        private bool CanCancelInto(AttackData attack)
+        {
+            return IsAttacking && !IsLanding && _lastHitIndex >= 0 && CurrentAttack.CanChainTo(attack);
         }
 
         // 기억해 둔 입력을 낼 수 있으면 냄. 히트스톱 중에는 불리지 않으므로 멈춘 동안에는 기억하는 시간이 줄지 않음
@@ -267,8 +273,6 @@ namespace Game.Character
             if (_bufferedCommand == null) return;
 
             CharacterCommand.CommandData command = _bufferedCommand;
-            _bufferedFramesLeft--;
-            if (_bufferedFramesLeft <= 0) _bufferedCommand = null;
 
             // 기억하는 동안 땅 / 공중 상태가 바뀌어 쓸 수 없게 된 커맨드는 버림
             bool isGrounded = IsGrounded();
@@ -280,10 +284,18 @@ namespace Game.Character
                 return;
             }
 
-            if (!CanStartCommand(command)) return;
+            if (CanStartCommand(command))
+            {
+                _bufferedCommand = null;
+                StartAttack(command.attack, _bufferedButton);
+                return;
+            }
 
-            _bufferedCommand = null;
-            StartAttack(command.attack, _bufferedButton);
+            // 캔슬할 수 있는 입력은 지속이 끝나 회수에 들어갈 때까지 기다림 (지속이 긴 기술에서 입력이 사라지지 않도록)
+            if (CanCancelInto(command.attack)) return;
+
+            _bufferedFramesLeft--;
+            if (_bufferedFramesLeft <= 0) _bufferedCommand = null;
         }
 
         /// <summary>attack을 시작함. 발생 / 지속 / 회수 프레임은 button에 맞춘 값을 씀 (AttackData의 버튼별 프레임)</summary>

@@ -44,6 +44,10 @@ MonoBehaviour:
   _chainAttacks:
   - {fileID: 11400000, guid: 6476ccdde7006f641883c327f100e8ac, type: 2}
   - {fileID: 11400000, guid: 3d996900fbbcc79438c766d5df8a9008, type: 2}
+  - {fileID: 11400000, guid: 288798401c1844e4f8c17ae8eb4bbc7b, type: 2}
+  - {fileID: 11400000, guid: 8c80e6c56f25c0f4e9efd450eb944575, type: 2}
+  - {fileID: 11400000, guid: cc8e5e457240f8b4eac342269cca70ce, type: 2}
+  - {fileID: 11400000, guid: 4b918e69514e5fe4cae6ba0c42854600, type: 2}
   _isLaunchAttack: 0
   _launchFrame: 0
   _shouldLaunchAtStartup: 0
