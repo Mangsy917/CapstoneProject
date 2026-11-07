@@ -41,7 +41,7 @@ MonoBehaviour:
   - _frameType: 1
     AD_frameCount: 1
   - _frameType: 2
-    AD_frameCount: 32
+    AD_frameCount: 33
   _buttonFrames:
   - _button: 1
     _frames:
@@ -50,7 +50,7 @@ MonoBehaviour:
     - _frameType: 1
       AD_frameCount: 1
     - _frameType: 2
-      AD_frameCount: 30
+      AD_frameCount: 31
     AD_damage: 700
     _projectileDistancePerFrame: 0.055
     AD_attackBoxSize: {x: 0, y: 0}
@@ -66,7 +66,7 @@ MonoBehaviour:
     - _frameType: 1
       AD_frameCount: 1
     - _frameType: 2
-      AD_frameCount: 32
+      AD_frameCount: 33
     AD_damage: 700
     _projectileDistancePerFrame: 0.07
     AD_attackBoxSize: {x: 0, y: 0}
@@ -82,7 +82,7 @@ MonoBehaviour:
     - _frameType: 1
       AD_frameCount: 1
     - _frameType: 2
-      AD_frameCount: 34
+      AD_frameCount: 35
     AD_damage: 700
     _projectileDistancePerFrame: 0.085
     AD_attackBoxSize: {x: 0, y: 0}
@@ -98,7 +98,7 @@ MonoBehaviour:
     - _frameType: 1
       AD_frameCount: 1
     - _frameType: 2
-      AD_frameCount: 27
+      AD_frameCount: 28
     AD_damage: 1000
     _projectileDistancePerFrame: 0.112
     AD_attackBoxSize: {x: 0, y: 0}

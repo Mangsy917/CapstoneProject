@@ -83,6 +83,10 @@ namespace Game.Character
         private void Update()
         {
             if (!Game.Field.GameSpeed.IsTickFrame) return;
+
+            // 히트스톱 중에는 기록을 지우기까지의 프레임을 세지 않음
+            if (HitStop.IsStoppedNow(this)) return;
+
             if (DG_hitReaction != null && DG_hitReaction.IsInStun) return;
 
             _idleFrames++;

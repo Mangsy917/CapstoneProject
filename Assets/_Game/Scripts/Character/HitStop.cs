@@ -5,7 +5,9 @@ namespace Game.Character
 {
     // 공격이 맞았을 때 때린 쪽과 맞은 쪽의 움직임을 잠깐 멈춤 (히트스톱, 타격감용)
     // - 게임 시간(Time.timeScale)은 그대로 흐르고, 멈춘 캐릭터만 프레임 진행을 건너뜀
-    //   이동(CharacterMove, DummyAction), 공격 프레임(CharacterAttack), 경직 / 히트백(CharacterHitReaction), 애니메이션(CharacterAnimationPlayer)이 IsStopped를 확인
+    //   이동(CharacterMove, DummyAction), 공격 프레임(CharacterAttack), 경직 / 히트백(CharacterHitReaction), 애니메이션(CharacterAnimationPlayer),
+    //   체력 회복 대기(CharacterHealth), 가드 기록 대기(DummyGuard)가 IsStopped를 확인
+    // - 입력 기록(CharacterCommand, InputHistoryDisplay)은 실제 입력을 놓치지 않도록 멈추지 않음
     // - 맞은 쪽의 피격 경직은 멈춘 동안 줄지 않고, 멈춤이 풀린 프레임부터 줄어듦
     // - 맞은 프레임에는 그대로 진행하고, 다음 프레임부터 정한 프레임 수만큼 멈춤
     // - 캐릭터에 미리 붙여두지 않아도 처음 맞을 때 자동으로 붙음

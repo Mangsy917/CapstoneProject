@@ -89,6 +89,10 @@ namespace Game.Character
         {
             // 설정창이 열려 멈춰 있거나 슬로우 모션 중에 건너뛰는 프레임에는 회복하지 않음
             if (!Game.Field.GameSpeed.IsTickFrame) return;
+
+            // 히트스톱 중에는 회복 대기 프레임을 세지 않고 회복하지도 않음
+            if (HitStop.IsStoppedNow(this)) return;
+
             if (_healthMode != HealthMode.AutoRecover) return;
 
             // 체력이 0이면 KO 연출 중이므로 회복하지 않음
