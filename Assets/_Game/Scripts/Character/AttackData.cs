@@ -660,10 +660,15 @@ namespace Game.Character
         // 그 타의 지속 첫 프레임(투사체 공격이면 투사체가 가장 빨리 맞힐 수 있는 프레임)에 맞았을 때 "남은 공격 프레임 + 유리 프레임"이 되는 경직 프레임 수
         // - 다단 공격은 어느 타에 맞아도 공격이 끝난 뒤 같은 유리 프레임이 되도록, 맞은 타 기준으로 남은 프레임을 셈
         // - 공격은 전체 프레임이 지난 다음 프레임에 끝나서(CharacterAttack) 그 프레임까지 움직일 수 없으므로 1프레임을 더함
-        // - 착지 경직이 있는 공격(승룡권, 점프 공격)은 위키 값이 착지 경직까지 포함한 값이므로 착지 경직도 더함
+        // - 착지 경직이 있는 공격(승룡권)은 위키 값이 착지 경직까지 포함한 값이므로 착지 경직도 더함
+        // - 점프 공격은 언제 착지할지 정해져 있지 않음. 위키 값(4~9의 큰 쪽)은 착지 직전에 맞았을 때 기준이라
+        //   남은 공격 프레임은 세지 않고 착지 경직 + 1 + 유리 프레임으로 정함 (점프 약 공격: 3 + 1 + 9 = 13, 위키의 피격 경직과 같음)
         // - 투사체는 나온 다음 프레임부터 날아가며 맞히므로, 바로 앞에서 맞으면 나온 프레임 + 1에 맞음 (위키 값은 바로 앞 기준)
         private int GetStunFrames(CharacterCommand.AttackButtonType button, int advantage, int hitIndex)
         {
+            bool isJumpAttack = _holdUntilLanding && !_isLaunchAttack;
+            if (isJumpAttack) return Mathf.Max(1, _landingRecoveryFrames + 1 + advantage);
+
             AttackFrames frames = GetFrames(button);
             hitIndex = Mathf.Clamp(hitIndex, 0, frames.AD_HitCount - 1);
             int hitFrame = ProjectilePrefab != null ? GetProjectileSpawnFrame(frames) + 1 : frames.GetFirstActiveFrame(hitIndex);
