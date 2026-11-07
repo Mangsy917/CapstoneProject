@@ -21,6 +21,7 @@ MonoBehaviour:
   _hitAdvantage: 4
   _hitBackDistance: 0.5
   _hitBackFrames: 8
+  _hitStopFrames: 13
   _hitMotion: 1
   _blockAdvantage: -2
   _guardBackDistance: 0.4

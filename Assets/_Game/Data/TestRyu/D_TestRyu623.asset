@@ -21,7 +21,7 @@ MonoBehaviour:
   _hitAdvantage: 34
   _hitBackDistance: 0.5
   _hitBackFrames: 8
-  _hitStopFrames: 6
+  _hitStopFrames: 15
   _hitMotion: 5
   _blockAdvantage: -32
   _guardBackDistance: 0.4
@@ -73,6 +73,7 @@ MonoBehaviour:
     _shouldOverrideAdvantage: 1
     _hitAdvantage: 38
     _blockAdvantage: -23
+    AD_hitStopFrames: 15
   - _button: 2
     _frames:
     - _frameType: 0
@@ -89,6 +90,7 @@ MonoBehaviour:
     _shouldOverrideAdvantage: 1
     _hitAdvantage: 34
     _blockAdvantage: -32
+    AD_hitStopFrames: 15
   - _button: 4
     _frames:
     - _frameType: 0
@@ -105,6 +107,7 @@ MonoBehaviour:
     _shouldOverrideAdvantage: 1
     _hitAdvantage: 37
     _blockAdvantage: -39
+    AD_hitStopFrames: 20
   - _button: 8
     _frames:
     - _frameType: 0
@@ -121,6 +124,7 @@ MonoBehaviour:
     _shouldOverrideAdvantage: 1
     _hitAdvantage: 29
     _blockAdvantage: -40
+    AD_hitStopFrames: 20
   _traitWindows: []
   _isLaunchAttack: 1
   _launchFrame: 3

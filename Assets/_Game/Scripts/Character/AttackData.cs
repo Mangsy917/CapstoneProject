@@ -456,7 +456,11 @@ namespace Game.Character
             [Tooltip("이 버튼으로 나갔을 때의 가드 시 유리 프레임 (위키의 Block 값)")]
             [SerializeField] private int _blockAdvantage = 0;
 
+            [Tooltip("이 버튼으로 나갔을 때의 히트스톱 프레임 수. 0이면 기술의 히트스톱 사용")]
+            [SerializeField] private int AD_hitStopFrames = 0;
+
             public CharacterCommand.AttackButtonType Button => _button;
+            public int AD_HitStopFrames => AD_hitStopFrames;
             public bool ShouldOverrideAdvantage => _shouldOverrideAdvantage;
             public int HitAdvantage => _hitAdvantage;
             public int BlockAdvantage => _blockAdvantage;
@@ -472,6 +476,7 @@ namespace Game.Character
             public void Validate()
             {
                 if (AD_damage < 0) AD_damage = 0;
+                if (AD_hitStopFrames < 0) AD_hitStopFrames = 0;
                 if (_projectileDistancePerFrame < 0f) _projectileDistancePerFrame = 0f;
                 if (AD_attackBoxSize.x < 0f) AD_attackBoxSize.x = 0f;
                 if (AD_attackBoxSize.y < 0f) AD_attackBoxSize.y = 0f;
@@ -675,6 +680,13 @@ namespace Game.Character
             return Mathf.Max(1, frames.TotalFrames - hitFrame + 1 + _landingRecoveryFrames + advantage);
         }
 
+        /// <summary>이 버튼으로 나간 공격의 히트스톱 프레임 수 (버튼별 값이 0이면 기술의 값)</summary>
+        public int GetHitStopFrames(CharacterCommand.AttackButtonType button)
+        {
+            ButtonFrames buttonFrames = FindButtonFrames(button);
+            return buttonFrames != null && buttonFrames.AD_HitStopFrames > 0 ? buttonFrames.AD_HitStopFrames : _hitStopFrames;
+        }
+
         /// <summary>이 버튼으로 나간 공격의 hitIndex번째 타(1타 = 0)가 맞았을 때(또는 가드됐을 때) 상대에게 줄 정보</summary>
         public HitInfo GetHitInfo(CharacterCommand.AttackButtonType button, int hitIndex = 0)
         {
@@ -682,7 +694,7 @@ namespace Game.Character
                 hitStunFrames: GetHitStunFrames(button, hitIndex), hitBackDistance: _hitBackDistance, hitBackFrames: _hitBackFrames,
                 blockStunFrames: GetBlockStunFrames(button, hitIndex), guardBackDistance: _guardBackDistance, guardBackFrames: _guardBackFrames,
                 height: _height, motion: _hitMotion, isThrow: HasTrait(AttackTrait.Throw),
-                hitStopFrames: _hitStopFrames,
+                hitStopFrames: GetHitStopFrames(button),
                 normalHitResult: _normalHitResult, counterHitResult: _counterHitResult, punishCounterResult: _punishCounterResult);
         }
 
