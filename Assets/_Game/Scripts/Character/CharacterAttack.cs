@@ -78,6 +78,7 @@ namespace Game.Character
         private int _bufferedFramesLeft;
 
         private int _attackStartedFrame = -1; // 마지막으로 공격을 시작한 Time.frameCount
+        private CharacterHitReaction _lastHitReaction; // 이번 공격이 닿은 상대 (캔슬할 때 경직을 늘리는 데 사용)
 
         private void Awake()
         {
@@ -216,6 +217,7 @@ namespace Game.Character
                 if (hitbox == null) continue;
 
                 _lastHitIndex = hitIndex;
+                _lastHitReaction = opponent.GetComponent<CharacterHitReaction>();
                 CharacterHitReaction.HitTarget(opponent, attack.GetDamage(_currentButton, hitIndex), attack.GetHitInfo(_currentButton, hitIndex), hitbox, direction: facingSign, attacker: this, shouldPushAttacker: true);
                 return;
             }
@@ -267,6 +269,19 @@ namespace Game.Character
             return IsAttacking && !IsLanding && _lastHitIndex >= 0 && CurrentAttack.CanChainTo(attack);
         }
 
+        // 이번 프레임에 시작한 attack이 target에게 닿기까지 target의 경직이 남아 있어야 하는 프레임 수
+        // 맞으면 새 기술의 경직으로 바뀌므로, 투사체는 판정 크기를 빼지 않고 넉넉하게 계산함 (어차피 그 전에 맞으면 덮어씀)
+        private int GetFramesUntilHit(AttackData attack, CharacterCommand.AttackButtonType button, Transform target)
+        {
+            AttackFrames frames = attack.GetFrames(button);
+            if (attack.ProjectilePrefab == null) return frames.FirstActiveFrame;
+
+            float speed = attack.GetProjectileDistancePerFrame(button);
+            float distance = Mathf.Abs(target.position.x - transform.position.x) - attack.ProjectileSpawnOffset.x;
+            int travelFrames = speed > 0f ? Mathf.CeilToInt(Mathf.Max(0f, distance) / speed) : 0;
+            return attack.GetProjectileSpawnFrame(frames) + travelFrames + 1; // 투사체는 나온 다음 프레임부터 움직이며 맞힘
+        }
+
         // 기억해 둔 입력을 낼 수 있으면 냄. 히트스톱 중에는 불리지 않으므로 멈춘 동안에는 기억하는 시간이 줄지 않음
         private void TryStartBufferedCommand()
         {
@@ -291,8 +306,9 @@ namespace Game.Character
                 return;
             }
 
-            // 캔슬할 수 있는 입력은 지속이 끝나 회수에 들어갈 때까지 기다림 (지속이 긴 기술에서 입력이 사라지지 않도록)
-            if (CanCancelInto(command.attack)) return;
+            // 이번 공격이 상대에게 닿았으면 공격이 끝날 때까지 입력을 계속 기억함
+            // (캔슬할 수 있으면 회수에 들어갈 때, 아니면 공격이 끝난 뒤 첫 프레임에 나감. 회수가 긴 기술 뒤에 잇는 기술이 사라지지 않도록)
+            if (IsAttacking && !IsLanding && _lastHitIndex >= 0) return;
 
             _bufferedFramesLeft--;
             if (_bufferedFramesLeft <= 0) _bufferedCommand = null;
@@ -301,12 +317,17 @@ namespace Game.Character
         /// <summary>attack을 시작함. 발생 / 지속 / 회수 프레임은 button에 맞춘 값을 씀 (AttackData의 버튼별 프레임)</summary>
         public void StartAttack(AttackData attack, CharacterCommand.AttackButtonType button)
         {
+            // 캔슬이면 맞고 있는 상대를 기억해 둠 (아래에서 값을 지우기 전에)
+            CharacterHitReaction cancelledTarget = CanCancelInto(attack) ? _lastHitReaction : null;
+
             _attackStartedFrame = Time.frameCount;
             _bufferedCommand = null;
+            _lastHitReaction = null;
             CurrentAttack = attack;
             CurrentFrames = attack.GetFrames(button);
             _currentButton = button;
             AttackFrame = 0; // 이번 프레임 Update에서 1이 됨
+            if (cancelledTarget != null) cancelledTarget.ExtendHitStun(GetFramesUntilHit(attack, button, cancelledTarget.transform));
             _isAirAttack = !IsGrounded();
             _lastHitIndex = -1;
             _pendingLandingAttack = null; // 공중에서 다시 공격하면 새 공격의 착지 경직을 따름

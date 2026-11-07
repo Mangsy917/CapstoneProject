@@ -261,6 +261,15 @@ namespace Game.Character
             if (health != null) health.TakeDamage(Mathf.RoundToInt(damage * info.GetDamageRate(hitType)), attacker: attacker);
         }
 
+        /// <summary>
+        /// 피격 경직 중이면 경직이 최소 minFrames 남도록 늘림 (가드 중이거나 경직이 아니면 그대로)
+        /// 맞은 기술을 캔슬해서 낸 기술이 이어서 맞도록 CharacterAttack이 호출
+        /// </summary>
+        public void ExtendHitStun(int minFrames)
+        {
+            if (HitStunFramesLeft > 0) HitStunFramesLeft = Mathf.Max(HitStunFramesLeft, minFrames);
+        }
+
         private static void SetCounterState(CharactorState state, HitType hitType)
         {
             switch (hitType)

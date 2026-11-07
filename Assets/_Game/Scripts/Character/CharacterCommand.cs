@@ -319,6 +319,7 @@ namespace Game.Character
         // 버퍼를 최신 → 과거 순으로 읽으며, 커맨드의 방향을 뒤에서부터 순서대로 찾는다.
         // 방향을 "새로 누른 프레임"(직전 프레임과 방향이 다른 프레임)만 보므로,
         // 같은 방향을 누르고 있는 동안은 한 번의 입력으로 취급한다. (22는 2를 두 번 눌러야 함)
+        // 단, 첫 방향은 누르고 있던 마지막 프레임으로 판정한다. (2M을 앉은 채로 치고 3, 6으로 굴려도 236이 되도록)
         private bool IsMotionInBuffer(CommandData command)
         {
             int[] motion = command.directionSequence;
@@ -329,7 +330,7 @@ namespace Game.Character
             for (int i = _inputBuffer.Count - 1; i >= 1 && motionIndex >= 0; i--)
             {
                 BufferedInput entry = _inputBuffer[i];
-                if (entry.direction == _inputBuffer[i - 1].direction) continue;
+                if (motionIndex > 0 && entry.direction == _inputBuffer[i - 1].direction) continue;
                 if (entry.direction != motion[motionIndex]) continue; // 스쳐 지나가는 방향은 건너뜀
 
                 // 직전에 매칭된 시점(버튼 입력 또는 다음 방향)과의 프레임 차가
