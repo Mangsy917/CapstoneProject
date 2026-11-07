@@ -70,7 +70,7 @@ namespace Game.Character
         private AttackData _pendingLandingAttack;
 
         [Tooltip("지금 낼 수 없는 입력을 기억해 두는 프레임 수 (입력 버퍼). 히트스톱 중에는 줄지 않음")]
-        [SerializeField] private int _inputBufferFrames = 4;
+        [SerializeField] private int _inputBufferFrames = 6;
 
         // 기억해 둔 입력 (없으면 null)
         private CharacterCommand.CommandData _bufferedCommand;
@@ -79,6 +79,7 @@ namespace Game.Character
 
         private int _attackStartedFrame = -1; // 마지막으로 공격을 시작한 Time.frameCount
         private CharacterHitReaction _lastHitReaction; // 이번 공격이 닿은 상대 (캔슬할 때 경직을 늘리는 데 사용)
+        private CharacterHitReaction _chainTarget; // 이번 공격이 캔슬로 나왔을 때 앞 공격이 닿은 상대 (캔슬로 나온 공격이 아니면 null)
 
         private void Awake()
         {
@@ -248,6 +249,13 @@ namespace Game.Character
 
             if (command.requireAllButtons) return;
 
+            // 버튼을 먼저 누른 커맨드는 캔슬로 이어지는 중일 때만 기억함 (평소에는 먼저 나간 기본기 뒤에 뒤늦게 나가지 않도록)
+            bool isConnected = IsAttacking && !IsLanding && (_lastHitIndex >= 0 || _chainTarget != null);
+            if (_characterCommand.IsLateMotionCheck && !isConnected) return;
+
+            // 기억 중인 방향 커맨드는 연타한 기본기로 덮어쓰지 않음
+            if (_bufferedCommand != null && HasMotion(_bufferedCommand) && !HasMotion(command)) return;
+
             _bufferedCommand = command;
             _bufferedButton = button;
             _bufferedFramesLeft = _inputBufferFrames;
@@ -260,7 +268,21 @@ namespace Game.Character
             if (!CanUseCommand(command)) return false;
             if (CA_hitReaction != null && CA_hitReaction.IsInStun) return false;
             if (!IsAttacking) return true;
-            return CanCancelInto(command.attack) && CurrentFrames.GetFrameType(AttackFrame + 1) == FrameType.Recovery;
+            if (CanCancelInto(command.attack)) return CurrentFrames.GetFrameType(AttackFrame + 1) == FrameType.Recovery;
+            return HasMotion(command) && CanReplaceChainedStartup(command.attack);
+        }
+
+        private static bool HasMotion(CharacterCommand.CommandData command)
+        {
+            return command.directionSequence != null && command.directionSequence.Length > 0;
+        }
+
+        // 캔슬로 나간 공격의 발생 중에는 다른 공격으로 바꿀 수 있음
+        // (연타로 먼저 나간 약 때문에 커맨드가 빠지지 않도록. 약이 닿기 전이라 회수를 기다릴 수 없음)
+        private bool CanReplaceChainedStartup(AttackData attack)
+        {
+            return IsAttacking && !IsLanding && _chainTarget != null &&
+                   AttackFrame + 1 < CurrentFrames.FirstActiveFrame && CurrentAttack.CanChainTo(attack);
         }
 
         // 이번 공격이 상대에게 닿았고(히트 또는 가드) 캔슬 목록에 attack이 있는지
@@ -318,11 +340,12 @@ namespace Game.Character
         public void StartAttack(AttackData attack, CharacterCommand.AttackButtonType button)
         {
             // 캔슬이면 맞고 있는 상대를 기억해 둠 (아래에서 값을 지우기 전에)
-            CharacterHitReaction cancelledTarget = CanCancelInto(attack) ? _lastHitReaction : null;
+            CharacterHitReaction cancelledTarget = CanCancelInto(attack) ? _lastHitReaction : CanReplaceChainedStartup(attack) ? _chainTarget : null;
 
             _attackStartedFrame = Time.frameCount;
             _bufferedCommand = null;
             _lastHitReaction = null;
+            _chainTarget = cancelledTarget;
             CurrentAttack = attack;
             CurrentFrames = attack.GetFrames(button);
             _currentButton = button;
@@ -362,6 +385,7 @@ namespace Game.Character
 
         private void EndAttack()
         {
+            _chainTarget = null;
             CurrentAttack = null;
             AttackFrame = 0;
             _landingFrame = 0;

@@ -85,6 +85,12 @@ namespace Game.Character
                  "예) 2로 두면 L, M을 2프레임 이내에 누른 경우까지 '동시에 누름'으로 인정합니다.")]
         [SerializeField] private int _defaultComboWindowFrames = 2;
 
+        [Tooltip("방향 커맨드에서 버튼을 마지막 방향보다 이 프레임 수만큼 먼저 눌러도 인정합니다.")]
+        [SerializeField] private int _lateButtonFrames = 3;
+
+        /// <summary>버튼을 먼저 누른 입력을 판정하는 중인지 (OnCommandTriggered를 받는 쪽에서 확인)</summary>
+        public bool IsLateMotionCheck { get; private set; }
+
         [Header("방향 기준")]
         [Tooltip("체크하면 커맨드를 '바라보는 방향' 기준으로 판정합니다.\n" +
                  "예) 오른쪽에 서 있을 때도 화면상 214가 아니라 커맨드표 그대로 236으로 파동권이 나갑니다.\n" +
@@ -163,10 +169,31 @@ namespace Game.Character
             CC_frameCounter++;
 
             AttackButtonType pressedButtons = ReadPressedButtons();
-            AddToBuffer(new BufferedInput(CC_frameCounter, ReadDirection(), pressedButtons));
+            int direction = ReadDirection();
+            bool isDirectionChanged = _inputBuffer.Count > 0 && _inputBuffer[_inputBuffer.Count - 1].direction != direction;
+            AddToBuffer(new BufferedInput(CC_frameCounter, direction, pressedButtons));
 
             if (pressedButtons != 0)
                 CheckCommands(pressedButtons);
+
+            if (isDirectionChanged)
+                CheckLateMotion();
+        }
+
+        // 버튼을 마지막 방향보다 조금 먼저 눌렀어도 방향 입력이 완성되면 커맨드로 인정 (연타 중에 커맨드가 빠지지 않도록)
+        private void CheckLateMotion()
+        {
+            AttackButtonType recentButtons = 0;
+            for (int i = _inputBuffer.Count - 2; i >= 0; i--)
+            {
+                if (CC_frameCounter - _inputBuffer[i].frame > _lateButtonFrames) break;
+                recentButtons |= _inputBuffer[i].pressedButtons;
+            }
+            if (recentButtons == 0) return;
+
+            IsLateMotionCheck = true;
+            CheckCommands(recentButtons, isMotionOnly: true);
+            IsLateMotionCheck = false;
         }
 
         // =====================================================================
@@ -211,7 +238,8 @@ namespace Game.Character
         // 커맨드 판정
         // =====================================================================
 
-        private void CheckCommands(AttackButtonType pressedButtons)
+        // isMotionOnly: 방향 입력이 있는 커맨드만 판정 (버튼을 먼저 누른 경우)
+        private void CheckCommands(AttackButtonType pressedButtons, bool isMotionOnly = false)
         {
             int currentDirection = _inputBuffer[_inputBuffer.Count - 1].direction;
             bool isGrounded = CC_characterMove == null || CC_characterMove.IsGrounded;
@@ -224,6 +252,9 @@ namespace Game.Character
                 foreach (var command in _sortedCommandList)
                 {
                     if (_triggeredThisFrame.Contains(command)) continue;
+
+                    bool hasMotion = command.directionSequence != null && command.directionSequence.Length > 0;
+                    if (isMotionOnly && (!hasMotion || command.requireAllButtons)) continue;
 
                     // 지금 쓸 수 없는 커맨드(예: 장풍이 남아 있을 때의 장풍)는 건너뛰고 다음 커맨드를 찾음
                     if (CanUseCommand != null && !CanUseCommand(command)) continue;

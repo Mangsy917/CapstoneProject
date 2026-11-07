@@ -30858,6 +30858,7 @@ MonoBehaviour:
   CA_characterMove: {fileID: 1389828396}
   CA_hitReaction: {fileID: 0}
   CA_opponentTag: Enemy
+  _inputBufferFrames: 6
 --- !u!114 &1389828393
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -30872,9 +30873,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Game.Character.CharacterCommand
   CC_inputReader: {fileID: 1896591971}
   CC_characterMove: {fileID: 1389828396}
-  _bufferFrames: 20
+  _bufferFrames: 30
   _defaultCommandWindowFrames: 4
   _defaultComboWindowFrames: 2
+  _lateButtonFrames: 3
   _useRelativeDirection: 1
   CC_commandList:
   - commandName: 623
@@ -30884,8 +30886,8 @@ MonoBehaviour:
     buttons: 15
     requireAllButtons: 0
     comboWindowFrames: 0
-    windowFrames: 4
-    stepWindowFrames: 0a0000000800000008000000
+    windowFrames: 8
+    stepWindowFrames: 0c0000000a0000000a000000
     priority: 30
     attack: {fileID: 11400000, guid: 8c80e6c56f25c0f4e9efd450eb944575, type: 2}
   - commandName: 236
@@ -30895,7 +30897,7 @@ MonoBehaviour:
     buttons: 15
     requireAllButtons: 0
     comboWindowFrames: 0
-    windowFrames: 5
+    windowFrames: 8
     stepWindowFrames: 
     priority: 20
     attack: {fileID: 11400000, guid: 288798401c1844e4f8c17ae8eb4bbc7b, type: 2}
@@ -30906,7 +30908,7 @@ MonoBehaviour:
     buttons: 15
     requireAllButtons: 0
     comboWindowFrames: 0
-    windowFrames: 5
+    windowFrames: 8
     stepWindowFrames: 
     priority: 20
     attack: {fileID: 11400000, guid: cc8e5e457240f8b4eac342269cca70ce, type: 2}
