@@ -494,7 +494,8 @@ MonoBehaviour:
   _leftIndex: 0
   _placeStepper: {fileID: 858530112}
   _stageBoundary: {fileID: 351704330}
-  _characterGap: 1.9
+  _characterGap: 2.9
+  _wallCharacterGap: 1.1
   _centerIndex: 0
   _rightEndIndex: 1
   _leftEndIndex: 2

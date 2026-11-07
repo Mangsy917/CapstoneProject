@@ -31,8 +31,10 @@ namespace Game.UI.Setting
         [SerializeField] private SettingStepper _placeStepper;
         // 스테이지 끝 값을 가진 오브젝트 (비워두면 씬에서 찾음)
         [SerializeField] private CharStageBoundary _stageBoundary;
-        // 다시 세울 때 두 캐릭터 사이의 x 거리
-        [SerializeField] private float _characterGap = 1.9f;
+        [Tooltip("중앙에서 시작할 때 두 캐릭터 사이의 x 거리 (스테이지 중앙에서 양쪽으로 절반씩).\n앞점프 거리(2.5)보다 조금 넓어서, 앞점프로 넘어가지 않고 상대와 겹쳐지는 곳에 착지함")]
+        [SerializeField] private float _characterGap = 2.9f;
+        [Tooltip("벽에서 시작할 때 두 캐릭터 사이의 x 거리. 히트박스 폭(1.08)보다 조금 넓어서 히트박스가 겹치지 않을 만큼만 붙음")]
+        [SerializeField] private float _wallCharacterGap = 1.1f;
         // 스테퍼 Options 순서 (0부터)
         [SerializeField] private int _centerIndex = 0;
         [SerializeField] private int _rightEndIndex = 1;
@@ -155,13 +157,26 @@ namespace Game.UI.Setting
             Transform rightCharacter = isPlayerLeft ? enemy : player;
 
             float leftX;
-            if (index == _leftEndIndex) leftX = GetStageLeftEndX(leftCharacter);
-            else if (index == _rightEndIndex) leftX = GetStageRightEndX(rightCharacter) - _characterGap;
-            else if (index == _centerIndex) leftX = GetStageCenterX() - _characterGap * 0.5f;
+            float gap;
+            if (index == _leftEndIndex)
+            {
+                gap = _wallCharacterGap;
+                leftX = GetStageLeftEndX(leftCharacter);
+            }
+            else if (index == _rightEndIndex)
+            {
+                gap = _wallCharacterGap;
+                leftX = GetStageRightEndX(rightCharacter) - gap;
+            }
+            else if (index == _centerIndex)
+            {
+                gap = _characterGap;
+                leftX = GetStageCenterX() - gap * 0.5f;
+            }
             else return;
 
             SetPositionX(leftCharacter, leftX);
-            SetPositionX(rightCharacter, leftX + _characterGap);
+            SetPositionX(rightCharacter, leftX + gap);
         }
 
         private float GetStageCenterX()
