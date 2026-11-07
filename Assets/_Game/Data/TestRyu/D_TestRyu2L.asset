@@ -19,13 +19,13 @@ MonoBehaviour:
   AD_attackBoxOffset: {x: 0.845, y: 0.101}
   _attackBoxWindows: []
   _hitAdvantage: 4
-  _hitBackDistance: 0.5
-  _hitBackFrames: 8
+  _hitBackDistance: 0.45
+  _hitBackFrames: 3
   _hitStopFrames: 9
   _hitMotion: 2
   _blockAdvantage: -1
   _guardBackDistance: 0.4
-  _guardBackFrames: 8
+  _guardBackFrames: 3
   _shouldHideTopHitbox: 1
   _extraHitboxes:
   - AD_size: {x: 0.691, y: 0.809}
@@ -41,6 +41,9 @@ MonoBehaviour:
     AD_frameCount: 9
   _buttonFrames: []
   _traitWindows: []
+  _chainAttacks:
+  - {fileID: 11400000, guid: 6476ccdde7006f641883c327f100e8ac, type: 2}
+  - {fileID: 11400000, guid: 3d996900fbbcc79438c766d5df8a9008, type: 2}
   _isLaunchAttack: 0
   _launchFrame: 0
   _shouldLaunchAtStartup: 0

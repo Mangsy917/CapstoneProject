@@ -589,6 +589,11 @@ namespace Game.Character
         [ShowIf(nameof(_isLaunchAttack))]
         [SerializeField] private bool _holdUntilLanding = false;
 
+        [Header("체인 캔슬")]
+        [Tooltip("이 공격이 상대에게 닿은 뒤(히트 또는 가드) 끝나기 전에 입력하면 바로 이어서 낼 수 있는 공격 (예: 약 -> 약, 2L)\n" +
+                 "횟수 제한은 없고, 밀려난 상대에게 공격이 닿지 않으면 체인도 끊김")]
+        [SerializeField] private AttackData[] _chainAttacks = new AttackData[0];
+
         [Header("착지 경직")]
         [Tooltip("공중에서 착지했을 때 움직일 수 없는 프레임 수. 0이면 경직 없음")]
         [SerializeField] private int _landingRecoveryFrames = 0;
@@ -628,6 +633,12 @@ namespace Game.Character
         public ExtraHitbox[] ExtraHitboxes => _extraHitboxes;
         public float LaunchForwardDistance => _launchForwardDistance;
         public float LaunchHeight => _launchHeight;
+        /// <summary>이 공격이 상대에게 닿은 뒤 attack으로 바로 이어갈 수 있는지</summary>
+        public bool CanChainTo(AttackData attack)
+        {
+            return _chainAttacks != null && Array.IndexOf(_chainAttacks, attack) >= 0;
+        }
+
         public bool HoldUntilLanding => _holdUntilLanding;
         public int LandingRecoveryFrames => _landingRecoveryFrames;
         public string LandingAnimationState => _landingAnimationState;

@@ -69,6 +69,16 @@ namespace Game.Character
         // 공중에서 프레임이 다 끝난 공격. 착지하면 이 공격의 착지 경직을 시작함
         private AttackData _pendingLandingAttack;
 
+        [Tooltip("지금 낼 수 없는 입력을 기억해 두는 프레임 수 (입력 버퍼). 히트스톱 중에는 줄지 않음")]
+        [SerializeField] private int _inputBufferFrames = 4;
+
+        // 기억해 둔 입력 (없으면 null)
+        private CharacterCommand.CommandData _bufferedCommand;
+        private CharacterCommand.AttackButtonType _bufferedButton;
+        private int _bufferedFramesLeft;
+
+        private int _attackStartedFrame = -1; // 마지막으로 공격을 시작한 Time.frameCount
+
         private void Awake()
         {
             if (_characterCommand == null) _characterCommand = GetComponent<CharacterCommand>();
@@ -89,6 +99,7 @@ namespace Game.Character
 
         private void OnDisable()
         {
+            _bufferedCommand = null;
             if (_characterCommand == null) return;
             _characterCommand.OnCommandTriggered -= HandleCommandTriggered;
             if (_characterCommand.CanUseCommand == CanUseCommand) _characterCommand.CanUseCommand = null;
@@ -109,6 +120,8 @@ namespace Game.Character
 
             // 히트스톱 중에는 공격 프레임이 진행되지 않음
             if (HitStop.IsStoppedNow(this)) return;
+
+            TryStartBufferedCommand();
 
             if (!IsAttacking)
             {
@@ -218,17 +231,66 @@ namespace Game.Character
             Gizmos.DrawWireCube(transform.position + new Vector3(offset.x * facingSign, offset.y, 0f), new Vector3(size.x, size.y, 0.1f));
         }
 
-        // 공격 중이나 피격 / 가드 경직 중에 들어온 커맨드는 무시함 (캔슬은 아직 없음)
+        // 지금 낼 수 있으면 바로 내고, 아니면 잠시 기억해 뒀다가 낼 수 있게 되는 순간 냄 (입력 버퍼)
+        // - 같은 프레임에 눌린 버튼으로 이미 공격이 시작됐으면 두 번째 입력은 버림
+        // - 동시입력 커맨드(잡기 등)는 기억하지 않음 (먼저 눌린 버튼의 공격 뒤에 뒤늦게 나가지 않도록)
         private void HandleCommandTriggered(CharacterCommand.CommandData command, CharacterCommand.AttackButtonType button)
         {
-            if (command.attack == null || IsAttacking || !CanUseCommand(command)) return;
-            if (CA_hitReaction != null && CA_hitReaction.IsInStun) return;
-            StartAttack(command.attack, button);
+            if (command.attack == null || _attackStartedFrame == Time.frameCount) return;
+
+            if (!HitStop.IsStoppedNow(this) && CanStartCommand(command))
+            {
+                StartAttack(command.attack, button);
+                return;
+            }
+
+            if (command.requireAllButtons) return;
+
+            _bufferedCommand = command;
+            _bufferedButton = button;
+            _bufferedFramesLeft = _inputBufferFrames;
+        }
+
+        // 지금 이 커맨드의 공격을 시작할 수 있는지
+        // 공격 중이면 이번 공격이 상대에게 닿았고(히트 또는 가드) 체인 목록에 있는 공격일 때만 가능
+        private bool CanStartCommand(CharacterCommand.CommandData command)
+        {
+            if (!CanUseCommand(command)) return false;
+            if (CA_hitReaction != null && CA_hitReaction.IsInStun) return false;
+            if (!IsAttacking) return true;
+            return _lastHitIndex >= 0 && !IsLanding && CurrentAttack.CanChainTo(command.attack);
+        }
+
+        // 기억해 둔 입력을 낼 수 있으면 냄. 히트스톱 중에는 불리지 않으므로 멈춘 동안에는 기억하는 시간이 줄지 않음
+        private void TryStartBufferedCommand()
+        {
+            if (_bufferedCommand == null) return;
+
+            CharacterCommand.CommandData command = _bufferedCommand;
+            _bufferedFramesLeft--;
+            if (_bufferedFramesLeft <= 0) _bufferedCommand = null;
+
+            // 기억하는 동안 땅 / 공중 상태가 바뀌어 쓸 수 없게 된 커맨드는 버림
+            bool isGrounded = IsGrounded();
+            bool isUsableState = command.usableState == CharacterCommand.UsableState.Both ||
+                                 (command.usableState == CharacterCommand.UsableState.Ground) == isGrounded;
+            if (!isUsableState)
+            {
+                _bufferedCommand = null;
+                return;
+            }
+
+            if (!CanStartCommand(command)) return;
+
+            _bufferedCommand = null;
+            StartAttack(command.attack, _bufferedButton);
         }
 
         /// <summary>attack을 시작함. 발생 / 지속 / 회수 프레임은 button에 맞춘 값을 씀 (AttackData의 버튼별 프레임)</summary>
         public void StartAttack(AttackData attack, CharacterCommand.AttackButtonType button)
         {
+            _attackStartedFrame = Time.frameCount;
+            _bufferedCommand = null;
             CurrentAttack = attack;
             CurrentFrames = attack.GetFrames(button);
             _currentButton = button;
@@ -250,6 +312,7 @@ namespace Game.Character
         /// <summary>재시작할 때 호출. 진행 중인 공격과 기다리던 착지 경직을 모두 취소</summary>
         public void CancelAttack()
         {
+            _bufferedCommand = null;
             _pendingLandingAttack = null;
             if (!IsAttacking) return;
             EndAttack();
