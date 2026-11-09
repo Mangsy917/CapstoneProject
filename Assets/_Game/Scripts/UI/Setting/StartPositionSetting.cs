@@ -34,7 +34,7 @@ namespace Game.UI.Setting
         [Tooltip("중앙에서 시작할 때 두 캐릭터 사이의 x 거리 (스테이지 중앙에서 양쪽으로 절반씩).\n" +
                  "Player의 CharacterMove와 두 캐릭터의 Pushbox가 있으면 이 값 대신 자동으로 계산함:\n" +
                  "제자리 앞점프 거리 + 두 Pushbox 절반 폭 + 아래 여유 거리 (앞점프하면 상대와 겹치지 않고 바로 앞에 착지)")]
-        [SerializeField] private float _characterGap = 3.44f;
+        [SerializeField] private float _characterGap = 1.94f;
         [Tooltip("중앙 시작 거리를 자동 계산할 때, 앞점프 착지 위치와 상대 Pushbox 사이에 남기는 거리")]
         [SerializeField] private float _jumpLandingMargin = 0.05f;
         [Tooltip("벽에서 시작할 때 두 캐릭터 사이의 x 거리. 히트박스 폭(1.08)보다 조금 넓어서 히트박스가 겹치지 않을 만큼만 붙음")]
