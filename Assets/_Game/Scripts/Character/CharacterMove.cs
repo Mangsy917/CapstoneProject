@@ -644,6 +644,45 @@ public class CharacterMove : MonoBehaviour
         StartAirArc(jumpState, height, frames, velocityX: facingSign * forwardDistance / frames);
     }
 
+    /// <summary>
+    /// 맞아서 공중에 뜸 (CharacterHitReaction). 첫 프레임 속도 velocity(1프레임 거리, 오른쪽 / 위가 +)로 떠오르고,
+    /// airFrames 프레임째에 바닥에 닿도록 중력을 정함 (같은 프레임 수면 처음 속도가 빠를수록 높이 뜸)
+    /// </summary>
+    public void LaunchIntoAirWithVelocity(Vector2 velocity, int airFrames)
+    {
+        isJumpStarting = false;
+        dashFramesLeft = 0;
+        StopRun();
+
+        float facingSign = IsFacingRight ? 1f : -1f;
+        float forwardVelocity = velocity.x * facingSign;
+        MoveState jumpState = forwardVelocity > 0f ? MoveState.JumpForward
+                            : forwardVelocity < 0f ? MoveState.JumpBack
+                            : MoveState.JumpNeutral;
+        int frames = Mathf.Max(1, airFrames);
+        float gravity = GetGravityToLand(transform.position.y - groundY, velocity.y, frames);
+        StartAirMotion(jumpState, frames, velocity, gravity);
+    }
+
+    /// <summary>공중에 있으면 가로 속도에 x를 더함 (공중에서 앞으로 가던 공격에 맞아 같이 밀려날 때)</summary>
+    public void AddAirVelocityX(float x)
+    {
+        if (!IsGrounded) airVelocityX += x;
+    }
+
+    /// <summary>지금 움직이는 속도 (다음 프레임에 움직일 1프레임 거리, 오른쪽 / 위가 +). 땅에서는 이번 프레임에 걷거나 달린 거리</summary>
+    public Vector2 Velocity => IsGrounded ? new Vector2(groundVelocityX, 0f) : new Vector2(airVelocityX, airVelocityY);
+
+    /// <summary>
+    /// 바닥에서 heightAboveGround만큼 높은 곳에서 세로 속도 velocityY로 떠서, frames 프레임째에 바닥에 닿게 하는 중력
+    /// (frames 프레임 동안 움직인 높이 = velocityY x frames - 중력 x frames² / 2 = -heightAboveGround)
+    /// </summary>
+    public static float GetGravityToLand(float heightAboveGround, float velocityY, int frames)
+    {
+        int safeFrames = Mathf.Max(1, frames);
+        return Mathf.Max(0f, 2f * (heightAboveGround + velocityY * safeFrames) / (safeFrames * safeFrames));
+    }
+
     // 레버 점프 시작. xDistance는 공중에 있는 동안 가는 전체 가로 거리 (오른쪽이 +)
     // 공중 프레임 수로 나눈 값이 가로 속도가 됨
     private void StartJump(MoveState jumpState, float xDistance)
@@ -657,15 +696,22 @@ public class CharacterMove : MonoBehaviour
     // 이 프레임이 공중 첫 프레임이므로 바로 한 프레임만큼 움직임
     private void StartAirArc(MoveState jumpState, float height, int frames, float velocityX)
     {
+        float dropToGround = groundY - transform.position.y; // 바닥에서 뛰면 0, 공중에서 뜨면 음수
+        float gravity = 8f * height / (frames * frames);
+        float velocityY = (dropToGround + 4f * height) / frames;
+        StartAirMotion(jumpState, frames, new Vector2(velocityX, velocityY), gravity);
+    }
+
+    // 정한 처음 속도와 중력으로 공중 움직임 시작. 이 프레임이 공중 첫 프레임이므로 바로 한 프레임만큼 움직임
+    private void StartAirMotion(MoveState jumpState, int frames, Vector2 velocity, float gravity)
+    {
         CurrentState = jumpState;
         IsGrounded = false;
         airFrame = 0;
         airFrames = frames;
-
-        float dropToGround = groundY - transform.position.y; // 바닥에서 뛰면 0, 공중에서 뜨면 음수
-        airGravity = 8f * height / (frames * frames);
-        airVelocityY = (dropToGround + 4f * height) / frames;
-        airVelocityX = velocityX;
+        airGravity = gravity;
+        airVelocityX = velocity.x;
+        airVelocityY = velocity.y;
 
         shouldStopBeforeEnemy = IsJumpingTowardEnemyAtWall();
         UpdateAirborne();

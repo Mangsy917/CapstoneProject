@@ -8,7 +8,7 @@ namespace Game.Character
     // - 점프: 땅에 닿으면 점프 준비 프레임 뒤에 다시 뛰어오르기를 계속함 (제자리 점프)
     // - 가드(DummyGuard)는 행동과 따로 정해지고, 공중에 있는 동안은 가드하지 못함 (CharacterHitReaction)
     // - 피격 / 가드 경직 중에는 다음 점프를 시작하지 않음. 공중에서 맞으면 점프 궤도는 그대로 이어짐
-    //   띄우는 공격(승룡권 등)에 맞으면 맞은 높이에서 새 포물선으로 떠올랐다가 쓰러지는 프레임이 끝날 때 착지함
+    //   띄우는 공격(승룡권 등)에 맞으면 때린 쪽의 움직임을 따라 맞은 높이에서 새 포물선으로 떠올랐다가 쓰러지는 프레임이 끝날 때 착지함
     // - 자세는 CharactorState(서기 / 앉기 / 점프, 지상 / 공중)에도 넣음 (판정 표시용)
     // - 설정은 DummyActionSetting이 넣어줌. 다시 생성된 더미도 같은 설정을 씀
     public class DummyAction : MonoBehaviour
@@ -46,11 +46,16 @@ namespace Game.Character
         private float DA_groundY;
         private int DA_airFrame;  // 공중에 뜬 뒤 지난 프레임 (공중 첫 프레임 = 1)
 
-        // 지금 그리는 포물선 (점프, 띄우는 공격에 맞음 공통)
-        private int DA_airFrames = 1;   // 공중에 떠 있는 전체 프레임 수
-        private float DA_airHeight;     // 포물선이 더 올라가는 높이
-        private float DA_airStartY;     // 뜬 높이 (공중에서 맞아 다시 뜨면 바닥이 아님). 마지막 프레임에 바닥에 닿음
+        // 지금 하고 있는 공중 움직임 (점프, 띄우는 공격에 맞음 공통)
+        // 가로는 일정한 속도, 세로는 중력으로 매 프레임 속도가 줄어드는 포물선 (CharacterMove와 같은 방식)
+        private int DA_airFrames = 1;    // 공중에 떠 있는 전체 프레임 수
+        private float DA_airVelocityX;   // 가로 속도 (1프레임 거리, 오른쪽이 +)
+        private float DA_airVelocityY;   // 세로 속도 (1프레임 거리, 위가 +)
+        private float DA_airGravity;     // 1프레임마다 세로 속도가 줄어드는 양
         private int _groundFrames; // 땅에 닿은 뒤 지난 프레임 (점프 준비)
+
+        /// <summary>지금 움직이는 속도 (다음 프레임에 움직일 1프레임 거리, 오른쪽 / 위가 +). 땅에서는 0</summary>
+        public Vector2 DA_Velocity => DA_IsGrounded ? Vector2.zero : new Vector2(DA_airVelocityX, DA_airVelocityY);
 
         // Domain Reload를 꺼둔 상태로 플레이해도 이전 설정이 남지 않도록 초기화
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
@@ -117,39 +122,57 @@ namespace Game.Character
         }
 
         /// <summary>
-        /// 띄우는 공격에 맞았을 때 호출 (CharacterHitReaction). 지금 높이에서 frames 프레임 동안 포물선을 그리고 마지막 프레임에 바닥에 닿음
+        /// 띄우는 공격에 맞았을 때 호출 (CharacterHitReaction). 첫 프레임 속도 velocity(1프레임 거리, 오른쪽 / 위가 +)로 떠오르고,
+        /// frames 프레임째에 바닥에 닿도록 중력을 정함 (같은 프레임 수면 처음 속도가 빠를수록 높이 뜸)
         /// 이 프레임은 맞은 프레임이라 움직이지 않고, 다음 프레임부터 뜸
         /// </summary>
-        public void LaunchIntoAir(float height, int frames)
+        public void LaunchIntoAir(Vector2 velocity, int frames)
         {
-            StartAirArc(height, frames);
+            int safeFrames = Mathf.Max(1, frames);
+            float gravity = CharacterMove.GetGravityToLand(transform.position.y - DA_groundY, velocity.y, safeFrames);
+            StartAirMotion(safeFrames, velocity, gravity);
         }
 
-        // 이 프레임이 공중 첫 프레임이므로 바로 한 프레임만큼 움직임
+        /// <summary>공중에 있으면 가로 속도에 x를 더함 (공중에서 앞으로 가던 공격에 맞아 같이 밀려날 때)</summary>
+        public void AddAirVelocityX(float x)
+        {
+            if (!DA_IsGrounded) DA_airVelocityX += x;
+        }
+
+        // 제자리 점프. 이 프레임이 공중 첫 프레임이므로 바로 한 프레임만큼 움직임
         private void StartJump()
         {
-            StartAirArc(DA_jumpHeight, DA_jumpAirFrames);
+            int frames = Mathf.Max(1, DA_jumpAirFrames);
+            float velocityY = 4f * DA_jumpHeight / frames;
+            StartAirMotion(frames, new Vector2(0f, velocityY), gravity: 8f * DA_jumpHeight / (frames * frames));
             UpdateAirborne();
         }
 
-        private void StartAirArc(float height, int frames)
+        private void StartAirMotion(int frames, Vector2 velocity, float gravity)
         {
             DA_IsGrounded = false;
             DA_airFrame = 0;
-            DA_airFrames = Mathf.Max(1, frames);
-            DA_airHeight = height;
-            DA_airStartY = transform.position.y;
+            DA_airFrames = frames;
+            DA_airVelocityX = velocity.x;
+            DA_airVelocityY = velocity.y;
+            DA_airGravity = gravity;
             _groundFrames = 0;
         }
 
-        // DA_airFrames 프레임 동안 포물선을 그리고, 마지막 프레임에 바닥 높이에 닿음
+        // 가로는 일정한 속도, 세로는 매 프레임 중력만큼 속도가 줄어듦. DA_airFrames 프레임째에 바닥 높이에 닿음
         private void UpdateAirborne()
         {
             DA_airFrame++;
-            float progress = (float)DA_airFrame / DA_airFrames;
 
             Vector3 position = transform.position;
-            position.y = Mathf.Lerp(DA_airStartY, DA_groundY, progress) + 4f * DA_airHeight * progress * (1f - progress);
+            position.x += DA_airVelocityX;
+            // 이번 프레임 동안 평균 속도(처음 속도 - 중력 절반)만큼 움직인 뒤 속도를 줄임
+            position.y += DA_airVelocityY - 0.5f * DA_airGravity;
+            DA_airVelocityY -= DA_airGravity;
+
+            // 마지막 프레임은 계산 오차 없이 바닥에 맞춤
+            if (DA_airFrame >= DA_airFrames) position.y = DA_groundY;
+
             transform.position = position;
         }
 
@@ -159,6 +182,8 @@ namespace Game.Character
             position.y = DA_groundY;
             transform.position = position;
             DA_IsGrounded = true;
+            DA_airVelocityX = 0f;
+            DA_airVelocityY = 0f;
         }
 
         private void UpdateCharacterState()

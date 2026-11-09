@@ -146,6 +146,9 @@ namespace Game.Character
     //   피격 모션은 히트 종류에 정한 모션 → 기술의 모션 순서로 쓰고, 자동이면 상단 공격은 MiddleHit, 중단 공격은 Top2Low, 하단 공격은 맞은 피격 상자 위치에 따라 정함
     // - 가드하면: 가드 경직 + 가드백 + 가드 모션 (가드한 피격 상자 위치에 따라 Top / Middle / Bottom), 데미지 없음
     // - 히트백 / 가드백: 정해진 프레임 동안 뒤로 밀려남. 벽에 붙어 있으면 대신 때린 쪽이 밀려남 (장풍은 제외)
+    // - 때린 쪽 움직임 따라가기: 띄우는 공격에 맞으면 때린 쪽이 움직이던 속도(앞으로, 위로)를 따라 같이 떠오름
+    //   뛰어오르는 속도가 빠르거나 데미지가 클수록 높이 뜸. 공중에서 맞으면 앞으로 가던 공격의 가로 속도를 같이 받음
+    //   땅에서 띄우지 않는 공격에 맞으면 따라가지 않음 (히트백만 받음)
     // - 다운: 다운되는 히트 종류로 맞으면, 쓰러지는 프레임 동안 피격 경직(추가타 가능) 뒤 기상할 때까지 다운됨
     //   다운 프레임을 정해 두면 그만큼 다운되고, 0이면 기상 시점이 히트 시 유리 프레임(위키의 KD 값)이 되도록 계산함
     //   다운 중에는 피격 상자가 모두 꺼져서 무적이고(CharacterHitboxes), 움직이거나 공격할 수 없음
@@ -175,6 +178,17 @@ namespace Game.Character
 
         [Tooltip("히트백 / 가드백 중 벽에 붙었는지 확인할 Pushbox. 비워두면 같은 오브젝트에서 찾음")]
         [SerializeField] private Pushbox _pushbox;
+
+        [Header("때린 쪽 움직임 따라가기")]
+        [Tooltip("띄우는 공격에 맞거나 공중에서 맞았을 때, 때린 쪽이 움직이던 속도를 얼마나 따라가는지 (1이면 같은 속도, 0이면 따라가지 않음).\n" +
+                 "예) 승룡권에 맞으면 위로 뛰어오르는 승룡권과 같은 속도로 같이 떠오름")]
+        [SerializeField] private float _attackerVelocityFollowRatio = 1f;
+
+        [Tooltip("띄우는 공격의 데미지가 이 값일 때 뜨는 높이가 1배. 데미지가 클수록 더 높이 뜸 (예: 1200이면 1600 데미지는 1.33배)")]
+        [SerializeField] private float _launchReferenceDamage = 1200f;
+
+        [Tooltip("데미지로 정하는 뜨는 높이 배율의 최소 / 최대")]
+        [SerializeField] private Vector2 _launchDamageScaleRange = new Vector2(0.5f, 2f);
 
         /// <summary>남은 피격 경직 프레임</summary>
         public int HitStunFramesLeft { get; private set; }
@@ -243,7 +257,11 @@ namespace Game.Character
             // 카운터 / 퍼니시 카운터는 콤보의 첫 타만 (피격 경직 중에 맞은 2타부터와 슈퍼아머로 버틴 공격은 노말 히트)
             bool isComboHit = reaction != null && reaction.IsInHitStun;
             HitType hitType = !isAbsorbed && !isComboHit && targetAttack != null ? targetAttack.GetHitTypeOnHit() : HitType.Normal;
-            if (!isAbsorbed && reaction != null) reaction.ReceiveHit(info, hitbox, direction, pushedAttacker, hitType);
+            int finalDamage = Mathf.RoundToInt(damage * info.GetDamageRate(hitType));
+
+            // 맞은 쪽이 따라 움직일 때린 쪽의 속도 (장풍은 때린 쪽 몸이 아니므로 따라가지 않음)
+            Vector2 attackerVelocity = shouldPushAttacker && attacker != null ? GetVelocity(attacker.gameObject) : Vector2.zero;
+            if (!isAbsorbed && reaction != null) reaction.ReceiveHit(info, hitbox, direction, pushedAttacker, hitType, attackerVelocity, finalDamage);
 
             // 맞은 쪽의 판정 표시(StateUI)에 노말 히트 / 카운터 / 퍼니시 카운터를 넣음 (다음에 맞을 때까지 유지)
             var targetState = target.GetComponent<CharactorState>();
@@ -258,7 +276,16 @@ namespace Game.Character
             }
 
             var health = target.GetComponent<CharacterHealth>();
-            if (health != null) health.TakeDamage(Mathf.RoundToInt(damage * info.GetDamageRate(hitType)), attacker: attacker);
+            if (health != null) health.TakeDamage(finalDamage, attacker: attacker);
+        }
+
+        // 캐릭터가 지금 움직이는 속도 (플레이어는 CharacterMove, 더미는 DummyAction. 둘 다 없으면 0)
+        private static Vector2 GetVelocity(GameObject character)
+        {
+            var move = character.GetComponent<CharacterMove>();
+            if (move != null) return move.Velocity;
+            var dummyAction = character.GetComponent<DummyAction>();
+            return dummyAction != null ? dummyAction.DA_Velocity : Vector2.zero;
         }
 
         /// <summary>
@@ -382,7 +409,9 @@ namespace Game.Character
         }
 
         /// <summary>맞았을 때 피격 경직, 히트백, 피격 모션을 정함 (보통은 HitTarget을 통해 호출)</summary>
-        public void ReceiveHit(HitInfo info, Hitbox hitbox, float direction, Transform pushedAttacker, HitType hitType = HitType.Normal)
+        /// attackerVelocity: 때린 쪽이 움직이던 속도 (1프레임 거리, 오른쪽 / 위가 +). damage: 히트 종류 배율까지 곱한 데미지
+        public void ReceiveHit(HitInfo info, Hitbox hitbox, float direction, Transform pushedAttacker, HitType hitType = HitType.Normal,
+                               Vector2 attackerVelocity = default, int damage = 0)
         {
             // 경직 마지막 프레임에 맞아도 아직 줄기 전이라 경직 중으로 봄
             ComboCount = IsInHitStun ? ComboCount + 1 : 1;
@@ -395,11 +424,11 @@ namespace Game.Character
             _pendingDownFrames = info.GetKnockDownFrames(hitType, isAirborne); // 콤보 중이면 마지막으로 맞은 공격이 다운을 정함
 
             // 띄우는 공격이면 피격 경직(다운되면 쓰러지는 프레임) 동안 공중에 떴다가, 끝나는 프레임에 착지
+            // 공중에서 맞으면 앞으로 가던 공격(점프 공격 등)의 가로 속도를 같이 받아 밀려남
             if (airborneHeight > 0f)
-            {
-                if (CHR_characterMove != null) CHR_characterMove.LaunchIntoAir(forwardDistance: 0f, height: airborneHeight, airFrames: HitStunFramesLeft);
-                else if (_dummyAction != null) _dummyAction.LaunchIntoAir(height: airborneHeight, frames: HitStunFramesLeft);
-            }
+                LaunchByHit(GetLaunchVelocity(airborneHeight, HitStunFramesLeft, direction, attackerVelocity, damage), HitStunFramesLeft);
+            else if (!IsGrounded())
+                AddAirVelocityX(GetFollowVelocityX(direction, attackerVelocity));
             GuardStunFramesLeft = 0;
             CurrentMotion = GetHitMotion(info, hitbox, hitType);
             HitCount++;
@@ -408,6 +437,56 @@ namespace Game.Character
             // 맞으면 하던 공격은 취소됨
             if (CHR_characterAttack != null) CHR_characterAttack.CancelAttack();
             if (_dummyGuard != null) _dummyGuard.NotifyHit();
+        }
+
+        /// <summary>
+        /// 띄우는 공격에 맞았을 때 떠오르는 첫 프레임 속도
+        /// - 가로: 때린 쪽이 맞은 쪽으로 다가오던 속도를 따라감 (승룡권처럼 앞으로 나가는 공격이면 같이 앞으로 날아감)
+        /// - 세로: 때린 쪽이 뛰어오르던 속도를 따라감 + 기술의 띄우는 높이만큼 더 뜨는 속도
+        ///   빠르게 뛰어오르는 기술일수록 높이 뜨고, 그 전체에 데미지 배율을 곱해서 데미지가 클수록 높이 뜸
+        /// frames 프레임째에 바닥에 닿도록 중력이 정해지므로, 처음 속도가 빠를수록 더 높이 떴다가 같은 프레임에 착지함
+        /// </summary>
+        private Vector2 GetLaunchVelocity(float airborneHeight, int frames, float direction, Vector2 attackerVelocity, int damage)
+        {
+            int safeFrames = Mathf.Max(1, frames);
+            float followY = Mathf.Max(0f, attackerVelocity.y) * _attackerVelocityFollowRatio;
+            float extraY = 4f * airborneHeight / safeFrames; // 바닥에서 이 속도로 뜨면 가장 높은 곳이 airborneHeight
+            return new Vector2(GetFollowVelocityX(direction, attackerVelocity), (followY + extraY) * GetDamageScale(damage));
+        }
+
+        // 때린 쪽이 맞은 쪽으로 다가오던 가로 속도 (멀어지던 중이면 따라가지 않음)
+        private float GetFollowVelocityX(float direction, Vector2 attackerVelocity)
+        {
+            bool isMovingToward = attackerVelocity.x * direction > 0f;
+            return isMovingToward ? attackerVelocity.x * _attackerVelocityFollowRatio : 0f;
+        }
+
+        // 데미지가 기준 데미지의 몇 배인지 (최소 / 최대 안에서). 데미지를 모르면 1배
+        private float GetDamageScale(int damage)
+        {
+            if (damage <= 0 || _launchReferenceDamage <= 0f) return 1f;
+            return Mathf.Clamp(damage / _launchReferenceDamage, _launchDamageScaleRange.x, _launchDamageScaleRange.y);
+        }
+
+        private void LaunchByHit(Vector2 velocity, int frames)
+        {
+            if (CHR_characterMove != null) CHR_characterMove.LaunchIntoAirWithVelocity(velocity, airFrames: frames);
+            else if (_dummyAction != null) _dummyAction.LaunchIntoAir(velocity, frames);
+        }
+
+        private void AddAirVelocityX(float x)
+        {
+            if (x == 0f) return;
+            if (CHR_characterMove != null) CHR_characterMove.AddAirVelocityX(x);
+            else if (_dummyAction != null) _dummyAction.AddAirVelocityX(x);
+        }
+
+        private void OnValidate()
+        {
+            if (_attackerVelocityFollowRatio < 0f) _attackerVelocityFollowRatio = 0f;
+            if (_launchReferenceDamage < 0f) _launchReferenceDamage = 0f;
+            if (_launchDamageScaleRange.x < 0f) _launchDamageScaleRange.x = 0f;
+            if (_launchDamageScaleRange.y < _launchDamageScaleRange.x) _launchDamageScaleRange.y = _launchDamageScaleRange.x;
         }
 
         // 플레이어는 CharacterMove, 더미는 DummyAction으로 땅에 있는지 봄 (둘 다 없으면 땅에 있다고 봄)
