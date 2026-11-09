@@ -459,7 +459,11 @@ namespace Game.Character
             [Tooltip("이 버튼으로 나갔을 때의 히트스톱 프레임 수. 0이면 기술의 히트스톱 사용")]
             [SerializeField] private int AD_hitStopFrames = 0;
 
+            [Tooltip("이 버튼으로 나갔을 때 발생 동안 앞으로 나가는 전체 거리. 0이면 기술의 전진 거리 사용")]
+            [SerializeField] private float AD_forwardMoveDistance = 0f;
+
             public CharacterCommand.AttackButtonType Button => _button;
+            public float AD_ForwardMoveDistance => AD_forwardMoveDistance;
             public int AD_HitStopFrames => AD_hitStopFrames;
             public bool ShouldOverrideAdvantage => _shouldOverrideAdvantage;
             public int HitAdvantage => _hitAdvantage;
@@ -481,6 +485,7 @@ namespace Game.Character
                 if (AD_attackBoxSize.x < 0f) AD_attackBoxSize.x = 0f;
                 if (AD_attackBoxSize.y < 0f) AD_attackBoxSize.y = 0f;
                 if (_invincibleFrames < 0) _invincibleFrames = 0;
+                if (AD_forwardMoveDistance < 0f) AD_forwardMoveDistance = 0f;
                 ValidateFrames(_frames);
             }
         }
@@ -566,6 +571,11 @@ namespace Game.Character
         [Header("프레임 구간별 특성")]
         [Tooltip("예) 슈퍼아머 / 시작 1 / 끝 8 / 상단 / 2회 → 1~8프레임 동안 상단 공격을 2번까지 버팀")]
         [SerializeField] private TraitWindow[] _traitWindows = new TraitWindow[0];
+
+        [Header("전진")]
+        [Tooltip("땅에서 쓴 공격이 발생 동안(공격 시작 ~ 첫 공격 판정 직전) 앞으로 나가는 전체 거리. 0이면 전진하지 않음.\n" +
+                 "매 프레임 같은 거리만큼 나가므로 발생이 짧은 버튼일수록 빠르게 나감 (버튼별 전진 거리로 따로 정할 수 있음)")]
+        [SerializeField] private float _forwardMoveDistance = 0f;
 
         [Header("공중으로 뛰어오르기")]
         [Tooltip("체크하면 공격 중에 공중으로 뛰어오름 (승룡권 등). 체크하면 아래에 뛰어오르는 설정이 나옴")]
@@ -795,6 +805,19 @@ namespace Game.Character
         }
 
         /// <summary>이 버튼으로 나갔을 때 투사체가 1프레임에 날아가는 거리 (버튼별 값 → 기술의 투사체 속도 순서로, 둘 다 0이면 0 = 투사체 프리팹의 값)</summary>
+        /// <summary>
+        /// 이번 공격 프레임(공격 시작 = 1)에 앞으로 나갈 거리. 발생 동안(첫 공격 판정 직전까지) 전체 전진 거리를 같은 거리로 나눠서 나감
+        /// 버튼별 전진 거리가 있으면 그 값, 없으면 기술의 전진 거리
+        /// </summary>
+        public float GetForwardMoveDistancePerFrame(CharacterCommand.AttackButtonType button, AttackFrames frames, int attackFrame)
+        {
+            ButtonFrames buttonFrames = FindButtonFrames(button);
+            float distance = buttonFrames != null && buttonFrames.AD_ForwardMoveDistance > 0f ? buttonFrames.AD_ForwardMoveDistance : _forwardMoveDistance;
+            int moveFrames = frames.FirstActiveFrame - 1;
+            if (distance <= 0f || moveFrames <= 0 || attackFrame < 1 || attackFrame > moveFrames) return 0f;
+            return distance / moveFrames;
+        }
+
         public float GetProjectileDistancePerFrame(CharacterCommand.AttackButtonType button)
         {
             ButtonFrames buttonFrames = FindButtonFrames(button);
@@ -856,6 +879,7 @@ namespace Game.Character
             if (_projectileDamage < 0) _projectileDamage = 0;
             if (_projectileDistancePerFrame < 0f) _projectileDistancePerFrame = 0f;
             if (_projectileCount < 1) _projectileCount = 1;
+            if (_forwardMoveDistance < 0f) _forwardMoveDistance = 0f;
             if (AD_damage < 0) AD_damage = 0;
             if (AD_attackBoxSize.x < 0f) AD_attackBoxSize.x = 0f;
             if (AD_attackBoxSize.y < 0f) AD_attackBoxSize.y = 0f;

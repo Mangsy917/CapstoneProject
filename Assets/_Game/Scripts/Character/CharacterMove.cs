@@ -664,6 +664,13 @@ public class CharacterMove : MonoBehaviour
         StartAirMotion(jumpState, frames, velocity, gravity);
     }
 
+    /// <summary>땅에서 공격 중에 바라보는 쪽으로 distance만큼 나감 (전진하는 공격, CharacterAttack). 움직인 만큼이 이번 프레임의 땅 속도가 됨</summary>
+    public void MoveForwardByAttack(float distance)
+    {
+        if (!IsGrounded || distance == 0f) return;
+        MoveBy((IsFacingRight ? 1f : -1f) * distance);
+    }
+
     /// <summary>공중에 있으면 가로 속도에 x를 더함 (공중에서 앞으로 가던 공격에 맞아 같이 밀려날 때)</summary>
     public void AddAirVelocityX(float x)
     {

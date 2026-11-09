@@ -127,6 +127,7 @@ MonoBehaviour:
     _hitAdvantage: 2
     _blockAdvantage: -3
     AD_hitStopFrames: 0
+    AD_forwardMoveDistance: 0.6
   - _button: 2
     _frames:
     - _frameType: 0
@@ -153,6 +154,7 @@ MonoBehaviour:
     _hitAdvantage: 2
     _blockAdvantage: -6
     AD_hitStopFrames: 0
+    AD_forwardMoveDistance: 0.9
   - _button: 4
     _frames:
     - _frameType: 0
@@ -179,6 +181,7 @@ MonoBehaviour:
     _hitAdvantage: 61
     _blockAdvantage: 2
     AD_hitStopFrames: 0
+    AD_forwardMoveDistance: 1.2
   - _button: 8
     _frames:
     - _frameType: 0
@@ -205,7 +208,9 @@ MonoBehaviour:
     _hitAdvantage: 3
     _blockAdvantage: 3
     AD_hitStopFrames: 0
+    AD_forwardMoveDistance: 1.2
   _traitWindows: []
+  _forwardMoveDistance: 0.9
   _isLaunchAttack: 0
   _launchFrame: 0
   _shouldLaunchAtStartup: 0
