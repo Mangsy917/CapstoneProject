@@ -142,6 +142,7 @@ namespace Game.Character
     //   서서 가드는 하단을, 앉아 가드는 중단을 막지 못함. 잡기, 공중, 공격 중, 피격 경직 중에는 가드할 수 없음
     // - 맞으면: 하던 공격을 취소하고 피격 경직 + 히트백 + 피격 모션, 데미지는 CharacterHealth로
     //   콤보의 첫 타가 맞은 쪽의 공격 발생 / 지속 중에 맞으면 카운터, 회수 / 착지 경직 중이면 퍼니시 카운터, 그 외(콤보 2타부터 포함)는 노말 히트
+    //   더미는 설정창의 카운터 종류(일반 / 항상 카운터 / 항상 퍼니시 카운터 / 랜덤)를 따름 (콤보 첫 타만)
     //   히트 종류마다 데미지 배율, 추가 경직, 다운 여부, 피격 모션을 공격(AttackData)의 히트 종류별 결과에서 정함
     //   피격 모션은 히트 종류에 정한 모션 → 기술의 모션 순서로 쓰고, 자동이면 상단 공격은 MiddleHit, 중단 공격은 Top2Low, 하단 공격은 맞은 피격 상자 위치에 따라 정함
     // - 가드하면: 가드 경직 + 가드백 + 가드 모션 (가드한 피격 상자 위치에 따라 Top / Middle / Bottom), 데미지 없음
@@ -161,6 +162,31 @@ namespace Game.Character
     [DefaultExecutionOrder(40)]
     public class CharacterHitReaction : MonoBehaviour
     {
+        // 설정창 더미 설정의 카운터 종류 (스테퍼 선택지 순서와 같음)
+        public enum DummyCounterMode
+        {
+            Normal,              // 일반: 맞은 순간의 상태대로 (공격 중이 아니면 노말 히트)
+            AlwaysCounter,       // 항상 카운터
+            AlwaysPunishCounter, // 항상 퍼니시 카운터
+            Random               // 노말 히트 / 카운터 / 퍼니시 카운터 중 하나
+        }
+
+        // 더미가 맞을 때 쓸 카운터 종류 (다시 생성된 더미도 같은 값을 쓰도록 static)
+        private static DummyCounterMode _dummyCounterMode = DummyCounterMode.Normal;
+
+        // Domain Reload를 꺼둔 상태로 플레이해도 이전 설정이 남지 않도록 초기화
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        private static void ResetSettings()
+        {
+            _dummyCounterMode = DummyCounterMode.Normal;
+        }
+
+        /// <summary>설정창의 카운터 종류를 더미에 적용 (CounterSetting)</summary>
+        public static void ApplyDummyCounterSetting(DummyCounterMode mode)
+        {
+            _dummyCounterMode = mode;
+        }
+
         [Tooltip("맞으면 하던 공격을 취소할 CharacterAttack. 비워두면 같은 오브젝트에서 찾음 (없어도 됨)")]
         [SerializeField] private CharacterAttack CHR_characterAttack;
 
@@ -257,6 +283,8 @@ namespace Game.Character
             // 카운터 / 퍼니시 카운터는 콤보의 첫 타만 (피격 경직 중에 맞은 2타부터와 슈퍼아머로 버틴 공격은 노말 히트)
             bool isComboHit = reaction != null && reaction.IsInHitStun;
             HitType hitType = !isAbsorbed && !isComboHit && targetAttack != null ? targetAttack.GetHitTypeOnHit() : HitType.Normal;
+            // 더미는 설정창의 카운터 종류를 따름 (콤보 첫 타만, 슈퍼아머로 버틴 공격은 제외)
+            if (!isAbsorbed && !isComboHit && reaction != null && reaction.IsDummy()) hitType = GetDummyHitType(hitType);
             int finalDamage = Mathf.RoundToInt(damage * info.GetDamageRate(hitType));
 
             // 맞은 쪽이 따라 움직일 때린 쪽의 속도 (장풍은 때린 쪽 몸이 아니므로 따라가지 않음)
@@ -277,6 +305,24 @@ namespace Game.Character
 
             var health = target.GetComponent<CharacterHealth>();
             if (health != null) health.TakeDamage(finalDamage, attacker: attacker);
+        }
+
+        // 설정창의 카운터 종류에 따른 더미의 히트 종류 (일반이면 맞은 순간의 상태로 정한 stateHitType 그대로)
+        private static HitType GetDummyHitType(HitType stateHitType)
+        {
+            switch (_dummyCounterMode)
+            {
+                case DummyCounterMode.AlwaysCounter: return HitType.Counter;
+                case DummyCounterMode.AlwaysPunishCounter: return HitType.PunishCounter;
+                case DummyCounterMode.Random: return (HitType)UnityEngine.Random.Range(0, 3); // 노말 / 카운터 / 퍼니시 카운터
+                default: return stateHitType;
+            }
+        }
+
+        // 더미인지 (플레이어가 조작하지 않고 더미 행동 / 가드 설정을 따르는 캐릭터)
+        private bool IsDummy()
+        {
+            return CHR_characterMove == null && (_dummyAction != null || _dummyGuard != null);
         }
 
         // 캐릭터가 지금 움직이는 속도 (플레이어는 CharacterMove, 더미는 DummyAction. 둘 다 없으면 0)
