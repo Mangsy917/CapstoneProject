@@ -78,10 +78,13 @@ public class CharacterMove : MonoBehaviour
     [SerializeField] private float jumpHeight = 2.88f;
     [Tooltip("공중에 떠 있는 프레임 수 (공중 판정을 가지는 프레임). 높이와 상관없이 항상 이 프레임 수만에 착지함")]
     [SerializeField] private int jumpAirFrames = 38;
-    [Tooltip("앞으로 점프할 때 공중에 있는 동안 가는 전체 가로 거리")]
+    [Tooltip("제자리에 서서 앞으로 점프할 때 공중에 있는 동안 가는 전체 가로 거리 (걷거나 달리면 그 속도만큼 더 감)")]
     [SerializeField] private float forwardJumpDistance = 1.9f;
-    [Tooltip("뒤로 점프할 때 공중에 있는 동안 가는 전체 가로 거리")]
+    [Tooltip("제자리에 서서 뒤로 점프할 때 공중에 있는 동안 가는 전체 가로 거리 (걷거나 달리면 그 속도만큼 더하거나 빠짐)")]
     [SerializeField] private float backJumpDistance = 1.9f;
+    [Tooltip("점프 직전 땅에서 움직이던 속도를 공중에서 얼마나 이어받는지 (1이면 그대로, 0이면 이어받지 않음).\n" +
+             "예) 1일 때 앞으로 달리다(1프레임 0.075) 앞점프하면 0.075 x 공중 38프레임 = 2.85만큼 더 멀리 감")]
+    [SerializeField] private float jumpMomentumRatio = 1f;
     [Tooltip("점프 입력(7, 8, 9) 후 이 프레임 수까지는 땅에서 방향 입력을 받고, 그다음 프레임에 점프함.\n" +
              "예) 4면 입력한 프레임 포함 1~5프레임은 지상(2~5프레임까지 방향 전환 가능, 8→9면 앞 점프), 6프레임째부터 공중")]
     [SerializeField] private int jumpDirectionBufferFrames = 4;
@@ -130,19 +133,28 @@ public class CharacterMove : MonoBehaviour
     public bool IsGuarding => CurrentState == MoveState.CrouchGuard || CurrentState == MoveState.WalkBackGuard;
     public bool IsBackDashing => CurrentState == MoveState.BackDash;
 
+    /// <summary>제자리에 서서 앞으로 점프할 때 가는 가로 거리 (재시작 위치 계산에 사용)</summary>
+    public float ForwardJumpDistance => forwardJumpDistance;
+
     // ===== 이동 내부 상태 =====
     private Transform enemy;
     private float searchTimer;
     private bool isJumpStarting;         // 점프 준비 중인지
     private int jumpStartFrame;          // 점프 입력이 처음 들어온 프레임
     private int pendingJumpDirection = 8; // 점프 준비 중 마지막으로 받은 방향 (7, 8, 9)
+    private float jumpStartVelocityX;    // 점프를 입력하기 직전 땅에서 움직이던 속도 (1프레임 거리, 오른쪽이 +). 점프할 때 이어받음
 
-    // 지금 하고 있는 공중 포물선 (레버 점프, 공격으로 뛰어오르기 공통)
+    // 땅에서의 속도 (1프레임에 움직인 가로 거리, 오른쪽이 +). 걷기, 달리기, 백대쉬가 움직인 만큼 매 프레임 다시 셈
+    private float groundVelocityX;
+    private float previousGroundVelocityX; // 직전 프레임의 땅 속도
+
+    // 지금 하고 있는 공중 움직임 (레버 점프, 공격으로 뛰어오르기 공통)
+    // 가로는 일정한 속도, 세로는 중력으로 매 프레임 속도가 줄어드는 포물선
     private int airFrame;                // 공중에 뜬 뒤 지난 프레임 (공중 첫 프레임 = 1)
     private int airFrames = 1;           // 공중에 떠 있는 전체 프레임 수
-    private float airHeight;             // 가장 높은 곳까지의 높이
-    private float CM_airStartY;          // 뛰어오른 높이 (공중에서 맞아 다시 떠오를 때는 바닥이 아님). 마지막 프레임에 바닥에 닿음
-    private float airDistancePerFrame;   // 1프레임에 움직이는 가로 거리 (오른쪽이 +)
+    private float airVelocityX;          // 가로 속도 (1프레임 거리, 오른쪽이 +)
+    private float airVelocityY;          // 세로 속도 (1프레임 거리, 위가 +)
+    private float airGravity;            // 1프레임마다 세로 속도가 줄어드는 양
     private bool shouldStopBeforeEnemy;  // 벽에 붙은 Enemy 쪽으로 뛰어서, Enemy를 넘어가지 않고 원래 쪽에 착지해야 하는지
 
     // 벽에 붙은 Enemy 쪽으로 앞 점프할 때 Enemy 바로 앞에 멈출 때 남기는 x 거리 (같은 위치가 되어 좌우가 애매해지지 않도록)
@@ -235,6 +247,10 @@ public class CharacterMove : MonoBehaviour
 
         bool isAttacking = characterAttack != null && characterAttack.IsAttacking;
         bool isInStun = CM_hitReaction != null && CM_hitReaction.IsInStun;
+
+        // 땅 속도는 이번 프레임에 움직인 만큼 다시 셈 (MoveBy에서 더함)
+        previousGroundVelocityX = groundVelocityX;
+        groundVelocityX = 0f;
 
         // 이동 (공격 / 피격 / 가드 경직 중에는 땅에서 멈추고, 공중에서는 점프 궤도를 그대로 따라감. 히트백 / 가드백은 CharacterHitReaction이 함)
         if (!IsGrounded)
@@ -352,6 +368,11 @@ public class CharacterMove : MonoBehaviour
     {
         StopForAttack();
         IsGrounded = true;
+        groundVelocityX = 0f;
+        previousGroundVelocityX = 0f;
+        jumpStartVelocityX = 0f;
+        airVelocityX = 0f;
+        airVelocityY = 0f;
         lastForwardTapFrame = int.MinValue / 2;
         lastBackTapFrame = int.MinValue / 2;
         appliedPosture = StatePosture.None; // 다음 프레임에 서기 자세를 다시 넣음
@@ -370,10 +391,11 @@ public class CharacterMove : MonoBehaviour
         CurrentState = MoveState.Neutral;
     }
 
-    // 이번 프레임에 x만큼 움직임 (걷기, 대쉬, 달리기는 모두 프레임 기준)
+    // 이번 프레임에 x만큼 움직임 (걷기, 대쉬, 달리기는 모두 프레임 기준). 움직인 만큼이 이번 프레임의 땅 속도가 됨
     private void MoveBy(float x)
     {
         transform.position += new Vector3(x, 0f, 0f);
+        groundVelocityX += x;
     }
 
     // =====================================================================
@@ -524,6 +546,8 @@ public class CharacterMove : MonoBehaviour
         isJumpStarting = true;
         jumpStartFrame = frameCounter;
         pendingJumpDirection = direction;
+        // 점프 준비 중에는 땅에서 멈추므로, 입력 직전에 움직이던 속도를 기억해 두었다가 뛰어오를 때 이어받음
+        jumpStartVelocityX = previousGroundVelocityX;
         CurrentState = MoveState.JumpStartup;
     }
 
@@ -573,26 +597,34 @@ public class CharacterMove : MonoBehaviour
                             : forwardDistance < 0f ? MoveState.JumpBack
                             : MoveState.JumpNeutral;
         int frames = Mathf.Max(1, airFrames);
-        StartAirArc(jumpState, height, frames, facingSign * forwardDistance / frames);
+        StartAirArc(jumpState, height, frames, velocityX: facingSign * forwardDistance / frames);
     }
 
-    // 레버 점프 시작. xDistance는 공중에 있는 동안 가는 전체 가로 거리 (오른쪽이 +)
+    // 레버 점프 시작. xDistance는 제자리에서 뛸 때 공중에 있는 동안 가는 전체 가로 거리 (오른쪽이 +)
+    // 점프 직전에 움직이던 속도를 더해서, 걷거나 달리다 뛰면 그 방향으로 더 멀리 감 (반대 방향이면 덜 감)
     private void StartJump(MoveState jumpState, float xDistance)
     {
-        StartAirArc(jumpState, jumpHeight, jumpAirFrames, xDistance / jumpAirFrames);
+        float velocityX = xDistance / jumpAirFrames + jumpStartVelocityX * jumpMomentumRatio;
+        jumpStartVelocityX = 0f;
+        StartAirArc(jumpState, jumpHeight, jumpAirFrames, velocityX);
     }
 
-    // 공중 포물선 시작 (레버 점프, 공격으로 뛰어오르기 공통)
+    // 공중 움직임 시작 (레버 점프, 공격으로 뛰어오르기 공통)
+    // frames 프레임 뒤 바닥에 닿고, 그 사이 가장 높은 곳이 height가 되도록 처음 세로 속도와 중력을 정함
+    // (바닥에서 뛰면 frames의 절반에서 가장 높음. 공중에서 다시 뜨면 그 높이에서 바닥까지 내려가는 선보다 height만큼 높게 휨)
     // 이 프레임이 공중 첫 프레임이므로 바로 한 프레임만큼 움직임
-    private void StartAirArc(MoveState jumpState, float height, int frames, float xDistancePerFrame)
+    private void StartAirArc(MoveState jumpState, float height, int frames, float velocityX)
     {
         CurrentState = jumpState;
         IsGrounded = false;
         airFrame = 0;
         airFrames = frames;
-        airHeight = height;
-        CM_airStartY = transform.position.y;
-        airDistancePerFrame = xDistancePerFrame;
+
+        float dropToGround = groundY - transform.position.y; // 바닥에서 뛰면 0, 공중에서 뜨면 음수
+        airGravity = 8f * height / (frames * frames);
+        airVelocityY = (dropToGround + 4f * height) / frames;
+        airVelocityX = velocityX;
+
         shouldStopBeforeEnemy = IsJumpingTowardEnemyAtWall();
         UpdateAirborne();
     }
@@ -605,7 +637,7 @@ public class CharacterMove : MonoBehaviour
         if (enemy == null || enemyPushbox == null) return false;
 
         float facingSign = IsFacingRight ? 1f : -1f;
-        if (airDistancePerFrame * facingSign <= 0f) return false; // 제자리 / 뒤로 점프
+        if (airVelocityX * facingSign <= 0f) return false; // 제자리 / 뒤로 점프
 
         return enemyPushbox.IsTouchingWall(direction: facingSign);
     }
@@ -636,22 +668,27 @@ public class CharacterMove : MonoBehaviour
     }
 
     /// <summary>
-    /// 공중: airFrames 프레임 동안 포물선을 그리고, 마지막 프레임에 바닥 높이에 닿음
-    /// (착지 처리는 다음 프레임 Update 처음에 함. 마지막 프레임까지 공중 판정)
-    /// 점프 방향은 뛰어오를 때 정해지고, 공중에서는 바뀌지 않음
+    /// 공중: 가로는 뛰어오를 때의 속도 그대로, 세로는 매 프레임 중력만큼 속도가 줄어듦.
+    /// airFrames 프레임째에 바닥 높이에 닿음 (착지 처리는 다음 프레임 Update 처음에 함. 마지막 프레임까지 공중 판정)
+    /// 점프 방향과 가로 속도는 뛰어오를 때 정해지고, 공중에서는 바뀌지 않음
     /// </summary>
     private void UpdateAirborne()
     {
         airFrame++;
 
-        // 공중에서 지난 비율 (0 → 1). 높이는 비율 0.5에서 airHeight가 되는 포물선
-        float progress = (float)airFrame / airFrames;
-
         Vector3 pos = transform.position;
-        pos.x += airDistancePerFrame;
+        pos.x += airVelocityX;
         if (shouldStopBeforeEnemy)
             pos.x = LimitBeforeEnemy(pos.x);
-        pos.y = Mathf.Lerp(CM_airStartY, groundY, progress) + 4f * airHeight * progress * (1f - progress);
+
+        // 이번 프레임 동안 평균 속도(처음 속도 - 중력 절반)만큼 움직인 뒤 속도를 줄임 (프레임이 끊겨도 정확한 포물선)
+        pos.y += airVelocityY - 0.5f * airGravity;
+        airVelocityY -= airGravity;
+
+        // 마지막 프레임은 계산 오차 없이 바닥에 맞춤
+        if (airFrame >= airFrames)
+            pos.y = groundY;
+
         transform.position = pos;
     }
 
@@ -726,6 +763,7 @@ public class CharacterMove : MonoBehaviour
         if (backWalkDistancePerFrame < 0f) backWalkDistancePerFrame = 0f;
         if (forwardJumpDistance < 0f) forwardJumpDistance = 0f;
         if (backJumpDistance < 0f) backJumpDistance = 0f;
+        if (jumpMomentumRatio < 0f) jumpMomentumRatio = 0f;
         if (jumpHeight < 0f) jumpHeight = 0f;
         if (jumpAirFrames < 1) jumpAirFrames = 1;
         if (searchInterval < 0f) searchInterval = 0f;
