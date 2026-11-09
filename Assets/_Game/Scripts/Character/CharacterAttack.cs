@@ -77,6 +77,9 @@ namespace Game.Character
         private CharacterCommand.AttackButtonType _bufferedButton;
         private int _bufferedFramesLeft;
 
+        private bool _isSpecialAttack;  // 지금 공격이 필살기(레버를 두 방향 이상 순서대로 넣는 커맨드, 예: 236, 623)인지
+        private bool _isBufferLocked;   // 필살기가 히트해서 이 공격이 끝날 때까지 선입력을 받지 않는 중인지
+
         private int _attackStartedFrame = -1; // 마지막으로 공격을 시작한 Time.frameCount
         private CharacterHitReaction _lastHitReaction; // 이번 공격이 닿은 상대 (캔슬할 때 경직을 늘리는 데 사용)
         private CharacterHitReaction _chainTarget; // 이번 공격이 캔슬로 나왔을 때 앞 공격이 닿은 상대 (캔슬로 나온 공격이 아니면 null)
@@ -220,6 +223,7 @@ namespace Game.Character
                 _lastHitIndex = hitIndex;
                 _lastHitReaction = opponent.GetComponent<CharacterHitReaction>();
                 CharacterHitReaction.HitTarget(opponent, attack.GetDamage(_currentButton, hitIndex), attack.GetHitInfo(_currentButton, hitIndex), hitbox, direction: facingSign, attacker: this, shouldPushAttacker: true);
+                LockBufferIfSpecialHit(_lastHitReaction);
                 return;
             }
         }
@@ -243,11 +247,12 @@ namespace Game.Character
 
             if (!HitStop.IsStoppedNow(this) && CanStartCommand(command))
             {
-                StartAttack(command.attack, button);
+                StartAttack(command.attack, button, isSpecial: IsSpecialCommand(command));
                 return;
             }
 
-            if (command.requireAllButtons) return;
+            // 필살기가 히트한 뒤에는 그 기술이 끝날 때까지 지금 낼 수 없는 입력을 기억하지 않음 (선입력 불가)
+            if (command.requireAllButtons || _isBufferLocked) return;
 
             // 버튼을 먼저 누른 커맨드는 캔슬로 이어지는 중일 때만 기억함 (평소에는 먼저 나간 기본기 뒤에 뒤늦게 나가지 않도록)
             bool isConnected = IsAttacking && !IsLanding && (_lastHitIndex >= 0 || _chainTarget != null);
@@ -275,6 +280,27 @@ namespace Game.Character
         private static bool HasMotion(CharacterCommand.CommandData command)
         {
             return command.directionSequence != null && command.directionSequence.Length > 0;
+        }
+
+        // 필살기 커맨드인지 (레버를 두 방향 이상 순서대로 넣는 커맨드. 6M처럼 한 방향만 누르는 특수기는 아님)
+        private static bool IsSpecialCommand(CharacterCommand.CommandData command)
+        {
+            return command.directionSequence != null && command.directionSequence.Length >= 2;
+        }
+
+        // 필살기가 상대에게 히트하면(가드, 슈퍼아머로 버틴 것은 아님) 이 공격이 끝날 때까지 선입력을 받지 않고, 기억해 둔 입력도 버림
+        private void LockBufferIfSpecialHit(CharacterHitReaction target)
+        {
+            if (!_isSpecialAttack || target == null || !target.IsInHitStun) return;
+            _isBufferLocked = true;
+            _bufferedCommand = null;
+        }
+
+        /// <summary>내가 쏜 투사체가 상대에게 닿았을 때 호출 (Projectile). 투사체를 쏜 필살기가 아직 진행 중이면 히트 시 선입력을 막음</summary>
+        public void NotifyProjectileHit(GameObject target)
+        {
+            if (!IsAttacking || CurrentAttack.ProjectilePrefab == null || target == null) return;
+            LockBufferIfSpecialHit(target.GetComponent<CharacterHitReaction>());
         }
 
         // 캔슬로 나간 공격의 발생 중에는 다른 공격으로 바꿀 수 있음
@@ -324,7 +350,7 @@ namespace Game.Character
             if (CanStartCommand(command))
             {
                 _bufferedCommand = null;
-                StartAttack(command.attack, _bufferedButton);
+                StartAttack(command.attack, _bufferedButton, isSpecial: IsSpecialCommand(command));
                 return;
             }
 
@@ -336,9 +362,15 @@ namespace Game.Character
             if (_bufferedFramesLeft <= 0) _bufferedCommand = null;
         }
 
-        /// <summary>attack을 시작함. 발생 / 지속 / 회수 프레임은 button에 맞춘 값을 씀 (AttackData의 버튼별 프레임)</summary>
-        public void StartAttack(AttackData attack, CharacterCommand.AttackButtonType button)
+        /// <summary>
+        /// attack을 시작함. 발생 / 지속 / 회수 프레임은 button에 맞춘 값을 씀 (AttackData의 버튼별 프레임)
+        /// isSpecial: 필살기 커맨드로 나간 공격인지 (히트하면 끝날 때까지 선입력을 받지 않음)
+        /// </summary>
+        public void StartAttack(AttackData attack, CharacterCommand.AttackButtonType button, bool isSpecial = false)
         {
+            _isSpecialAttack = isSpecial;
+            _isBufferLocked = false;
+
             // 캔슬이면 맞고 있는 상대를 기억해 둠 (아래에서 값을 지우기 전에)
             CharacterHitReaction cancelledTarget = CanCancelInto(attack) ? _lastHitReaction : CanReplaceChainedStartup(attack) ? _chainTarget : null;
 
@@ -386,6 +418,8 @@ namespace Game.Character
         private void EndAttack()
         {
             _chainTarget = null;
+            _isSpecialAttack = false;
+            _isBufferLocked = false;
             CurrentAttack = null;
             AttackFrame = 0;
             _landingFrame = 0;
