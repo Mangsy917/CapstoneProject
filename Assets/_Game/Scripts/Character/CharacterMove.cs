@@ -78,16 +78,23 @@ public class CharacterMove : MonoBehaviour
     [SerializeField] private float jumpHeight = 2.88f;
     [Tooltip("공중에 떠 있는 프레임 수 (공중 판정을 가지는 프레임). 높이와 상관없이 항상 이 프레임 수만에 착지함")]
     [SerializeField] private int jumpAirFrames = 38;
-    [Tooltip("제자리에 서서 앞으로 점프할 때 공중에 있는 동안 가는 전체 가로 거리 (걷거나 달리면 그 속도만큼 더 감)")]
-    [SerializeField] private float forwardJumpDistance = 1.9f;
-    [Tooltip("제자리에 서서 뒤로 점프할 때 공중에 있는 동안 가는 전체 가로 거리 (걷거나 달리면 그 속도만큼 더하거나 빠짐)")]
-    [SerializeField] private float backJumpDistance = 1.9f;
-    [Tooltip("점프 직전 땅에서 움직이던 속도를 공중에서 얼마나 이어받는지 (1이면 그대로, 0이면 이어받지 않음).\n" +
-             "예) 1일 때 앞으로 달리다(1프레임 0.075) 앞점프하면 0.075 x 공중 38프레임 = 2.85만큼 더 멀리 감")]
-    [SerializeField] private float jumpMomentumRatio = 1f;
     [Tooltip("점프 입력(7, 8, 9) 후 이 프레임 수까지는 땅에서 방향 입력을 받고, 그다음 프레임에 점프함.\n" +
              "예) 4면 입력한 프레임 포함 1~5프레임은 지상(2~5프레임까지 방향 전환 가능, 8→9면 앞 점프), 6프레임째부터 공중")]
     [SerializeField] private int jumpDirectionBufferFrames = 4;
+
+    // 점프 거리는 점프 직전에 움직이던 속도에 비례해서 정해짐
+    // (서 있음 → 걷기 속도 → 달리기 속도 사이는 속도 비율대로 두 거리 사이 값. 예: 걷기 속도의 절반이면 제자리와 걷기 거리의 중간)
+    [Header("점프 거리 (공중에 있는 동안 가는 전체 가로 거리)")]
+    [Tooltip("서 있다가 앞점프할 때 거리 (재시작 중앙 거리도 이 값으로 계산함)")]
+    [SerializeField] private float forwardJumpDistance = 1.9f;
+    [Tooltip("앞으로 걷다가(걷기 속도) 앞점프할 때 거리")]
+    [SerializeField] private float walkForwardJumpDistance = 4.4f;
+    [Tooltip("달리다가(달리기 속도) 앞점프할 때 거리")]
+    [SerializeField] private float runForwardJumpDistance = 5.35f;
+    [Tooltip("서 있다가 뒤점프할 때 거리")]
+    [SerializeField] private float backJumpDistance = 1.9f;
+    [Tooltip("뒤로 걷다가(뒤로 걷기 속도) 뒤점프할 때 거리")]
+    [SerializeField] private float walkBackJumpDistance = 3.77f;
 
     [Header("대쉬 / 달리기")]
     [Tooltip("같은 방향을 두 번 누를 때(66은 달리기, 44는 백대쉬), 첫 입력 후 이 프레임 수 이내에 다시 눌러야 인정")]
@@ -142,7 +149,7 @@ public class CharacterMove : MonoBehaviour
     private bool isJumpStarting;         // 점프 준비 중인지
     private int jumpStartFrame;          // 점프 입력이 처음 들어온 프레임
     private int pendingJumpDirection = 8; // 점프 준비 중 마지막으로 받은 방향 (7, 8, 9)
-    private float jumpStartVelocityX;    // 점프를 입력하기 직전 땅에서 움직이던 속도 (1프레임 거리, 오른쪽이 +). 점프할 때 이어받음
+    private float jumpStartVelocityX;    // 점프를 입력하기 직전 땅에서 움직이던 속도 (1프레임 거리, 오른쪽이 +). 점프 거리를 정할 때 사용
 
     // 땅에서의 속도 (1프레임에 움직인 가로 거리, 오른쪽이 +). 걷기, 달리기, 백대쉬가 움직인 만큼 매 프레임 다시 셈
     private float groundVelocityX;
@@ -572,12 +579,49 @@ public class CharacterMove : MonoBehaviour
         isJumpStarting = false;
         float facingSign = IsFacingRight ? 1f : -1f;
 
+        // 점프 직전 속도 (앞이 +, 뒤가 -)
+        float forwardSpeed = jumpStartVelocityX * facingSign;
+        jumpStartVelocityX = 0f;
+
         switch (pendingJumpDirection)
         {
-            case 7: StartJump(MoveState.JumpBack, -facingSign * backJumpDistance); break;
-            case 9: StartJump(MoveState.JumpForward, facingSign * forwardJumpDistance); break;
+            case 7: StartJump(MoveState.JumpBack, -facingSign * GetBackJumpDistance(backSpeed: -forwardSpeed)); break;
+            case 9: StartJump(MoveState.JumpForward, facingSign * GetForwardJumpDistance(forwardSpeed)); break;
             default: StartJump(MoveState.JumpNeutral, 0f); break;
         }
+    }
+
+    /// <summary>
+    /// 앞점프 거리: 점프 직전 앞으로 가던 속도에 비례
+    /// 서 있음(0) → 제자리 거리, 걷기 속도 → 걷다가 점프 거리, 달리기 속도 → 달리다 점프 거리.
+    /// 그 사이 속도는 두 값 사이를 속도 비율대로 나눔 (달리기 속도보다 빠르면 달리다 점프 거리)
+    /// </summary>
+    private float GetForwardJumpDistance(float forwardSpeed)
+    {
+        if (forwardSpeed <= 0f) return forwardJumpDistance;
+
+        if (forwardSpeed <= forwardWalkDistancePerFrame || runDistancePerFrame <= forwardWalkDistancePerFrame)
+            return Mathf.Lerp(forwardJumpDistance, walkForwardJumpDistance, GetSpeedRatio(forwardSpeed, forwardWalkDistancePerFrame));
+
+        float runRatio = Mathf.InverseLerp(forwardWalkDistancePerFrame, runDistancePerFrame, forwardSpeed);
+        return Mathf.Lerp(walkForwardJumpDistance, runForwardJumpDistance, runRatio);
+    }
+
+    /// <summary>
+    /// 뒤점프 거리: 점프 직전 뒤로 가던 속도에 비례
+    /// 서 있음(0) → 제자리 거리, 뒤로 걷기 속도 → 뒤로 걷다가 점프 거리 (더 빠르면 뒤로 걷다가 점프 거리)
+    /// </summary>
+    private float GetBackJumpDistance(float backSpeed)
+    {
+        if (backSpeed <= 0f) return backJumpDistance;
+        return Mathf.Lerp(backJumpDistance, walkBackJumpDistance, GetSpeedRatio(backSpeed, backWalkDistancePerFrame));
+    }
+
+    // speed가 fullSpeed의 몇 배인지 (0 ~ 1). fullSpeed가 0이면 1
+    private static float GetSpeedRatio(float speed, float fullSpeed)
+    {
+        if (fullSpeed <= 0f) return 1f;
+        return Mathf.Clamp01(speed / fullSpeed);
     }
 
     /// <summary>
@@ -600,13 +644,11 @@ public class CharacterMove : MonoBehaviour
         StartAirArc(jumpState, height, frames, velocityX: facingSign * forwardDistance / frames);
     }
 
-    // 레버 점프 시작. xDistance는 제자리에서 뛸 때 공중에 있는 동안 가는 전체 가로 거리 (오른쪽이 +)
-    // 점프 직전에 움직이던 속도를 더해서, 걷거나 달리다 뛰면 그 방향으로 더 멀리 감 (반대 방향이면 덜 감)
+    // 레버 점프 시작. xDistance는 공중에 있는 동안 가는 전체 가로 거리 (오른쪽이 +)
+    // 공중 프레임 수로 나눈 값이 가로 속도가 됨
     private void StartJump(MoveState jumpState, float xDistance)
     {
-        float velocityX = xDistance / jumpAirFrames + jumpStartVelocityX * jumpMomentumRatio;
-        jumpStartVelocityX = 0f;
-        StartAirArc(jumpState, jumpHeight, jumpAirFrames, velocityX);
+        StartAirArc(jumpState, jumpHeight, jumpAirFrames, velocityX: xDistance / jumpAirFrames);
     }
 
     // 공중 움직임 시작 (레버 점프, 공격으로 뛰어오르기 공통)
@@ -763,7 +805,9 @@ public class CharacterMove : MonoBehaviour
         if (backWalkDistancePerFrame < 0f) backWalkDistancePerFrame = 0f;
         if (forwardJumpDistance < 0f) forwardJumpDistance = 0f;
         if (backJumpDistance < 0f) backJumpDistance = 0f;
-        if (jumpMomentumRatio < 0f) jumpMomentumRatio = 0f;
+        if (walkForwardJumpDistance < 0f) walkForwardJumpDistance = 0f;
+        if (runForwardJumpDistance < 0f) runForwardJumpDistance = 0f;
+        if (walkBackJumpDistance < 0f) walkBackJumpDistance = 0f;
         if (jumpHeight < 0f) jumpHeight = 0f;
         if (jumpAirFrames < 1) jumpAirFrames = 1;
         if (searchInterval < 0f) searchInterval = 0f;
