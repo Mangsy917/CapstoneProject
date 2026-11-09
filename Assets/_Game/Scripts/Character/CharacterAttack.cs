@@ -78,7 +78,7 @@ namespace Game.Character
         private int _bufferedFramesLeft;
 
         private bool _isSpecialAttack;  // 지금 공격이 필살기(레버를 두 방향 이상 순서대로 넣는 커맨드, 예: 236, 623)인지
-        private bool _isBufferLocked;   // 필살기가 히트해서 이 공격이 끝날 때까지 선입력을 받지 않는 중인지
+        private bool _isBufferLocked;   // 필살기가 상대에게 닿아서(히트 / 가드 / 슈퍼아머) 이 공격이 끝날 때까지 선입력을 받지 않는 중인지
 
         private int _attackStartedFrame = -1; // 마지막으로 공격을 시작한 Time.frameCount
         private CharacterHitReaction _lastHitReaction; // 이번 공격이 닿은 상대 (캔슬할 때 경직을 늘리는 데 사용)
@@ -171,6 +171,10 @@ namespace Game.Character
             if (CurrentAttack.ProjectilePrefab != null && AttackFrame == CurrentAttack.GetProjectileSpawnFrame(CurrentFrames))
                 SpawnProjectile(CurrentAttack);
 
+            // 전진하는 공격이면 발생 동안 앞으로 나감 (땅에서만. 공격 판정보다 먼저 움직여서 나간 자리에서 맞힘)
+            if (CA_characterMove != null && !_isAirAttack)
+                CA_characterMove.MoveForwardByAttack(CurrentAttack.GetForwardMoveDistancePerFrame(_currentButton, CurrentFrames, AttackFrame));
+
             if (AttackFrame == CurrentAttack.GetLaunchFrame(CurrentFrames) && CA_characterMove != null)
             {
                 CA_characterMove.LaunchIntoAir(forwardDistance: CurrentAttack.LaunchForwardDistance, height: CurrentAttack.LaunchHeight, airFrames: CurrentAttack.GetLaunchAirFrames(CurrentFrames));
@@ -223,7 +227,7 @@ namespace Game.Character
                 _lastHitIndex = hitIndex;
                 _lastHitReaction = opponent.GetComponent<CharacterHitReaction>();
                 CharacterHitReaction.HitTarget(opponent, attack.GetDamage(_currentButton, hitIndex), attack.GetHitInfo(_currentButton, hitIndex), hitbox, direction: facingSign, attacker: this, shouldPushAttacker: true);
-                LockBufferIfSpecialHit(_lastHitReaction);
+                LockBufferIfSpecial();
                 return;
             }
         }
@@ -251,7 +255,7 @@ namespace Game.Character
                 return;
             }
 
-            // 필살기가 히트한 뒤에는 그 기술이 끝날 때까지 지금 낼 수 없는 입력을 기억하지 않음 (선입력 불가)
+            // 필살기가 상대에게 닿은 뒤에는 그 기술이 끝날 때까지 지금 낼 수 없는 입력을 기억하지 않음 (선입력 불가)
             if (command.requireAllButtons || _isBufferLocked) return;
 
             // 버튼을 먼저 누른 커맨드는 캔슬로 이어지는 중일 때만 기억함 (평소에는 먼저 나간 기본기 뒤에 뒤늦게 나가지 않도록)
@@ -288,19 +292,19 @@ namespace Game.Character
             return command.directionSequence != null && command.directionSequence.Length >= 2;
         }
 
-        // 필살기가 상대에게 히트하면(가드, 슈퍼아머로 버틴 것은 아님) 이 공격이 끝날 때까지 선입력을 받지 않고, 기억해 둔 입력도 버림
-        private void LockBufferIfSpecialHit(CharacterHitReaction target)
+        // 필살기가 상대에게 닿으면(히트, 가드, 슈퍼아머로 버팀 모두) 이 공격이 끝날 때까지 선입력을 받지 않고, 기억해 둔 입력도 버림
+        private void LockBufferIfSpecial()
         {
-            if (!_isSpecialAttack || target == null || !target.IsInHitStun) return;
+            if (!_isSpecialAttack) return;
             _isBufferLocked = true;
             _bufferedCommand = null;
         }
 
-        /// <summary>내가 쏜 투사체가 상대에게 닿았을 때 호출 (Projectile). 투사체를 쏜 필살기가 아직 진행 중이면 히트 시 선입력을 막음</summary>
-        public void NotifyProjectileHit(GameObject target)
+        /// <summary>내가 쏜 투사체가 상대에게 닿았을 때 호출 (Projectile). 투사체를 쏜 필살기가 아직 진행 중이면 선입력을 막음</summary>
+        public void NotifyProjectileHit()
         {
-            if (!IsAttacking || CurrentAttack.ProjectilePrefab == null || target == null) return;
-            LockBufferIfSpecialHit(target.GetComponent<CharacterHitReaction>());
+            if (!IsAttacking || CurrentAttack.ProjectilePrefab == null) return;
+            LockBufferIfSpecial();
         }
 
         // 캔슬로 나간 공격의 발생 중에는 다른 공격으로 바꿀 수 있음
@@ -364,7 +368,7 @@ namespace Game.Character
 
         /// <summary>
         /// attack을 시작함. 발생 / 지속 / 회수 프레임은 button에 맞춘 값을 씀 (AttackData의 버튼별 프레임)
-        /// isSpecial: 필살기 커맨드로 나간 공격인지 (히트하면 끝날 때까지 선입력을 받지 않음)
+        /// isSpecial: 필살기 커맨드로 나간 공격인지 (상대에게 닿으면 끝날 때까지 선입력을 받지 않음)
         /// </summary>
         public void StartAttack(AttackData attack, CharacterCommand.AttackButtonType button, bool isSpecial = false)
         {

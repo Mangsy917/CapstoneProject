@@ -97,7 +97,7 @@ namespace Game.Character
                 // 장풍은 상대가 벽에 붙어 있어도 쏜 쪽을 밀어내지 않음
                 CharacterAttack attacker = _owner != null ? _owner.GetComponent<CharacterAttack>() : null;
                 CharacterHitReaction.HitTarget(hitTarget, P_damage, _hitInfo, hitbox, direction: P_direction, attacker: attacker, shouldPushAttacker: false, shouldHitStop: false);
-                if (attacker != null) attacker.NotifyProjectileHit(hitTarget);
+                if (attacker != null) attacker.NotifyProjectileHit();
                 DestroyProjectile();
                 return;
             }
