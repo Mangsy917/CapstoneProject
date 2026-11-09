@@ -86,15 +86,15 @@ public class CharacterMove : MonoBehaviour
     // (서 있음 → 걷기 속도 → 달리기 속도 사이는 속도 비율대로 두 거리 사이 값. 예: 걷기 속도의 절반이면 제자리와 걷기 거리의 중간)
     [Header("점프 거리 (공중에 있는 동안 가는 전체 가로 거리)")]
     [Tooltip("서 있다가 앞점프할 때 거리 (재시작 중앙 거리도 이 값으로 계산함)")]
-    [SerializeField] private float forwardJumpDistance = 1f;
+    [SerializeField] private float forwardJumpDistance = 1.5f;
     [Tooltip("앞으로 걷다가(걷기 속도) 앞점프할 때 거리")]
-    [SerializeField] private float walkForwardJumpDistance = 1f;
+    [SerializeField] private float walkForwardJumpDistance = 1.5f;
     [Tooltip("달리다가(달리기 속도) 앞점프할 때 거리")]
-    [SerializeField] private float runForwardJumpDistance = 2.3f;
+    [SerializeField] private float runForwardJumpDistance = 3.45f;
     [Tooltip("서 있다가 뒤점프할 때 거리")]
-    [SerializeField] private float backJumpDistance = 1f;
+    [SerializeField] private float backJumpDistance = 1.5f;
     [Tooltip("뒤로 걷다가(뒤로 걷기 속도) 뒤점프할 때 거리")]
-    [SerializeField] private float walkBackJumpDistance = 1f;
+    [SerializeField] private float walkBackJumpDistance = 1.5f;
 
     [Header("대쉬 / 달리기")]
     [Tooltip("같은 방향을 두 번 누를 때(66은 달리기, 44는 백대쉬), 첫 입력 후 이 프레임 수 이내에 다시 눌러야 인정")]
@@ -103,7 +103,7 @@ public class CharacterMove : MonoBehaviour
     [Tooltip("백대쉬로 움직이는 전체 거리")]
     [SerializeField] private float backDashDistance = 1f;
     [Tooltip("백대쉬 전체 프레임 수")]
-    [SerializeField] private int backDashFrames = 18;
+    [SerializeField] private int backDashFrames = 15;
     [Tooltip("달리는 동안 1프레임에 움직이는 거리 (예: 0.075면 60프레임에 4.5)")]
     [SerializeField] private float runDistancePerFrame = 0.08625f;
     [Tooltip("달리는 중 Enemy와 겹치면, 겹친 프레임부터 이 프레임 수 뒤 자동으로 달리기를 멈춤")]
