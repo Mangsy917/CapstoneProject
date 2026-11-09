@@ -31119,19 +31119,19 @@ MonoBehaviour:
   CM_hitReaction: {fileID: 0}
   playerTag: Player
   enemyTag: Enemy
-  forwardWalkDistancePerFrame: 0.05
-  backWalkDistancePerFrame: 0.033333335
+  forwardWalkDistancePerFrame: 0.0375
+  backWalkDistancePerFrame: 0.025
   jumpHeight: 2.88
   jumpAirFrames: 38
   jumpDirectionBufferFrames: 4
   forwardJumpDistance: 1
-  walkForwardJumpDistance: 1.5
-  runForwardJumpDistance: 1.75
+  walkForwardJumpDistance: 1
+  runForwardJumpDistance: 2
   backJumpDistance: 1
-  walkBackJumpDistance: 1.33
+  walkBackJumpDistance: 1
   dashInputWindowFrames: 20
   backDashDistance: 1
-  backDashFrames: 23
+  backDashFrames: 18
   runDistancePerFrame: 0.075
   runStopFramesAfterOverlap: 60
   overlapDistance: 1
