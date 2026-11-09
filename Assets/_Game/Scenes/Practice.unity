@@ -494,7 +494,8 @@ MonoBehaviour:
   _leftIndex: 0
   _placeStepper: {fileID: 858530112}
   _stageBoundary: {fileID: 351704330}
-  _characterGap: 2.9
+  _characterGap: 3.44
+  _jumpLandingMargin: 0.05
   _wallCharacterGap: 1.1
   _centerIndex: 0
   _rightEndIndex: 1
@@ -31124,6 +31125,7 @@ MonoBehaviour:
   jumpAirFrames: 38
   forwardJumpDistance: 2.5
   backJumpDistance: 2.5
+  jumpMomentumRatio: 1
   jumpDirectionBufferFrames: 4
   dashInputWindowFrames: 20
   backDashDistance: 1
@@ -31223,7 +31225,7 @@ Transform:
   m_GameObject: {fileID: 1389828391}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -1.45, y: 1.7, z: 0}
+  m_LocalPosition: {x: -1.72, y: 1.7, z: 0}
   m_LocalScale: {x: 0.25, y: 0.25, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -48213,7 +48215,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 192519188449288156, guid: 2802a42fa7a8afb4ba50195fec27f35f, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 1.45
+      value: 1.72
       objectReference: {fileID: 0}
     - target: {fileID: 192519188449288156, guid: 2802a42fa7a8afb4ba50195fec27f35f, type: 3}
       propertyPath: m_LocalPosition.y
