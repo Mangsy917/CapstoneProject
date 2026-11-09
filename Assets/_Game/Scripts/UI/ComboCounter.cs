@@ -38,7 +38,7 @@ namespace Game.UI
         [SerializeField] private string _counterHitText = "COUNTER";
 
         [Tooltip("퍼니시 카운터로 맞았을 때 표시할 글자")]
-        [SerializeField] private string _punishCounterText = "PUNISH COUNTER";
+        [SerializeField] private string _punishCounterText = "PUNISH";
 
         [Header("사이드 (때린 쪽이 있는 쪽에 표시)")]
         [Tooltip("때린 쪽 캐릭터의 태그. 이 캐릭터가 맞는 쪽보다 오른쪽에 있으면 표시를 화면 오른쪽으로 좌우 반전함")]

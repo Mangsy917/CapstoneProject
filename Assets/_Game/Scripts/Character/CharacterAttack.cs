@@ -73,7 +73,8 @@ namespace Game.Character
         [SerializeField] private int _inputBufferFrames = 6;
 
         // 기억해 둔 입력 (없으면 null)
-        private CharacterCommand.CommandData _bufferedCommand;
+        // 플레이 중에 스크립트가 다시 컴파일되면 Unity가 빈 CommandData를 만들어 넣지 않도록 직렬화하지 않음 (공격이 null인 입력이 남아 오류가 남)
+        [System.NonSerialized] private CharacterCommand.CommandData _bufferedCommand;
         private CharacterCommand.AttackButtonType _bufferedButton;
         private int _bufferedFramesLeft;
 

@@ -64,7 +64,7 @@ public class StateUI : MonoBehaviour
     [Header("카운터 판정 - 표시할 텍스트 (인스펙터에서 수정)")]
     [SerializeField] private string normalHit = "노말히트";
     [SerializeField] private string counterHit = "카운터";
-    [SerializeField] private string punishCounter = "퍼니쉬카운터";
+    [SerializeField] private string punishCounter = "퍼니쉬";
 
     [Tooltip("값이 없을 때 표시할 텍스트 (공격 중이 아님, 카운터 없음 등)")]
     [SerializeField] private string emptyText = "-";
