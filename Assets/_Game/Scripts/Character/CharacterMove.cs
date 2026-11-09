@@ -90,7 +90,7 @@ public class CharacterMove : MonoBehaviour
     [Tooltip("앞으로 걷다가(걷기 속도) 앞점프할 때 거리")]
     [SerializeField] private float walkForwardJumpDistance = 1f;
     [Tooltip("달리다가(달리기 속도) 앞점프할 때 거리")]
-    [SerializeField] private float runForwardJumpDistance = 2f;
+    [SerializeField] private float runForwardJumpDistance = 2.3f;
     [Tooltip("서 있다가 뒤점프할 때 거리")]
     [SerializeField] private float backJumpDistance = 1f;
     [Tooltip("뒤로 걷다가(뒤로 걷기 속도) 뒤점프할 때 거리")]
@@ -105,7 +105,7 @@ public class CharacterMove : MonoBehaviour
     [Tooltip("백대쉬 전체 프레임 수")]
     [SerializeField] private int backDashFrames = 18;
     [Tooltip("달리는 동안 1프레임에 움직이는 거리 (예: 0.075면 60프레임에 4.5)")]
-    [SerializeField] private float runDistancePerFrame = 0.075f;
+    [SerializeField] private float runDistancePerFrame = 0.08625f;
     [Tooltip("달리는 중 Enemy와 겹치면, 겹친 프레임부터 이 프레임 수 뒤 자동으로 달리기를 멈춤")]
     [SerializeField] private int runStopFramesAfterOverlap = 60;
     [Tooltip("Collider가 없을 때 사용할 겹침 판정 거리. Player와 Enemy의 x축 거리가 이 값 이하이면 겹친 것으로 봄")]

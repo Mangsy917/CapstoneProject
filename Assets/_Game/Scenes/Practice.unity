@@ -31126,13 +31126,13 @@ MonoBehaviour:
   jumpDirectionBufferFrames: 4
   forwardJumpDistance: 1
   walkForwardJumpDistance: 1
-  runForwardJumpDistance: 2
+  runForwardJumpDistance: 2.3
   backJumpDistance: 1
   walkBackJumpDistance: 1
   dashInputWindowFrames: 20
   backDashDistance: 1
   backDashFrames: 18
-  runDistancePerFrame: 0.075
+  runDistancePerFrame: 0.08625
   runStopFramesAfterOverlap: 60
   overlapDistance: 1
   useStartYAsGround: 1
