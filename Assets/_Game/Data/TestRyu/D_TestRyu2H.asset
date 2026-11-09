@@ -19,7 +19,7 @@ MonoBehaviour:
   AD_attackBoxOffset: {x: 1.205, y: -0.864}
   _attackBoxWindows: []
   _hitAdvantage: 40
-  _hitBackDistance: 0.5
+  _hitBackDistance: 0.3
   _hitBackFrames: 8
   _hitStopFrames: 13
   _hitMotion: 0
@@ -101,6 +101,7 @@ MonoBehaviour:
   _launchHeight: 1.62
   _launchAirFrames: 43
   _holdUntilLanding: 0
+  _chainAttacks: []
   _landingRecoveryFrames: 0
   _landingAnimationState: 
   _animationState: 2H

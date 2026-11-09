@@ -19,12 +19,61 @@ MonoBehaviour:
   AD_attackBoxOffset: {x: 0, y: 0}
   _attackBoxWindows: []
   _hitAdvantage: 0
-  _hitBackDistance: 0.5
+  _hitBackDistance: 0.3
   _hitBackFrames: 8
+  _hitStopFrames: 6
   _hitMotion: 0
   _blockAdvantage: -7
   _guardBackDistance: 0.4
   _guardBackFrames: 8
+  _normalHitResult:
+    _damageRate: 1
+    _shouldOverrideHitStop: 0
+    AD_hitStopFrames: 6
+    _extraHitStunFrames: 0
+    _shouldOverrideHitStun: 0
+    _standHitStunFrames: 20
+    _airHitStunFrames: 20
+    _shouldOverrideHitBack: 0
+    _hitBackDistance: 0.5
+    _hitBackFrames: 8
+    _shouldKnockDown: 0
+    _fallFrames: 20
+    _downFrames: 0
+    _airborneHeight: 0
+    _hitMotion: 0
+  _counterHitResult:
+    _damageRate: 1.2
+    _shouldOverrideHitStop: 0
+    AD_hitStopFrames: 6
+    _extraHitStunFrames: 2
+    _shouldOverrideHitStun: 0
+    _standHitStunFrames: 20
+    _airHitStunFrames: 20
+    _shouldOverrideHitBack: 0
+    _hitBackDistance: 0.5
+    _hitBackFrames: 8
+    _shouldKnockDown: 0
+    _fallFrames: 20
+    _downFrames: 0
+    _airborneHeight: 0
+    _hitMotion: 0
+  _punishCounterResult:
+    _damageRate: 1.2
+    _shouldOverrideHitStop: 0
+    AD_hitStopFrames: 6
+    _extraHitStunFrames: 4
+    _shouldOverrideHitStun: 0
+    _standHitStunFrames: 20
+    _airHitStunFrames: 20
+    _shouldOverrideHitBack: 0
+    _hitBackDistance: 0.5
+    _hitBackFrames: 8
+    _shouldKnockDown: 0
+    _fallFrames: 20
+    _downFrames: 0
+    _airborneHeight: 0
+    _hitMotion: 0
   _shouldHideTopHitbox: 0
   _extraHitboxes:
   - AD_size: {x: 0.364, y: 0.676}
@@ -38,19 +87,37 @@ MonoBehaviour:
   _frames:
   - _frameType: 0
     AD_frameCount: 14
+    AD_damage: 0
+    AD_attackBoxSize: {x: 0, y: 0}
+    AD_attackBoxOffset: {x: 0, y: 0}
   - _frameType: 1
     AD_frameCount: 1
+    AD_damage: 0
+    AD_attackBoxSize: {x: 0, y: 0}
+    AD_attackBoxOffset: {x: 0, y: 0}
   - _frameType: 2
     AD_frameCount: 33
+    AD_damage: 0
+    AD_attackBoxSize: {x: 0, y: 0}
+    AD_attackBoxOffset: {x: 0, y: 0}
   _buttonFrames:
   - _button: 1
     _frames:
     - _frameType: 0
       AD_frameCount: 16
+      AD_damage: 0
+      AD_attackBoxSize: {x: 0, y: 0}
+      AD_attackBoxOffset: {x: 0, y: 0}
     - _frameType: 1
       AD_frameCount: 1
+      AD_damage: 0
+      AD_attackBoxSize: {x: 0, y: 0}
+      AD_attackBoxOffset: {x: 0, y: 0}
     - _frameType: 2
       AD_frameCount: 31
+      AD_damage: 0
+      AD_attackBoxSize: {x: 0, y: 0}
+      AD_attackBoxOffset: {x: 0, y: 0}
     AD_damage: 700
     _projectileDistancePerFrame: 0.055
     AD_attackBoxSize: {x: 0, y: 0}
@@ -59,14 +126,24 @@ MonoBehaviour:
     _shouldOverrideAdvantage: 1
     _hitAdvantage: 2
     _blockAdvantage: -5
+    AD_hitStopFrames: 0
   - _button: 2
     _frames:
     - _frameType: 0
       AD_frameCount: 14
+      AD_damage: 0
+      AD_attackBoxSize: {x: 0, y: 0}
+      AD_attackBoxOffset: {x: 0, y: 0}
     - _frameType: 1
       AD_frameCount: 1
+      AD_damage: 0
+      AD_attackBoxSize: {x: 0, y: 0}
+      AD_attackBoxOffset: {x: 0, y: 0}
     - _frameType: 2
       AD_frameCount: 33
+      AD_damage: 0
+      AD_attackBoxSize: {x: 0, y: 0}
+      AD_attackBoxOffset: {x: 0, y: 0}
     AD_damage: 700
     _projectileDistancePerFrame: 0.07
     AD_attackBoxSize: {x: 0, y: 0}
@@ -75,14 +152,24 @@ MonoBehaviour:
     _shouldOverrideAdvantage: 1
     _hitAdvantage: 0
     _blockAdvantage: -7
+    AD_hitStopFrames: 0
   - _button: 4
     _frames:
     - _frameType: 0
       AD_frameCount: 12
+      AD_damage: 0
+      AD_attackBoxSize: {x: 0, y: 0}
+      AD_attackBoxOffset: {x: 0, y: 0}
     - _frameType: 1
       AD_frameCount: 1
+      AD_damage: 0
+      AD_attackBoxSize: {x: 0, y: 0}
+      AD_attackBoxOffset: {x: 0, y: 0}
     - _frameType: 2
       AD_frameCount: 35
+      AD_damage: 0
+      AD_attackBoxSize: {x: 0, y: 0}
+      AD_attackBoxOffset: {x: 0, y: 0}
     AD_damage: 700
     _projectileDistancePerFrame: 0.085
     AD_attackBoxSize: {x: 0, y: 0}
@@ -91,14 +178,24 @@ MonoBehaviour:
     _shouldOverrideAdvantage: 1
     _hitAdvantage: -2
     _blockAdvantage: -9
+    AD_hitStopFrames: 0
   - _button: 8
     _frames:
     - _frameType: 0
       AD_frameCount: 12
+      AD_damage: 0
+      AD_attackBoxSize: {x: 0, y: 0}
+      AD_attackBoxOffset: {x: 0, y: 0}
     - _frameType: 1
       AD_frameCount: 1
+      AD_damage: 0
+      AD_attackBoxSize: {x: 0, y: 0}
+      AD_attackBoxOffset: {x: 0, y: 0}
     - _frameType: 2
       AD_frameCount: 28
+      AD_damage: 0
+      AD_attackBoxSize: {x: 0, y: 0}
+      AD_attackBoxOffset: {x: 0, y: 0}
     AD_damage: 1000
     _projectileDistancePerFrame: 0.112
     AD_attackBoxSize: {x: 0, y: 0}
@@ -107,6 +204,7 @@ MonoBehaviour:
     _shouldOverrideAdvantage: 1
     _hitAdvantage: 54
     _blockAdvantage: -1
+    AD_hitStopFrames: 0
   _traitWindows: []
   _isLaunchAttack: 0
   _launchFrame: 0
@@ -115,6 +213,7 @@ MonoBehaviour:
   _launchHeight: 1.62
   _launchAirFrames: 43
   _holdUntilLanding: 0
+  _chainAttacks: []
   _landingRecoveryFrames: 0
   _landingAnimationState: 
   _animationState: 236
@@ -122,3 +221,6 @@ MonoBehaviour:
   _projectilePrefab: {fileID: 5406294107860528325, guid: 782b275b08e685e4bbccf1bd5f5faf3b, type: 3}
   _projectileSpawnFrame: 0
   _projectileSpawnOffset: {x: 1.39, y: 0.26}
+  _projectileDamage: 0
+  _projectileDistancePerFrame: 0
+  _projectileCount: 1
