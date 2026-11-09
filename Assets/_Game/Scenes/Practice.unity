@@ -31344,6 +31344,9 @@ MonoBehaviour:
   _dummyAction: {fileID: 0}
   _characterHitboxes: {fileID: 0}
   _pushbox: {fileID: 0}
+  _attackerVelocityFollowRatio: 1
+  _launchReferenceDamage: 1200
+  _launchDamageScaleRange: {x: 0.5, y: 2}
 --- !u!1 &1397161733
 GameObject:
   m_ObjectHideFlags: 0
