@@ -29,14 +29,19 @@ namespace Game.Character
         private readonly AttackData.HitTypeResult _counterHitResult;
         private readonly AttackData.HitTypeResult _punishCounterResult;
 
+        // 0보다 크면 히트 종류와 상관없이 다운되고, 이 프레임 수만큼 쓰러지는 동안 피격 경직 (누른 버튼마다 정한 다운)
+        private readonly int _buttonFallFrames;
+
         public HitInfo(int hitStunFrames, float hitBackDistance, int hitBackFrames,
                        int blockStunFrames, float guardBackDistance, int guardBackFrames,
                        AttackHeight height, HitMotion motion, bool isThrow,
                        int hitStopFrames = 0,
                        AttackData.HitTypeResult normalHitResult = null,
                        AttackData.HitTypeResult counterHitResult = null,
-                       AttackData.HitTypeResult punishCounterResult = null)
+                       AttackData.HitTypeResult punishCounterResult = null,
+                       int buttonFallFrames = 0)
         {
+            _buttonFallFrames = buttonFallFrames;
             HitStopFrames = hitStopFrames;
             _normalHitResult = normalHitResult;
             _counterHitResult = counterHitResult;
@@ -89,6 +94,7 @@ namespace Game.Character
         public int GetHitStunFrames(HitType hitType, bool isAirborne = false)
         {
             int totalFrames = GetTotalStunFrames(hitType, isAirborne);
+            if (_buttonFallFrames > 0) return Mathf.Min(_buttonFallFrames, totalFrames);
             AttackData.HitTypeResult result = GetResult(hitType);
             if (result == null || !result.ShouldKnockDown) return totalFrames;
             return Mathf.Min(result.FallFrames, totalFrames);
@@ -101,8 +107,9 @@ namespace Game.Character
         public int GetKnockDownFrames(HitType hitType, bool isAirborne = false)
         {
             AttackData.HitTypeResult result = GetResult(hitType);
-            if (result == null || !result.ShouldKnockDown) return 0;
-            if (result.DownFrames > 0) return result.DownFrames;
+            bool isResultKnockDown = result != null && result.ShouldKnockDown;
+            if (!isResultKnockDown && _buttonFallFrames <= 0) return 0;
+            if (isResultKnockDown && result.DownFrames > 0) return result.DownFrames;
             return GetTotalStunFrames(hitType, isAirborne) - GetHitStunFrames(hitType, isAirborne);
         }
 

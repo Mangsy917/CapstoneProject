@@ -182,6 +182,8 @@ MonoBehaviour:
     _blockAdvantage: 2
     AD_hitStopFrames: 0
     AD_forwardMoveDistance: 1.2
+    _shouldKnockDownOnHit: 1
+    _knockDownFallFrames: 20
   - _button: 8
     _frames:
     - _frameType: 0

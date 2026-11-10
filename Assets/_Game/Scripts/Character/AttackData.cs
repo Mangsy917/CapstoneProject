@@ -462,7 +462,18 @@ namespace Game.Character
             [Tooltip("이 버튼으로 나갔을 때 발생 동안 앞으로 나가는 전체 거리. 0이면 기술의 전진 거리 사용")]
             [SerializeField] private float AD_forwardMoveDistance = 0f;
 
+            [Tooltip("체크하면 이 버튼으로 나갔을 때 맞은 상대가 히트 종류와 상관없이 다운됨 (위키의 Hit 값이 KD +인 기술).\n" +
+                     "기상 시점은 위의 히트 시 유리 프레임(KD 값)에 맞춰 자동으로 계산함")]
+            [SerializeField] private bool _shouldKnockDownOnHit = false;
+
+            [Tooltip("다운될 때: 맞은 뒤 쓰러지는 동안의 피격 경직 프레임 수 (이 동안은 추가타를 맞을 수 있음).\n" +
+                     "기술의 남은 회수보다 짧으면 이 기술 뒤에 다른 공격이 이어지지 않음")]
+            [ShowIf(nameof(_shouldKnockDownOnHit))]
+            [SerializeField] private int _knockDownFallFrames = 20;
+
             public CharacterCommand.AttackButtonType Button => _button;
+            public bool ShouldKnockDownOnHit => _shouldKnockDownOnHit;
+            public int KnockDownFallFrames => _knockDownFallFrames;
             public float AD_ForwardMoveDistance => AD_forwardMoveDistance;
             public int AD_HitStopFrames => AD_hitStopFrames;
             public bool ShouldOverrideAdvantage => _shouldOverrideAdvantage;
@@ -486,6 +497,7 @@ namespace Game.Character
                 if (AD_attackBoxSize.y < 0f) AD_attackBoxSize.y = 0f;
                 if (_invincibleFrames < 0) _invincibleFrames = 0;
                 if (AD_forwardMoveDistance < 0f) AD_forwardMoveDistance = 0f;
+                if (_knockDownFallFrames < 1) _knockDownFallFrames = 1;
                 ValidateFrames(_frames);
             }
         }
@@ -712,12 +724,17 @@ namespace Game.Character
         /// <summary>이 버튼으로 나간 공격의 hitIndex번째 타(1타 = 0)가 맞았을 때(또는 가드됐을 때) 상대에게 줄 정보</summary>
         public HitInfo GetHitInfo(CharacterCommand.AttackButtonType button, int hitIndex = 0)
         {
+            // 버튼별로 다운을 정해 두었으면 히트 종류와 상관없이 그 쓰러지는 프레임으로 다운시킴 (0이면 히트 종류의 설정을 따름)
+            ButtonFrames buttonFrames = FindButtonFrames(button);
+            int buttonFallFrames = buttonFrames != null && buttonFrames.ShouldKnockDownOnHit ? buttonFrames.KnockDownFallFrames : 0;
+
             return new HitInfo(
                 hitStunFrames: GetHitStunFrames(button, hitIndex), hitBackDistance: _hitBackDistance, hitBackFrames: _hitBackFrames,
                 blockStunFrames: GetBlockStunFrames(button, hitIndex), guardBackDistance: _guardBackDistance, guardBackFrames: _guardBackFrames,
                 height: _height, motion: _hitMotion, isThrow: HasTrait(AttackTrait.Throw),
                 hitStopFrames: GetHitStopFrames(button),
-                normalHitResult: _normalHitResult, counterHitResult: _counterHitResult, punishCounterResult: _punishCounterResult);
+                normalHitResult: _normalHitResult, counterHitResult: _counterHitResult, punishCounterResult: _punishCounterResult,
+                buttonFallFrames: buttonFallFrames);
         }
 
         // 버튼별 프레임 목록에 없을 때 쓰는 기본 프레임

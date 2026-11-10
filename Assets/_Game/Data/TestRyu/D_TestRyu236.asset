@@ -205,6 +205,8 @@ MonoBehaviour:
     _hitAdvantage: 54
     _blockAdvantage: -1
     AD_hitStopFrames: 0
+    _shouldKnockDownOnHit: 1
+    _knockDownFallFrames: 20
   _traitWindows: []
   _isLaunchAttack: 0
   _launchFrame: 0
