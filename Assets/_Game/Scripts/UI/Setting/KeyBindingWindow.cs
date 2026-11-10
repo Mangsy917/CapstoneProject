@@ -567,7 +567,7 @@ namespace Game.UI.Setting
             }
         }
 
-        // 선택된 줄만 회색, 나머지는 투명
+        // 선택된 줄만 회색에 글자를 키움, 나머지는 투명
         private void RefreshHighlight()
         {
             if (_menuButtons == null) return;
@@ -575,6 +575,7 @@ namespace Game.UI.Setting
             for (int i = 0; i < _menuButtons.Length; i++)
             {
                 if (_menuButtons[i].image != null) _menuButtons[i].image.color = (i == _highlightIndex) ? _highlightColor : _normalColor;
+                SelectedFontSize.Apply(_menuButtons[i], isSelected: i == _highlightIndex);
             }
         }
 

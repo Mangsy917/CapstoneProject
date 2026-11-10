@@ -304,7 +304,7 @@ namespace Game.UI.Setting
             RefreshHighlight();
         }
 
-        // 선택된 줄만 회색, 나머지는 투명
+        // 선택된 줄만 회색에 글자를 키움, 나머지는 투명
         private void RefreshHighlight()
         {
             if (OW_menuButtons == null) return;
@@ -312,6 +312,7 @@ namespace Game.UI.Setting
             for (int i = 0; i < OW_menuButtons.Length; i++)
             {
                 if (OW_menuButtons[i].image != null) OW_menuButtons[i].image.color = (i == OW_highlightIndex) ? OW_highlightColor : OW_normalColor;
+                SelectedFontSize.Apply(OW_menuButtons[i], isSelected: i == OW_highlightIndex);
             }
         }
     }

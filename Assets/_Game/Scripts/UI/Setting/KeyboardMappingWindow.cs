@@ -355,7 +355,7 @@ namespace Game.UI.Setting
             return keyName.Length == 1 ? keyName.ToUpper() : keyName;
         }
 
-        // 선택된 줄만 회색, 나머지는 투명
+        // 선택된 줄만 회색에 글자를 키움, 나머지는 투명
         private void RefreshHighlight()
         {
             if (KMW_menuButtons == null) return;
@@ -363,6 +363,7 @@ namespace Game.UI.Setting
             for (int i = 0; i < KMW_menuButtons.Length; i++)
             {
                 if (KMW_menuButtons[i].image != null) KMW_menuButtons[i].image.color = (i == KMW_highlightIndex) ? KMW_highlightColor : KMW_normalColor;
+                SelectedFontSize.Apply(KMW_menuButtons[i], isSelected: i == KMW_highlightIndex);
             }
         }
 

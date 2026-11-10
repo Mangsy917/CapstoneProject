@@ -244,12 +244,13 @@ public class SettingMenu : MonoBehaviour
         return buttons != null && buttons.Length > 0;
     }
 
-    // 선택된 버튼만 회색, 나머지는 투명
+    // 선택된 버튼만 회색에 글자를 키움, 나머지는 투명
     private void Refresh()
     {
         for (int i = 0; i < buttons.Length; i++)
         {
             if (buttons[i].image != null) buttons[i].image.color = (i == selectedIndex) ? selectColor : notSelectColor;
+            Game.UI.SelectedFontSize.Apply(buttons[i], isSelected: i == selectedIndex);
         }
     }
 }

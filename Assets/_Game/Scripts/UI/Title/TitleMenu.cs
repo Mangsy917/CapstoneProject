@@ -121,12 +121,13 @@ public class TitleMenu : MonoBehaviour
         trigger.triggers.Add(entry);
     }
 
-    // 선택된 버튼만 회색, 나머지는 원래 색
+    // 선택된 버튼만 회색에 글자를 키움, 나머지는 원래 색과 크기
     private void Refresh()
     {
         for (int i = 0; i < mainButtons.Length; i++)
         {
             if (mainButtons[i].image != null) mainButtons[i].image.color = (i == mainIndex) ? selectColor : notSelectColor;
+            Game.UI.SelectedFontSize.Apply(mainButtons[i], isSelected: i == mainIndex);
         }
     }
 }

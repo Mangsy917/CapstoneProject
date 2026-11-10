@@ -214,12 +214,13 @@ namespace Game.UI.Setting
             Refresh();
         }
 
-        // 선택된 줄만 회색, 나머지는 투명
+        // 선택된 줄만 회색에 글자를 키움, 나머지는 투명
         private void Refresh()
         {
             for (int i = 0; i < _rowButtons.Length; i++)
             {
                 if (_rowButtons[i].image != null) _rowButtons[i].image.color = (i == OP_selectedIndex) ? OP_selectColor : OP_notSelectColor;
+                SelectedFontSize.Apply(_rowButtons[i], isSelected: i == OP_selectedIndex);
             }
         }
     }
