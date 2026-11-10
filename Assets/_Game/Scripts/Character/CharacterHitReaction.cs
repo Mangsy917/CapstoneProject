@@ -83,8 +83,10 @@ namespace Game.Character
 
         // 맞은 뒤 다시 움직일 수 있을 때까지의 전체 프레임 수 (피격 경직 + 다운)
         // 히트 종류에 피격 경직을 직접 정해 두었으면 땅 / 공중에 따라 그 값, 아니면 히트 시 유리 프레임 기준 경직 + 추가 경직
+        // 버튼별로 다운을 정한 기술은 위키의 KD 값이 히트 종류와 상관없이 같으므로 추가 경직을 더하지 않음
         private int GetTotalStunFrames(HitType hitType, bool isAirborne)
         {
+            if (_buttonFallFrames > 0) return HitStunFrames;
             AttackData.HitTypeResult result = GetResult(hitType);
             if (result != null && result.ShouldOverrideHitStun) return isAirborne ? result.AirHitStunFrames : result.StandHitStunFrames;
             return HitStunFrames + (result != null ? result.ExtraHitStunFrames : 0);

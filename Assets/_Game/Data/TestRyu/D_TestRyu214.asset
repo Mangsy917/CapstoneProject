@@ -46,14 +46,14 @@ MonoBehaviour:
     _damageRate: 1.2
     _shouldOverrideHitStop: 0
     AD_hitStopFrames: 6
-    _extraHitStunFrames: 2
+    _extraHitStunFrames: 57
     _shouldOverrideHitStun: 0
     _standHitStunFrames: 20
     _airHitStunFrames: 20
     _shouldOverrideHitBack: 0
     _hitBackDistance: 0.5
     _hitBackFrames: 8
-    _shouldKnockDown: 0
+    _shouldKnockDown: 1
     _fallFrames: 20
     _downFrames: 0
     _airborneHeight: 0
@@ -62,14 +62,14 @@ MonoBehaviour:
     _damageRate: 1.2
     _shouldOverrideHitStop: 0
     AD_hitStopFrames: 6
-    _extraHitStunFrames: 4
+    _extraHitStunFrames: 57
     _shouldOverrideHitStun: 0
     _standHitStunFrames: 20
     _airHitStunFrames: 20
     _shouldOverrideHitBack: 0
     _hitBackDistance: 0.5
     _hitBackFrames: 8
-    _shouldKnockDown: 0
+    _shouldKnockDown: 1
     _fallFrames: 20
     _downFrames: 0
     _airborneHeight: 0
