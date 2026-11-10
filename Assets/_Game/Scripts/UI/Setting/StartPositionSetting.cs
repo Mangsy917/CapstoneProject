@@ -88,14 +88,16 @@ namespace Game.UI.Setting
         /// 시작 사이드 / 위치를 바꾸고 두 캐릭터를 바로 그 자리에 세움 (재시작에서 사용)
         /// null인 값은 지금 고른 값을 그대로 씀. 설정창의 스테퍼 값도 같이 바뀜
         /// isPlayerLeft가 false면 Player가 오른쪽(2P 자리)
+        /// shouldSwapSide가 true면 isPlayerLeft 대신 지금 고른 사이드의 반대쪽으로 바꿈 (1P ↔ 2P)
         /// </summary>
-        public void SetAndApply(bool? isPlayerLeft, Place? place)
+        public void SetAndApply(bool? isPlayerLeft, Place? place, bool shouldSwapSide = false)
         {
-            if (isPlayerLeft.HasValue && _sideStepper != null)
+            if (_sideStepper != null)
             {
                 // 선택지는 왼쪽 / 오른쪽 두 개라서, 왼쪽이 아닌 쪽이 오른쪽
                 int rightIndex = _leftIndex == 0 ? 1 : 0;
-                _sideStepper.SetIndex(isPlayerLeft.Value ? _leftIndex : rightIndex);
+                if (shouldSwapSide) _sideStepper.SetIndex(_sideStepper.Index == _leftIndex ? rightIndex : _leftIndex);
+                else if (isPlayerLeft.HasValue) _sideStepper.SetIndex(isPlayerLeft.Value ? _leftIndex : rightIndex);
             }
 
             if (place.HasValue && _placeStepper != null)
