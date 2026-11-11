@@ -10,8 +10,9 @@ namespace Game.UI
     // - 2번째 히트부터 표시 (한 번만 맞은 것은 콤보가 아님)
     // - 경직이 풀려서 콤보가 끝나면 잠시 남겨 두었다가 숨김. 그 사이에 새 콤보가 시작되면 바로 숨김
     // - 카운터 / 퍼니시 카운터로 맞으면 콤보 표시 아래에 그 판정을 보여줌 (첫 타부터)
-    // - 때린 쪽(Player)이 맞는 쪽보다 오른쪽에 있으면 콤보 / HIT / 카운터 표시를 화면 오른쪽으로 좌우 반전해서 보여줌
-    //   사이드는 아무것도 보이지 않을 때만 정함 (콤보 도중에 상대를 넘어가도 표시가 옮겨가지 않음)
+    // - 표시 위치는 캐릭터가 서 있는 위치가 아니라 맞는 쪽의 체력바로 정함 (때린 쪽 체력바가 있는 쪽에 표시)
+    //   2P 체력바(오른쪽)가 닳으면 왼쪽에, 1P 체력바(왼쪽)가 닳으면 오른쪽으로 좌우 반전해서 보여줌
+    //   시작 사이드를 바꿔 캐릭터가 좌우로 바뀌어도 1P / 2P 체력바는 그대로이므로 표시 위치도 그대로
     // - Enemy가 사라졌다가 다시 생성되면 새로 찾음
     public class ComboCounter : MonoBehaviour
     {
@@ -40,15 +41,15 @@ namespace Game.UI
         [Tooltip("퍼니시 카운터로 맞았을 때 표시할 글자")]
         [SerializeField] private string _punishCounterText = "PUNISH";
 
-        [Header("사이드 (때린 쪽이 있는 쪽에 표시)")]
-        [Tooltip("때린 쪽 캐릭터의 태그. 이 캐릭터가 맞는 쪽보다 오른쪽에 있으면 표시를 화면 오른쪽으로 좌우 반전함")]
-        [SerializeField] private string _attackerTag = "Player";
+        [Header("사이드 (맞는 쪽 체력바의 반대쪽에 표시)")]
+        [Tooltip("맞는 쪽 캐릭터의 체력바. 이 체력바가 오른쪽(2P)이면 표시를 왼쪽에, 왼쪽(1P)이면 오른쪽으로 좌우 반전해서 보여줌.\n" +
+                 "비워두면 맞는 쪽 태그와 같은 캐릭터를 보여주는 체력바를 씬에서 찾음")]
+        [SerializeField] private HealthBar _healthBar;
 
         [Tooltip("콤보 숫자와 HIT 텍스트를 묶은 부모 (같이 좌우로 옮김). 비워두면 숫자 텍스트의 부모")]
         [SerializeField] private RectTransform _comboGroup;
 
         private CharacterHitReaction _targetReaction;
-        private Transform _attacker;
         private bool _isShownOnRight;   // 지금 표시가 화면 오른쪽(좌우 반전)인지
 
         // 처음(왼쪽) 배치를 기억해 두었다가 오른쪽으로 반전하거나 되돌릴 때 사용
@@ -82,6 +83,7 @@ namespace Game.UI
             SaveLayout();
             Hide();
             HideCounter();
+            UpdateSide();
         }
 
         private void Update()
@@ -94,8 +96,8 @@ namespace Game.UI
                 return;
             }
 
-            // 아무것도 보이지 않을 때만 사이드를 정함 (콤보 도중 상대를 넘어가도 표시가 반대로 옮겨가지 않도록)
-            if (!IsShowingAnything()) UpdateSide();
+            // 체력바를 아직 못 찾았으면 다시 찾음 (아무것도 보이지 않을 때만 옮김)
+            if (_healthBar == null && !IsShowingAnything()) UpdateSide();
 
             UpdateCounter();
 
@@ -156,18 +158,24 @@ namespace Game.UI
             return _hideTimeLeft > 0f || _counterHideTimeLeft > 0f || (_targetReaction != null && _targetReaction.IsInHitStun);
         }
 
-        // 때린 쪽이 맞는 쪽보다 오른쪽에 있으면 표시를 오른쪽으로, 아니면 처음 배치(왼쪽)로
+        // 맞는 쪽 체력바가 왼쪽(1P)이면 표시를 오른쪽으로, 오른쪽(2P)이면 처음 배치(왼쪽)로
         private void UpdateSide()
         {
-            if (_attacker == null)
-            {
-                GameObject attacker = GameObject.FindGameObjectWithTag(_attackerTag);
-                _attacker = attacker != null ? attacker.transform : null;
-            }
-            if (_attacker == null) return;
+            if (_healthBar == null) _healthBar = FindHealthBar();
+            if (_healthBar == null) return;
 
-            bool isRight = _attacker.position.x > _targetReaction.transform.position.x;
+            bool isRight = !_healthBar.IsRightSide;
             if (isRight != _isShownOnRight) ApplySide(isRight);
+        }
+
+        // 맞는 쪽 태그와 같은 캐릭터를 보여주는 체력바
+        private HealthBar FindHealthBar()
+        {
+            foreach (HealthBar healthBar in FindObjectsByType<HealthBar>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+            {
+                if (healthBar.HB_TargetTag == CC_targetTag) return healthBar;
+            }
+            return null;
         }
 
         private void SaveLayout()

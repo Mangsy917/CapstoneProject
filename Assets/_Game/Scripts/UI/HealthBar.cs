@@ -27,6 +27,12 @@ namespace Game.UI
         [Tooltip("체크하면 화면 오른쪽 체력바 (막대가 왼쪽 끝에 붙어서 오른쪽부터 줄어듦)")]
         [SerializeField] private bool _isRightSide;
 
+        /// <summary>체력을 보여줄 캐릭터의 태그 (1P / 2P는 들어갈 때 정해지고, 좌우 반전으로 바뀌지 않음)</summary>
+        public string HB_TargetTag => HB_targetTag;
+
+        /// <summary>화면 오른쪽 체력바(2P)인지</summary>
+        public bool IsRightSide => _isRightSide;
+
         private CharacterHealth _targetHealth;
         private float _damageRatio = 1f; // 반투명 막대의 길이 (전체 체력에 대한 비율)
 
