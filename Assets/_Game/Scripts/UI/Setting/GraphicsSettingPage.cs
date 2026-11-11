@@ -8,12 +8,17 @@ namespace Game.UI.Setting
     // - 해상도: 모니터가 지원하는 해상도 목록 (실행할 때 채움)
     // 값을 바꾸면 바로 적용됨. 화면 모드와 해상도는 Unity가 알아서 저장함 (빌드에서 껐다 켜도 유지)
     // 에디터에서는 Game 창 크기가 바뀌지 않으므로 빌드에서 확인해야 함
-    // 그림자 / 텍스처 / 이펙트 / 배경 품질은 아직 없음 (줄의 Interactable을 꺼둠)
-    // 기본값으로 되돌리기: 전체 창 모드 + 모니터 해상도 (ResetToDefault)
+    // - 이펙트: OFF, ON 스테퍼 (ON이 1번). 끄면 맞았을 때 캐릭터가 하얗게 번쩍이지 않음 (EffectSettings, 빌드에서 저장됨)
+    // 그림자 / 텍스처 / 배경 품질은 아직 없음 (줄의 Interactable을 꺼둠)
+    // 기본값으로 되돌리기: 전체 창 모드 + 모니터 해상도 + 이펙트 켜기 (ResetToDefault)
     public class GraphicsSettingPage : MonoBehaviour
     {
         [SerializeField] private SettingStepper _screenModeStepper;
         [SerializeField] private SettingStepper _resolutionStepper;
+        [SerializeField] private SettingStepper _effectStepper;
+
+        // 이펙트 스테퍼 선택지에서 ON이 몇 번째인지 (OFF, ON 순서면 1)
+        private const int EffectOnIndex = 1;
 
         // 화면 모드 스테퍼 선택지 순서
         private static readonly FullScreenMode[] _screenModes =
@@ -32,6 +37,7 @@ namespace Game.UI.Setting
         {
             if (_screenModeStepper != null) _screenModeStepper.onValueChanged.AddListener(ApplyScreenMode);
             if (_resolutionStepper != null) _resolutionStepper.onValueChanged.AddListener(ApplyResolution);
+            if (_effectStepper != null) _effectStepper.onValueChanged.AddListener(index => EffectSettings.IsEffectOn = index == EffectOnIndex);
         }
 
         // 처음 열 때는 줄들의 Awake(처음 값 설정)가 끝난 뒤인 Start에서, 그 뒤로는 열 때마다 OnEnable에서 지금 값을 보여줌
@@ -52,6 +58,7 @@ namespace Game.UI.Setting
         {
             Vector2Int monitorSize = new Vector2Int(Display.main.systemWidth, Display.main.systemHeight);
             Screen.SetResolution(monitorSize.x, monitorSize.y, DefaultScreenMode);
+            EffectSettings.ResetToDefault();
 
             // 화면 크기는 다음 프레임에 바뀌므로 지금 값 대신 바꿀 값을 보여줌
             ShowValues(DefaultScreenMode, monitorSize);
@@ -90,6 +97,11 @@ namespace Game.UI.Setting
                 string[] names = new string[_resolutions.Count];
                 for (int i = 0; i < _resolutions.Count; i++) names[i] = _resolutions[i].x + " x " + _resolutions[i].y;
                 _resolutionStepper.SetOptions(names, currentIndex);
+            }
+
+            if (_effectStepper != null)
+            {
+                _effectStepper.SetOptions(_effectStepper.options, EffectSettings.IsEffectOn ? EffectOnIndex : 0);
             }
         }
 

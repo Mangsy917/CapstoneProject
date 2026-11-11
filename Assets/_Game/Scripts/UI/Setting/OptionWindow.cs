@@ -8,11 +8,11 @@ namespace Game.UI.Setting
 {
     // 옵션 창 (P_OptionWindow 프리팹)에 붙여서 사용. 타이틀과 연습 씬의 옵션 버튼이 같은 창을 엶
     // 옵션을 열면 화면 전체가 옵션 배경으로 바뀜 (뒤의 게임 화면, 설정창은 보이지 않음, 씬 이동은 아님)
-    // 옵션 메뉴: 컨트롤러 설정, 키보드 매핑, 사운드 설정, 화면 설정, 그래픽 설정, 닫기
+    // 옵션 메뉴: 컨트롤러 설정, 키보드 매핑, 사운드 설정, 화면 설정, 그래픽 설정, 게임 설정, 닫기
     // - 메뉴에서 고른 페이지가 열리면 메뉴는 숨겨지고 그 페이지만 보임. 페이지를 닫으면 메뉴로 돌아감
     //   - 컨트롤러 설정: 공격 버튼에 연결할 패드 버튼을 바꾸는 창 (KeyBindingWindow)
     //   - 키보드 매핑: 키보드 키를 Xbox 버튼에 연결하는 창 (KeyboardMappingWindow, 오른쪽에 열림)
-    //   - 화면 설정, 그래픽 설정: OptionPage
+    //   - 화면 설정, 그래픽 설정, 게임 설정: OptionPage
     //   - 사운드 설정: 아직 없음 (줄의 Interactable을 꺼두면 고를 수 없음)
     // - 화면이 바뀔 때(옵션을 열 때, 페이지를 열고 닫을 때) 새 화면이 서서히 나타남
     // - 위/아래: 줄 이동 (잠긴 줄은 건너뜀), 선택 키 / 마우스 클릭: 실행
@@ -44,6 +44,7 @@ namespace Game.UI.Setting
         [SerializeField] private Button _soundSettingButton;
         [SerializeField] private Button _displaySettingButton;
         [SerializeField] private Button _graphicsSettingButton;
+        [SerializeField] private Button _gameSettingButton;
         [SerializeField] private Button OW_closeButton;
 
         [Header("페이지")]
@@ -51,6 +52,7 @@ namespace Game.UI.Setting
         [SerializeField] private KeyboardMappingWindow _keyboardMappingWindow;
         [SerializeField] private OptionPage _displaySettingPage;
         [SerializeField] private OptionPage _graphicsSettingPage;
+        [SerializeField] private OptionPage _gameSettingPage;
 
         [Tooltip("화면이 바뀔 때 새 화면이 나타나는 시간(초, 실제 시간 기준)")]
         [SerializeField] private float OW_fadeTime = 0.2f;
@@ -80,10 +82,11 @@ namespace Game.UI.Setting
             if (_keyboardMappingButton != null && _keyboardMappingWindow != null) _keyboardMappingButton.onClick.AddListener(_keyboardMappingWindow.Open);
             if (_displaySettingButton != null && _displaySettingPage != null) _displaySettingButton.onClick.AddListener(_displaySettingPage.Open);
             if (_graphicsSettingButton != null && _graphicsSettingPage != null) _graphicsSettingButton.onClick.AddListener(_graphicsSettingPage.Open);
+            if (_gameSettingButton != null && _gameSettingPage != null) _gameSettingButton.onClick.AddListener(_gameSettingPage.Open);
             if (OW_closeButton != null) OW_closeButton.onClick.AddListener(Close);
 
             List<Button> menuButtons = new List<Button>();
-            foreach (Button button in new[] { _controllerSettingButton, _keyboardMappingButton, _soundSettingButton, _displaySettingButton, _graphicsSettingButton, OW_closeButton })
+            foreach (Button button in new[] { _controllerSettingButton, _keyboardMappingButton, _soundSettingButton, _displaySettingButton, _graphicsSettingButton, _gameSettingButton, OW_closeButton })
             {
                 if (button != null) menuButtons.Add(button);
             }
@@ -196,6 +199,7 @@ namespace Game.UI.Setting
             if (_keyboardMappingWindow != null && _keyboardMappingWindow.gameObject.activeSelf) return _keyboardMappingWindow.gameObject;
             if (_displaySettingPage != null && _displaySettingPage.gameObject.activeSelf) return _displaySettingPage.gameObject;
             if (_graphicsSettingPage != null && _graphicsSettingPage.gameObject.activeSelf) return _graphicsSettingPage.gameObject;
+            if (_gameSettingPage != null && _gameSettingPage.gameObject.activeSelf) return _gameSettingPage.gameObject;
             return null;
         }
 
@@ -205,6 +209,7 @@ namespace Game.UI.Setting
             if (_keyboardMappingWindow != null) _keyboardMappingWindow.gameObject.SetActive(false);
             if (_displaySettingPage != null) _displaySettingPage.gameObject.SetActive(false);
             if (_graphicsSettingPage != null) _graphicsSettingPage.gameObject.SetActive(false);
+            if (_gameSettingPage != null) _gameSettingPage.gameObject.SetActive(false);
         }
 
         // 페이지가 열려 있으면 메뉴를 숨기고, 없으면 메뉴를 보임. 화면이 바뀌면 새 화면이 서서히 나타남

@@ -188,7 +188,14 @@ namespace Game.Character
         private static void ResetSettings()
         {
             _dummyCounterMode = DummyCounterMode.Normal;
+            TargetHit = null;
         }
+
+        /// <summary>
+        /// 공격이 맞았을 때 (가드는 제외, 데미지까지 준 뒤) 알림. 타격감 연출(HitFeedback)이 받음
+        /// 맞은 쪽, 히트 종류, 이 공격으로 체력이 0이 되었는지(KO)
+        /// </summary>
+        public static event System.Action<GameObject, HitType, bool> TargetHit;
 
         /// <summary>설정창의 카운터 종류를 더미에 적용 (CounterSetting)</summary>
         public static void ApplyDummyCounterSetting(DummyCounterMode mode)
@@ -313,7 +320,11 @@ namespace Game.Character
             }
 
             var health = target.GetComponent<CharacterHealth>();
+            bool wasAlive = health != null && health.CurrentHealth > 0;
             if (health != null) health.TakeDamage(finalDamage, attacker: attacker);
+
+            bool isKnockOut = wasAlive && health.CurrentHealth <= 0;
+            TargetHit?.Invoke(target, hitType, isKnockOut);
         }
 
         // 설정창의 카운터 종류에 따른 더미의 히트 종류 (일반이면 맞은 순간의 상태로 정한 stateHitType 그대로)

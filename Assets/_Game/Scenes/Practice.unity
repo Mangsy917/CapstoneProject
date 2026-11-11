@@ -32769,8 +32769,6 @@ MonoBehaviour:
   backDashDistance: 1
   backDashFrames: 15
   runDistancePerFrame: 0.08625
-  runStopFramesAfterOverlap: 60
-  overlapDistance: 1
   useStartYAsGround: 1
   groundY: 0
   searchInterval: 0.25
@@ -47907,6 +47905,7 @@ GameObject:
   - component: {fileID: 2083205331}
   - component: {fileID: 2083205332}
   - component: {fileID: 2083205333}
+  - component: {fileID: 2083205334}
   m_Layer: 0
   m_Name: GameManager
   m_TagString: Untagged
@@ -47967,9 +47966,33 @@ MonoBehaviour:
   KOS_screenFade: {fileID: 561717928}
   _practiceRestart: {fileID: 2083205332}
   KOS_enemyTag: Enemy
+  _knockOutStopTime: 0.4
   _slowMotionScale: 0.25
   _slowMotionTime: 1.5
   _fadeInTime: 0.5
+--- !u!114 &2083205334
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2083205329}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: abfcbac6d88554644a0efd6b9d706789, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Game.Field.HitFeedback
+  _hitStopShakeDistance: 0.05
+  _hitStopShakeRate: 30
+  _flashMaterial: {fileID: 2100000, guid: 0ef58827837d52941a0e7895f1919212, type: 2}
+  _flashFrames: 3
+  _knockOutFlashFrames: 6
+  _normalShakeDistance: 0.03
+  _counterShakeDistance: 0.06
+  _punishCounterShakeDistance: 0.1
+  _screenShakeTime: 0.15
+  _knockOutShakeDistance: 0.2
+  _knockOutShakeTime: 0.5
 --- !u!1 &2092465985
 GameObject:
   m_ObjectHideFlags: 0

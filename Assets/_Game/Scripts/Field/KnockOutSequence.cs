@@ -6,10 +6,12 @@ using UnityEngine;
 namespace Game.Field
 {
     // 상대(Enemy)의 체력이 0이 되면 KO 연출 후 연습을 재시작함 (GameManager에 붙여서 사용)
-    // 1) 화면에 K.O. 글자가 뜨고 슬로우 모션 (Time.timeScale을 낮추면 GameSpeed가 프레임을 건너뜀)
-    // 2) 잠시 뒤 화면이 서서히 검게 변함
-    // 3) 검은 화면 동안 K.O. 글자를 숨기고 속도를 되돌린 뒤 재시작 (PracticeRestart)
-    // 4) 서서히 원래 화면으로 돌아옴
+    // 1) KO 멈춤: 마지막 공격이 맞은 순간 게임 전체가 잠깐 멈춤 (Time.timeScale 0, 일반 히트스톱보다 긴 멈춤)
+    //    멈춘 동안 맞은 쪽은 하얗게 번쩍이고 떨리며, 화면이 크게 흔들림 (HitFeedback)
+    // 2) 화면에 K.O. 글자가 뜨고 슬로우 모션 (Time.timeScale을 낮추면 GameSpeed가 프레임을 건너뜀)
+    // 3) 잠시 뒤 화면이 서서히 검게 변함
+    // 4) 검은 화면 동안 K.O. 글자를 숨기고 속도를 되돌린 뒤 재시작 (PracticeRestart)
+    // 5) 서서히 원래 화면으로 돌아옴
     // - 시간은 모두 실제 시간(초)으로 셈 (슬로우 모션에 영향받지 않음)
     public class KnockOutSequence : MonoBehaviour
     {
@@ -24,6 +26,10 @@ namespace Game.Field
 
         [Tooltip("체력이 0이 되면 KO가 되는 캐릭터의 태그")]
         [SerializeField] private string KOS_enemyTag = "Enemy";
+
+        [Header("KO 멈춤")]
+        [Tooltip("마지막 공격이 맞은 순간 게임 전체가 멈추는 시간(초, 실제 시간). 0이면 멈추지 않고 바로 슬로우 모션")]
+        [SerializeField] private float _knockOutStopTime = 0.4f;
 
         [Header("슬로우 모션")]
         [Tooltip("슬로우 모션 속도 (1 = 평소, 0.25 = 4배 느리게)")]
@@ -69,6 +75,13 @@ namespace Game.Field
         private IEnumerator PlayRoutine()
         {
             IsPlaying = true;
+
+            if (_knockOutStopTime > 0f)
+            {
+                Time.timeScale = 0f;
+                yield return new WaitForSecondsRealtime(_knockOutStopTime);
+            }
+
             if (_knockOutText != null) _knockOutText.SetActive(true);
             Time.timeScale = _slowMotionScale;
 

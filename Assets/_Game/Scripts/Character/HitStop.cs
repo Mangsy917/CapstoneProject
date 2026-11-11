@@ -24,6 +24,9 @@ namespace Game.Character
         /// <summary>이번 프레임에 멈춰 있는지</summary>
         public bool IsStopped { get; private set; }
 
+        /// <summary>앞으로 멈출 프레임 수 (맞은 프레임에는 히트스톱 프레임 수 그대로)</summary>
+        public int FramesLeft => _stopFramesLeft;
+
         /// <summary>target이 이번 프레임에 히트스톱으로 멈춰 있는지 (HitStop이 없으면 false)</summary>
         public static bool IsStoppedNow(Component target)
         {
