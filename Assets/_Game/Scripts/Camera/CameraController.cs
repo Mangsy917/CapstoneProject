@@ -14,6 +14,8 @@ using UnityEngine.Serialization;
 ///                    가장 뒤는 isFarthestZAuto가 켜져 있으면 Boundary 두 벽의 안쪽 면이 화면 양 끝에 닿는 z로 자동 계산,
 ///                    꺼져 있으면 farthestZ
 ///                    뒤로 빠질 때는 캐릭터가 화면 밖으로 나가지 않도록 빠르게, 앞으로 올 때는 천천히 움직임
+/// - 화면 왼쪽 / 오른쪽 끝이 스테이지 끝 벽(CharStageBoundary의 Stage Left End / Stage Right End)을 넘지 않도록 x를 제한함
+///   (벽에 붙으면 캐릭터가 화면 맨 끝에 보이고, 벽 너머는 찍지 않음)
 /// - Player만 있을 때 : Boundary는 멈춰 있으므로 Player를 따라가고, z는 playerOnlyZ로 고정
 /// - Boundary 칸이 비어 있으면 Player와 Enemy의 중심을 직접 계산해서 따라감
 /// - y는 minY ~ maxY 범위로 제한한 뒤, yOffset(0.2)만큼 위로 올려서 촬영
@@ -83,6 +85,8 @@ public class CameraManager : MonoBehaviour
     private Camera targetCameraComponent;
     // Boundary 자식의 벽 Pushbox (가장 뒤 z 자동 계산용)
     private Game.Character.Pushbox[] boundaryWalls;
+    // 스테이지 끝 위치 (벽 너머를 찍지 않도록 카메라 x 제한)
+    private CharStageBoundary CC_stageBoundary;
     private Vector2 followVelocity;
     private float zoomVelocity;
     private float searchTimer;
@@ -142,7 +146,42 @@ public class CameraManager : MonoBehaviour
         // y 범위 제한 (보간 중에도 범위를 벗어나지 않도록, 오프셋만큼 올린 범위 기준)
         xy.y = Mathf.Clamp(xy.y, Mathf.Min(minY, maxY) + yOffset, Mathf.Max(minY, maxY) + yOffset);
 
+        // 스테이지 끝 벽 너머는 찍지 않음 (지금 z에서 보이는 폭 기준, 보간 중에도 적용)
+        float clampedX = ClampXToStage(xy.x, z);
+        if (!Mathf.Approximately(clampedX, xy.x)) followVelocity.x = 0f;
+        xy.x = clampedX;
+
         targetCamera.position = new Vector3(xy.x, xy.y, z);
+    }
+
+    /// <summary>
+    /// 화면 왼쪽 / 오른쪽 끝이 스테이지 끝 벽(CharStageBoundary의 Stage Left End / Stage Right End)을 넘지 않도록 카메라 x를 제한함
+    /// (오른쪽 벽에 붙으면 캐릭터가 화면 맨 오른쪽에 보임)
+    /// 화면 폭이 스테이지보다 넓으면 스테이지 가운데를 찍음
+    /// </summary>
+    private float ClampXToStage(float x, float cameraZ)
+    {
+        if (CC_stageBoundary == null) CC_stageBoundary = FindAnyObjectByType<CharStageBoundary>();
+        if (CC_stageBoundary == null) return x;
+
+        float halfVisibleWidth = GetHalfVisibleWidth(cameraZ);
+        if (halfVisibleWidth <= 0f) return x;
+
+        float minX = CC_stageBoundary.StageLeftEnd + halfVisibleWidth;
+        float maxX = CC_stageBoundary.StageRightEnd - halfVisibleWidth;
+        if (minX > maxX) return CC_stageBoundary.StageCenter;
+        return Mathf.Clamp(x, minX, maxX);
+    }
+
+    // 캐릭터가 서 있는 줄에서 화면 가운데~화면 왼쪽(오른쪽) 끝까지의 폭 (계산할 수 없으면 0)
+    private float GetHalfVisibleWidth(float cameraZ)
+    {
+        if (targetCameraComponent == null && targetCamera != null)
+            targetCameraComponent = targetCamera.GetComponentInChildren<Camera>();
+        if (targetCameraComponent == null || targetCameraComponent.orthographic) return 0f;
+
+        float tanHalfHorizontalFov = Mathf.Tan(targetCameraComponent.fieldOfView * 0.5f * Mathf.Deg2Rad) * targetCameraComponent.aspect;
+        return Mathf.Max(0f, characterLineZ - cameraZ) * tanHalfHorizontalFov;
     }
 
     /// <summary>
@@ -187,6 +226,9 @@ public class CameraManager : MonoBehaviour
 
         // y 범위 제한 후, 오프셋만큼 위로 올림
         y = Mathf.Clamp(y, Mathf.Min(minY, maxY), Mathf.Max(minY, maxY)) + yOffset;
+
+        // 스테이지 끝 벽 너머는 찍지 않음
+        x = ClampXToStage(x, z);
 
         return new Vector3(x, y, z);
     }
