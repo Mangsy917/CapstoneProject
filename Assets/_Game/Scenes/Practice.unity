@@ -15402,12 +15402,13 @@ MonoBehaviour:
   maxY: 2.5
   yOffset: 0.2
   playerOnlyZ: -5
-  nearZ: -5
-  farZ: -6.5
-  nearDistance: 2.5
-  farDistance: 8
+  closestZ: -5
+  farthestZ: -6.5
+  screenEdgeMargin: 1.2
+  characterLineZ: 0
   followSmoothTime: 0.15
-  zoomSmoothTime: 0.5
+  zoomInSmoothTime: 0.5
+  zoomOutSmoothTime: 0.15
   searchInterval: 0.5
 --- !u!1 &606131662
 GameObject:
