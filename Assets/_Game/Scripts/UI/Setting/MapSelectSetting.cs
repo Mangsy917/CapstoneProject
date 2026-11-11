@@ -21,6 +21,12 @@ namespace Game.UI.Setting
         [Tooltip("지금 고른 맵 이름을 보여줄 글자")]
         [SerializeField] private TMP_Text _mapNameText;
 
+        [Header("맵을 바꿀 때 재시작")]
+        [Tooltip("맵을 바꾸는 동안 화면을 가릴 ScreenFade (비워두면 씬에서 찾음)")]
+        [SerializeField] private ScreenFade MSS_screenFade;
+        [Tooltip("맵을 바꾼 뒤 연습 설정의 시작 사이드 / 위치대로 다시 세울 PracticeRestart (비워두면 씬에서 찾음)")]
+        [SerializeField] private PracticeRestart MSS_practiceRestart;
+
         [Header("맵 선택 팝업")]
         [SerializeField] private GameObject _popup;
         [Tooltip("카드 버튼 (맵 버전 순서대로)")]
@@ -40,6 +46,8 @@ namespace Game.UI.Setting
         {
             if (_practiceMap == null) _practiceMap = FindAnyObjectByType<PracticeMap>();
             if (_practiceMap != null) _practiceMap.MapChanged += OnMapChanged;
+            if (MSS_screenFade == null) MSS_screenFade = FindAnyObjectByType<ScreenFade>(FindObjectsInactive.Include);
+            if (MSS_practiceRestart == null) MSS_practiceRestart = FindAnyObjectByType<PracticeRestart>(FindObjectsInactive.Include);
 
             // 줄을 누르면 팝업을 엶
             Button rowButton = GetComponent<Button>();
@@ -132,10 +140,21 @@ namespace Game.UI.Setting
         }
 
         // 고른 맵으로 바꾸고 닫음
+        // 다른 맵을 골랐으면 재시작처럼 화면이 순간 검게 변하고, 그동안 맵을 바꾸고
+        // 연습 설정의 시작 사이드 / 위치대로 두 캐릭터를 다시 세운 뒤 서서히 원래 화면으로 돌아옴
         private void Confirm(int index)
         {
-            if (_practiceMap != null) _practiceMap.SetMap(index);
             ClosePopup();
+            if (_practiceMap == null || index == _practiceMap.MapIndex) return;
+
+            if (MSS_screenFade != null) MSS_screenFade.Play(onBlack: () => ChangeMap(index));
+            else ChangeMap(index);
+        }
+
+        private void ChangeMap(int index)
+        {
+            _practiceMap.SetMap(index);
+            if (MSS_practiceRestart != null) MSS_practiceRestart.Restart();
         }
 
         // 카드에 마우스를 올리면 선택, 클릭하면 그 맵으로 바꿈

@@ -27,7 +27,7 @@ namespace Game.Field
 
         [SerializeField] private MapTheme[] _themes;
         [Tooltip("저장된 값이 없을 때 처음 고를 버전 번호 (0부터)")]
-        [SerializeField] private int _defaultIndex = 0;
+        [SerializeField] private int _defaultIndex = 1;
 
         // 맵이 바뀌면 바뀐 번호를 알림 (설정창의 값 글자 갱신 등)
         public event System.Action<int> MapChanged;
