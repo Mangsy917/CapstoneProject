@@ -15402,8 +15402,8 @@ MonoBehaviour:
   maxY: 2.5
   yOffset: 0.2
   playerOnlyZ: -5
-  closestZ: -5
-  farthestZ: -6.5
+  closestZ: -4.5
+  farthestZ: -6.41
   screenEdgeMargin: 1.2
   characterLineZ: 0
   followSmoothTime: 0.15
