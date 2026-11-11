@@ -15403,6 +15403,7 @@ MonoBehaviour:
   yOffset: 0.2
   playerOnlyZ: -5
   closestZ: -4.5
+  isFarthestZAuto: 1
   farthestZ: -6.41
   screenEdgeMargin: 1.2
   characterLineZ: 0
