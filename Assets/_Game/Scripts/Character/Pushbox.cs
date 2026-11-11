@@ -7,6 +7,7 @@ namespace Game.Character
     // - 캐릭터(Player, Enemy)와 벽(스테이지 끝 벽, Boundary 벽)에 붙여서 사용
     // - 모든 이동(Update)이 끝난 뒤 한 번에 겹침을 풀어줌
     //   1) 캐릭터끼리 겹치면 반씩 밀어냄. 한쪽이 벽에 붙어 있으면 다른 쪽이 전부 밀려남
+    //      한쪽만 밀고 들어가는 중이면(SetPushing, 예: 달리기) 상대가 전부 밀려남 (달리기 속도 그대로 밀림)
     //   2) 캐릭터가 벽과 겹치면 벽 바깥(원래 있던 쪽)으로 되돌림
     // - 어느 쪽에 있었는지는 이전 프레임 위치로 정하기 때문에, 한 프레임에 많이 움직여도 벽을 통과하지 않음
     // - x축(좌우)으로만 밀어냄. 점프로 상대 위를 넘어가는 것은 높이가 겹치지 않으므로 허용
@@ -38,6 +39,7 @@ namespace Game.Character
         private static int _lastSolvedFrame = -1;
 
         private float _previousX; // 이전 프레임의 상자 중심 x (어느 쪽에 있었는지 판단용)
+        private int _pushingFrame = -1; // 마지막으로 SetPushing을 부른 프레임 (이 프레임에는 상대를 전부 밀어냄)
 
         private void Awake()
         {
@@ -124,6 +126,18 @@ namespace Game.Character
             return IsBlockedByWall(this, direction);
         }
 
+        /// <summary>
+        /// 이번 프레임에 이 캐릭터가 앞으로 밀고 들어가는 중이라고 알림 (예: 달리기).
+        /// 겹침을 풀 때 이 캐릭터는 밀려나지 않고 상대가 전부 밀려나서, 상대가 이 캐릭터의 이동 속도 그대로 밀림.
+        /// 둘 다 밀고 있으면 반씩, 상대가 벽에 막혀 있으면 이 캐릭터가 밀려남 (벽 판정이 우선)
+        /// </summary>
+        public void SetPushing()
+        {
+            _pushingFrame = Time.frameCount;
+        }
+
+        private bool IsPushingThisFrame => _pushingFrame == Time.frameCount;
+
         /// <summary>두 상자가 맞닿아 있거나 겹쳐 있는지 (예: 달리다가 상대에게 붙었는지)</summary>
         public static bool IsTouching(Pushbox a, Pushbox b)
         {
@@ -202,6 +216,12 @@ namespace Game.Character
             float aShare = 0.5f;
             if (isABlocked && !isBBlocked) aShare = 0f;
             else if (isBBlocked && !isABlocked) aShare = 1f;
+            // 벽에 막히지 않았으면, 밀고 들어가는 쪽(달리기 등)은 그대로 두고 반대쪽이 전부 밀려남
+            else if (!isABlocked && !isBBlocked)
+            {
+                if (a.IsPushingThisFrame && !b.IsPushingThisFrame) aShare = 0f;
+                else if (b.IsPushingThisFrame && !a.IsPushingThisFrame) aShare = 1f;
+            }
 
             a.MoveX(-side * overlap * aShare);
             b.MoveX(side * overlap * (1f - aShare));

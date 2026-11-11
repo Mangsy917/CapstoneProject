@@ -106,10 +106,6 @@ public class CharacterMove : MonoBehaviour
     [SerializeField] private int backDashFrames = 15;
     [Tooltip("달리는 동안 1프레임에 움직이는 거리 (예: 0.075면 60프레임에 4.5)")]
     [SerializeField] private float runDistancePerFrame = 0.08625f;
-    [Tooltip("달리는 중 Enemy와 겹치면, 겹친 프레임부터 이 프레임 수 뒤 자동으로 달리기를 멈춤")]
-    [SerializeField] private int runStopFramesAfterOverlap = 60;
-    [Tooltip("Collider가 없을 때 사용할 겹침 판정 거리. Player와 Enemy의 x축 거리가 이 값 이하이면 겹친 것으로 봄")]
-    [SerializeField] private float overlapDistance = 1f;
 
     [Header("바닥")]
     [Tooltip("체크하면 시작할 때의 y 위치를 바닥 높이로 사용")]
@@ -173,9 +169,6 @@ public class CharacterMove : MonoBehaviour
     private int lastBackTapFrame = int.MinValue / 2;    // 마지막으로 4를 새로 누른 프레임
     private int dashFramesLeft;                         // 남은 대쉬 프레임 (0보다 크면 대쉬 중)
     private bool isRunning;
-    private int runOverlapFrames = -1;                  // 달리는 중 Enemy와 겹친 뒤 지난 프레임 (-1이면 아직 안 겹침)
-    private Collider selfCollider;
-    private Collider enemyCollider;
     private Game.Character.Pushbox selfPushbox;
     private Game.Character.Pushbox enemyPushbox;
 
@@ -200,7 +193,6 @@ public class CharacterMove : MonoBehaviour
         if (CM_hitReaction == null)
             CM_hitReaction = GetComponent<Game.Character.CharacterHitReaction>();
 
-        selfCollider = GetComponent<Collider>();
         selfPushbox = GetComponent<Game.Character.Pushbox>();
 
         if (inputReader == null)
@@ -480,14 +472,12 @@ public class CharacterMove : MonoBehaviour
     private void StartRun()
     {
         isRunning = true;
-        runOverlapFrames = -1;
         CurrentState = MoveState.Run;
     }
 
     private void StopRun()
     {
         isRunning = false;
-        runOverlapFrames = -1;
     }
 
     /// <summary>
@@ -502,43 +492,13 @@ public class CharacterMove : MonoBehaviour
             return false;
         }
 
-        // Enemy와 겹치면 그때부터 프레임을 세기 시작
-        if (runOverlapFrames < 0 && IsOverlappingEnemy())
-            runOverlapFrames = 0;
-
-        if (runOverlapFrames >= 0)
-        {
-            runOverlapFrames++;
-            if (runOverlapFrames >= runStopFramesAfterOverlap)
-            {
-                // 겹친 뒤 runStopFramesAfterOverlap 프레임이 지나면 자동으로 달리기 종료 (6을 계속 누르고 있으면 걷기로 바뀜)
-                StopRun();
-                return false;
-            }
-        }
-
+        // 상대에게 붙어도 6을 누르고 있는 동안은 계속 달림
+        // 붙어 있으면 상대를 달리기 속도 그대로 밀어냄 (이번 프레임에 밀고 있다고 Pushbox에 알림)
         float facingSign = IsFacingRight ? 1f : -1f;
         CurrentState = MoveState.Run;
         MoveBy(facingSign * runDistancePerFrame);
+        if (selfPushbox != null) selfPushbox.SetPushing();
         return true;
-    }
-
-    /// <summary>
-    /// Enemy와 겹쳤는지 확인.
-    /// 양쪽 모두 Pushbox가 있으면 맞닿았는지로 (Pushbox가 겹침을 풀어주므로 겹치지는 않음),
-    /// Collider가 있으면 Collider 범위로, 둘 다 없으면 x축 거리(overlapDistance)로 판정
-    /// </summary>
-    private bool IsOverlappingEnemy()
-    {
-        if (enemy == null) return false;
-
-        if (selfPushbox != null && enemyPushbox != null)
-            return Game.Character.Pushbox.IsTouching(selfPushbox, enemyPushbox);
-
-        if (selfCollider != null && enemyCollider != null)
-            return selfCollider.bounds.Intersects(enemyCollider.bounds);
-
-        return Mathf.Abs(enemy.position.x - transform.position.x) <= overlapDistance;
     }
 
     // =====================================================================
@@ -848,7 +808,6 @@ public class CharacterMove : MonoBehaviour
             }
         }
 
-        enemyCollider = enemy != null ? enemy.GetComponent<Collider>() : null;
         enemyPushbox = enemy != null ? enemy.GetComponent<Game.Character.Pushbox>() : null;
     }
 
@@ -869,7 +828,5 @@ public class CharacterMove : MonoBehaviour
         if (backDashDistance < 0f) backDashDistance = 0f;
         if (backDashFrames < 1) backDashFrames = 1;
         if (runDistancePerFrame < 0f) runDistancePerFrame = 0f;
-        if (runStopFramesAfterOverlap < 0) runStopFramesAfterOverlap = 0;
-        if (overlapDistance < 0f) overlapDistance = 0f;
     }
 }
