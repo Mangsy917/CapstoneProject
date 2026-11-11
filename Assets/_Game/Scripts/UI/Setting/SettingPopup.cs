@@ -60,9 +60,21 @@ public class SettingPopup : MonoBehaviour
         }
     }
 
-    void OnEnable()
+    // 예 / 아니오 팝업이 아닌 다른 팝업(맵 선택 등)도 열려 있는 동안 뒤의 메뉴를 막도록 알림
+    public static void AddOpenPopup()
     {
         openCount++;
+    }
+
+    public static void RemoveOpenPopup()
+    {
+        openCount--;
+        SP_closedFrame = Time.frameCount;
+    }
+
+    void OnEnable()
+    {
+        AddOpenPopup();
 
         // 실수로 넘어가지 않도록 처음엔 아니오를 선택
         selectedIndex = 1;
@@ -78,8 +90,7 @@ public class SettingPopup : MonoBehaviour
 
     void OnDisable()
     {
-        openCount--;
-        SP_closedFrame = Time.frameCount;
+        RemoveOpenPopup();
     }
 
     void Update()
