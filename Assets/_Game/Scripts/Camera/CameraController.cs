@@ -11,7 +11,8 @@ using UnityEngine.Serialization;
 ///                    z는 두 캐릭터가 화면 양 끝에서 screenEdgeMargin만큼 떨어져 보이도록 카메라 화각으로 계산함
 ///                    (캐릭터가 멀어지면 뒤로 빠지고, 가까워지면 앞으로 옴)
 ///                    계산한 z는 closestZ(가장 앞, 최댓값) ~ 가장 뒤(최솟값) 안으로 제한
-///                    가장 뒤는 isFarthestZAuto가 켜져 있으면 Boundary 벽 사이 최대 거리로 자동 계산, 꺼져 있으면 farthestZ
+///                    가장 뒤는 isFarthestZAuto가 켜져 있으면 Boundary 두 벽의 안쪽 면이 화면 양 끝에 닿는 z로 자동 계산,
+///                    꺼져 있으면 farthestZ
 ///                    뒤로 빠질 때는 캐릭터가 화면 밖으로 나가지 않도록 빠르게, 앞으로 올 때는 천천히 움직임
 /// - Player만 있을 때 : Boundary는 멈춰 있으므로 Player를 따라가고, z는 playerOnlyZ로 고정
 /// - Boundary 칸이 비어 있으면 Player와 Enemy의 중심을 직접 계산해서 따라감
@@ -51,8 +52,8 @@ public class CameraManager : MonoBehaviour
     [FormerlySerializedAs("nearZ")]
     [SerializeField] private float closestZ = -5f;
     [Tooltip("켜면 가장 뒤 z를 Boundary 벽 위치로 자동 계산함:\n" +
-             "두 벽 사이에서 캐릭터가 벌어질 수 있는 최대 거리일 때 두 캐릭터가 화면에 딱 들어오는 z\n" +
-             "(벽 간격, 캐릭터 Pushbox 폭, Screen Edge Margin, 화면 비율이 바뀌어도 따라감)")]
+             "왼쪽 벽의 안쪽 면(오른쪽 끝)과 오른쪽 벽의 안쪽 면(왼쪽 끝)이 화면 양 끝에 딱 닿는 z\n" +
+             "(벽 간격, 화면 비율이 바뀌어도 따라감)")]
     [SerializeField] private bool isFarthestZAuto = true;
     [Tooltip("캐릭터가 멀어졌을 때 카메라가 뒤로 빠질 수 있는 최솟값 (가장 뒤).\n" +
              "Is Farthest Z Auto가 켜져 있으면 벽을 찾지 못했을 때만 씀")]
@@ -80,10 +81,8 @@ public class CameraManager : MonoBehaviour
     private Transform player;
     private Transform enemy;
     private Camera targetCameraComponent;
-    // Boundary 자식의 벽 Pushbox (캐릭터가 벌어질 수 있는 최대 거리 계산용)
+    // Boundary 자식의 벽 Pushbox (가장 뒤 z 자동 계산용)
     private Game.Character.Pushbox[] boundaryWalls;
-    private Game.Character.Pushbox playerPushbox;
-    private Game.Character.Pushbox CC_enemyPushbox;
     private Vector2 followVelocity;
     private float zoomVelocity;
     private float searchTimer;
@@ -213,26 +212,23 @@ public class CameraManager : MonoBehaviour
         float tanHalfHorizontalFov = Mathf.Tan(halfVerticalFov) * targetCameraComponent.aspect;
         if (tanHalfHorizontalFov <= 0f) return frontZ;
 
-        // 가장 뒤 z를 벽 위치로 자동 계산: 최대 거리로 벌어졌을 때 화면에 딱 들어오는 z (가장 앞보다 앞으로 오지는 않음)
-        if (isFarthestZAuto && TryGetMaxCharacterDistance(out float maxCharacterDistance))
-        {
-            float maxHalfWidth = maxCharacterDistance * 0.5f + screenEdgeMargin;
-            backZ = Mathf.Min(frontZ, characterLineZ - maxHalfWidth / tanHalfHorizontalFov);
-        }
+        // 가장 뒤 z를 벽 위치로 자동 계산: 두 벽의 안쪽 면이 화면 양 끝에 딱 닿는 z (가장 앞보다 앞으로 오지는 않음)
+        if (isFarthestZAuto && TryGetInnerWallHalfSpan(out float innerWallHalfSpan))
+            backZ = Mathf.Min(frontZ, characterLineZ - innerWallHalfSpan / tanHalfHorizontalFov);
 
         float distanceToLine = halfWidth / tanHalfHorizontalFov;
         return Mathf.Clamp(characterLineZ - distanceToLine, backZ, frontZ);
     }
 
     /// <summary>
-    /// Boundary 벽 사이에서 두 캐릭터 중심이 벌어질 수 있는 최대 x 거리
-    /// = (오른쪽 벽 안쪽 면 - 왼쪽 벽 안쪽 면) - Player Pushbox 절반 폭 - Enemy Pushbox 절반 폭
-    /// 벽이 두 개 미만이거나 캐릭터 Pushbox가 없으면 false
+    /// Boundary 두 벽의 안쪽 면 사이 거리의 절반
+    /// = (오른쪽 벽 안쪽 면(x 최솟값) - 왼쪽 벽 안쪽 면(x 최댓값)) / 2
+    /// 벽이 두 개 미만이면 false
     /// </summary>
-    private bool TryGetMaxCharacterDistance(out float maxCharacterDistance)
+    private bool TryGetInnerWallHalfSpan(out float innerWallHalfSpan)
     {
-        maxCharacterDistance = 0f;
-        if (boundary == null || boundaryWalls == null || playerPushbox == null || CC_enemyPushbox == null) return false;
+        innerWallHalfSpan = 0f;
+        if (boundary == null || boundaryWalls == null) return false;
 
         // Boundary 중심보다 왼쪽 벽 중 가장 안쪽 면, 오른쪽 벽 중 가장 안쪽 면
         float centerX = boundary.position.x;
@@ -247,8 +243,8 @@ public class CameraManager : MonoBehaviour
         }
         if (float.IsInfinity(leftInnerX) || float.IsInfinity(rightInnerX)) return false;
 
-        maxCharacterDistance = (rightInnerX - leftInnerX) - playerPushbox.HalfWidth - CC_enemyPushbox.HalfWidth;
-        return maxCharacterDistance > 0f;
+        innerWallHalfSpan = (rightInnerX - leftInnerX) * 0.5f;
+        return innerWallHalfSpan > 0f;
     }
 
     private static bool IsValid(Transform t)
@@ -262,8 +258,6 @@ public class CameraManager : MonoBehaviour
         player = playerObj != null ? playerObj.transform : null;
 
         enemy = null;
-        playerPushbox = player != null ? player.GetComponent<Game.Character.Pushbox>() : null;
-        CC_enemyPushbox = null;
         if (player == null) return;
 
         // Enemy가 여러 개면 Player와 가장 가까운 것을 사용
@@ -278,7 +272,6 @@ public class CameraManager : MonoBehaviour
                 enemy = e.transform;
             }
         }
-        if (enemy != null) CC_enemyPushbox = enemy.GetComponent<Game.Character.Pushbox>();
     }
 
     private void OnValidate()
