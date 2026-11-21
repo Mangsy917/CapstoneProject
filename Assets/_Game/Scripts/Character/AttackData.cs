@@ -531,7 +531,7 @@ namespace Game.Character
         [Tooltip("히트백으로 밀려나는 데 걸리는 프레임 수")]
         [SerializeField] private int _hitBackFrames = 8;
 
-        [Tooltip("히트스톱: 맞혔을 때 때린 쪽과 맞은 쪽이 멈추는 프레임 수 (60프레임 = 1초, 6이면 0.1초). 0이면 멈추지 않음\n" +
+        [Tooltip("히트스톱: 맞히거나 가드됐을 때 때린 쪽과 맞은 쪽이 멈추는 프레임 수 (60프레임 = 1초, 6이면 0.1초). 0이면 멈추지 않음\n" +
                  "게임 시간은 그대로 흐르고 두 캐릭터만 멈춤. 맞은 쪽의 피격 경직은 멈춤이 풀린 뒤부터 줄어듦 (장풍은 멈추지 않음)")]
         [SerializeField] private int _hitStopFrames = 6;
 

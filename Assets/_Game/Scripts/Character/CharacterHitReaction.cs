@@ -155,6 +155,7 @@ namespace Game.Character
     //   히트 종류마다 데미지 배율, 추가 경직, 다운 여부, 피격 모션을 공격(AttackData)의 히트 종류별 결과에서 정함
     //   피격 모션은 히트 종류에 정한 모션 → 기술의 모션 순서로 쓰고, 자동이면 상단 공격은 MiddleHit, 중단 공격은 Top2Low, 하단 공격은 맞은 피격 상자 위치에 따라 정함
     // - 가드하면: 가드 경직 + 가드백 + 가드 모션 (가드한 피격 상자 위치에 따라 Top / Middle / Bottom), 데미지 없음
+    // - 히트스톱: 장풍을 제외한 모든 공격은 맞거나 가드되면 양쪽이 잠깐 멈춤 (HitStop). 가드는 기술의 히트스톱 값을 씀
     // - 히트백 / 가드백: 정해진 프레임 동안 뒤로 밀려남. 벽에 붙어 있으면 대신 때린 쪽이 밀려남 (장풍은 제외)
     // - 때린 쪽 움직임 따라가기: 띄우는 공격에 맞으면 때린 쪽이 움직이던 속도(앞으로, 위로)를 따라 같이 떠오름
     //   뛰어오르는 속도가 빠르거나 데미지가 클수록 높이 뜸. 공중에서 맞으면 앞으로 가던 공격의 가로 속도를 같이 받음
@@ -276,7 +277,7 @@ namespace Game.Character
         /// target에게 공격이 닿았을 때 호출. 가드하면 가드 경직 / 가드백, 슈퍼아머로 버티면 데미지만, 아니면 데미지와 피격 경직 / 히트백을 줌
         /// direction: 밀려나는 방향 (때린 쪽에서 맞은 쪽으로, 1: 오른쪽, -1: 왼쪽)
         /// shouldPushAttacker: 맞은 쪽이 벽에 붙어 있을 때 때린 쪽이 대신 밀려날지 (장풍은 false)
-        /// shouldHitStop: 맞혔을 때 때린 쪽과 맞은 쪽을 히트스톱으로 멈출지 (장풍은 false)
+        /// shouldHitStop: 맞히거나 가드됐을 때 때린 쪽과 맞은 쪽을 히트스톱으로 멈출지 (장풍은 false)
         /// </summary>
         public static void HitTarget(GameObject target, int damage, HitInfo info, Hitbox hitbox, float direction, CharacterAttack attacker, bool shouldPushAttacker, bool shouldHitStop = true)
         {
@@ -289,6 +290,10 @@ namespace Game.Character
             if (reaction != null && reaction.CanGuard(info))
             {
                 reaction.ReceiveGuard(info, hitbox, direction, pushedAttacker);
+
+                // 가드해도 맞혔을 때처럼 가드한 쪽과 때린 쪽을 멈춤 (기술의 히트스톱, 히트 종류별 값은 쓰지 않음)
+                // 두 쪽이 같은 프레임 수만큼 멈추므로 가드 시 유리 프레임은 그대로
+                if (shouldHitStop) StopBoth(target, attacker, info.HitStopFrames);
                 return;
             }
 
@@ -312,12 +317,7 @@ namespace Game.Character
             if (targetState != null) SetCounterState(targetState, hitType);
 
             // 타격감: 맞은 쪽과 때린 쪽을 잠깐 멈춤 (게임 시간은 그대로 흐름)
-            if (shouldHitStop)
-            {
-                int hitStopFrames = info.GetHitStopFrames(hitType);
-                HitStop.Stop(target, hitStopFrames);
-                if (attacker != null) HitStop.Stop(attacker.gameObject, hitStopFrames);
-            }
+            if (shouldHitStop) StopBoth(target, attacker, info.GetHitStopFrames(hitType));
 
             var health = target.GetComponent<CharacterHealth>();
             bool wasAlive = health != null && health.CurrentHealth > 0;
@@ -325,6 +325,13 @@ namespace Game.Character
 
             bool isKnockOut = wasAlive && health.CurrentHealth <= 0;
             TargetHit?.Invoke(target, hitType, isKnockOut);
+        }
+
+        // 맞은(가드한) 쪽과 때린 쪽을 frames 프레임 동안 히트스톱으로 멈춤
+        private static void StopBoth(GameObject target, CharacterAttack attacker, int frames)
+        {
+            HitStop.Stop(target, frames);
+            if (attacker != null) HitStop.Stop(attacker.gameObject, frames);
         }
 
         // 설정창의 카운터 종류에 따른 더미의 히트 종류 (일반이면 맞은 순간의 상태로 정한 stateHitType 그대로)
