@@ -20,6 +20,9 @@ namespace Game.UI
 
         private Coroutine _fadeRoutine;
 
+        // 검은 화면으로 바뀌기 시작해서 원래 화면으로 다 돌아올 때까지 true
+        public bool SF_IsPlaying => _fadeRoutine != null;
+
         void Awake()
         {
             if (_fadeImage == null) _fadeImage = GetComponent<Image>();

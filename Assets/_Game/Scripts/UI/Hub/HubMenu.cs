@@ -3,92 +3,86 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
-using UnityEngine.UI;
 
 namespace Game.UI.Hub
 {
-    // 거점 메뉴 (거점 씬의 UI 관리 오브젝트에 붙여서 사용, 5. UI/UX '거점 화면')
-    // 하단 탭 줄은 윈도우 작업 표시줄처럼 동작함
-    // - 탭을 옮김 (좌우, LB·RB(Q·E), 마우스 올리기): 위 화면이 그 탭의 화면으로 바로 바뀜. 전환 연출·대사 없음
-    // - 탭을 선택 (선택 키, 마우스 클릭): 탭 화면은 그대로 두고, 탭 줄만 내려가며 투명해지고 비활성화됨
-    //   (Should Zoom Screen을 켜면 탭 화면이 전체 화면으로 확대됨)
-    //   일반형 탭이면 일러스트 밑에 대사 자막 상자가 보임. 이제 하위 메뉴(보드형은 포스트잇·구석 버튼)를 고름
-    // - 뒤로 가기 (취소 키, 뒤로 버튼, 마우스 우클릭): 탭 줄이 올라오며 선명해지고 다시 활성화됨
-    // - ESC / 패드 Start(Menu·Options) 버튼: 어디서든 바로 설정 탭의 팝업(시스템 설정)을 엶
-    // - 탭 줄이 활성인 동안 탭 화면의 하위 메뉴를 마우스로 누르면 그 탭을 선택한 것으로 봄 (그 하위 메뉴가 선택된 채로 확대)
-    // - 팝업형 탭을 선택하면 화면을 확대하지 않고 팝업을 띄움
+    // 메인화면(거점) 메뉴 (거점 씬의 UI 관리 오브젝트에 붙여서 사용, 5. UI/UX '메인화면 (거점)')
+    // 모던 바 3D 배경 위의 2D 오브젝트(HubObject)와 하단 1depth 메뉴 바가 같은 선택 상태를 공유함
+    // - 1depth 항목을 옮김 (좌우, LB·RB(Q·E), 메뉴·오브젝트에 마우스 올리기): 그 항목의 오브젝트가 외곽 빛으로 강조됨
+    // - 선택 (선택 키, 메뉴·오브젝트 클릭): 오브젝트 쪽으로 확대되면서 검은 화면 -> 2depth 메뉴 (전체 화면)
+    //   오브젝트가 없는 항목은 확대 없이 검은 화면만 거침. 일반형이면 일러스트 밑에 대사 자막 상자가 보임
+    // - 2depth에서 뒤로 가기 (취소 키, 마우스 우클릭): 페이드로 메인화면에 돌아옴
+    // - 메인화면에서 뒤로 가기: 확인 팝업 -> 페이드로 타이틀에 돌아감
+    // - 팝업형 항목을 선택하면 확대·페이드 없이 팝업을 띄움
+    // - ESC / 패드 Start(Menu·Options) 버튼: 어디서든 바로 설정 항목의 팝업(시스템 설정)을 엶
     // - 아직 제작되지 않은 메뉴(Is Built 꺼짐)를 고르면 '미완성된 시스템입니다' 팝업을 띄움
-    // 팝업이나 옵션 창이 열려 있는 동안에는 입력을 받지 않음
+    // 팝업·옵션 창이 열려 있거나 화면이 전환되는 동안에는 입력을 받지 않음
     public class HubMenu : MonoBehaviour
     {
-        private static readonly Color HM_highlightColor = new Color(0.5f, 0.5f, 0.5f, 1f);
-        private static readonly Color HM_normalColor = new Color(1f, 1f, 1f, 0.15f);
+        private static readonly Color HM_highlightColor = new Color(0.12f, 0.55f, 0.52f, 1f);
+        private static readonly Color HM_normalColor = new Color(1f, 1f, 1f, 0.06f);
 
         // 비워두면 씬에서 찾음
         [SerializeField] private UIControl HM_uiControl;
 
-        [Tooltip("탭 줄의 왼쪽부터 순서대로")]
+        [Tooltip("1depth 메뉴 바의 왼쪽부터 순서대로")]
         [SerializeField] private HubTab[] _hubTabs;
 
         [Header("화면")]
-        [Tooltip("탭 화면들이 들어 있는 영역 (앵커는 화면 전체로 늘려 둠)")]
+        [Tooltip("2depth 메뉴 화면들이 들어 있는 영역 (메인화면에서는 꺼짐)")]
         [SerializeField] private RectTransform _screenArea;
 
-        [Tooltip("탭 화면이 화면 가장자리에서 들어가는 거리 (x 왼쪽, y 아래, z 오른쪽, w 위)")]
-        [SerializeField] private Vector4 _smallScreenInset = new Vector4(160f, 250f, 160f, 130f);
-
-        [Tooltip("켜면 탭을 선택했을 때 탭 화면이 전체 화면으로 확대됨. 끄면 화면은 그대로 두고 탭 줄만 내려가며 비활성화됨")]
-        [SerializeField] private bool _shouldZoomScreen;
-
-        [Tooltip("탭 줄 (탭 버튼과 한 줄 설명이 들어 있음)")]
+        [Tooltip("1depth 메뉴 바 (항목 버튼과 한 줄 설명, 2depth에서는 꺼짐)")]
         [SerializeField] private RectTransform _tabBar;
 
-        [Tooltip("탭을 선택했을 때 탭 줄이 아래로 내려가는 거리")]
-        [SerializeField] private float _tabBarHideDistance = 300f;
-
-        [Tooltip("고른 탭을 설명하는 한 줄")]
+        [Tooltip("고른 항목을 설명하는 한 줄")]
         [SerializeField] private TMP_Text _descriptionText;
-
-        [Tooltip("탭을 선택한 동안만 보이는 뒤로 가기 버튼")]
-        [SerializeField] private Button HM_backButton;
 
         [SerializeField] private UnfinishedPopup _unfinishedPopup;
 
-        [Tooltip("ESC / Start 버튼을 누르면 이 탭의 팝업을 엶 (시스템 설정 탭)")]
+        [Tooltip("ESC / Start 버튼을 누르면 이 항목의 팝업을 엶 (시스템 설정)")]
         [SerializeField] private HubTab _settingTab;
 
-        [Tooltip("탭 화면이 확대·축소되는 시간(초, 실제 시간 기준)")]
-        [SerializeField] private float _transitionTime = 0.25f;
+        [Tooltip("메인화면에서 뒤로 가기를 누르면 띄울 확인 팝업. 예 버튼에 ReturnToTitle을 연결")]
+        [SerializeField] private SettingPopup _titlePopup;
 
-        private CanvasGroup _tabBarGroup;
-        private Vector2 _tabBarShownPosition;
+        [Tooltip("타이틀 씬 이름")]
+        [SerializeField] private string _titleScene = "Title";
+
+        [Header("확대·페이드")]
+        [SerializeField] private ScreenFade HM_screenFade;
+
+        [Tooltip("메인화면을 비추는 카메라")]
+        [SerializeField] private Camera _hubCamera;
+
+        [Tooltip("선택했을 때 확대되며 검은 화면이 되는 시간(초, 실제 시간 기준)")]
+        [SerializeField] private float _zoomTime = 0.6f;
+
+        [Tooltip("뒤로 갈 때 검은 화면이 되는 시간(초, 실제 시간 기준)")]
+        [SerializeField] private float _backFadeTime = 0.25f;
+
+        [Tooltip("확대가 끝났을 때 카메라와 오브젝트 사이의 거리")]
+        [SerializeField] private float _zoomDistance = 2.5f;
+
+        private Vector3 _cameraHomePosition;
+        private Coroutine _zoomRoutine;
 
         private int _tabIndex;
         private int _itemIndex;
-        private bool _isInsideTab;
 
-        // 0: 탭을 고르는 중 (작은 화면, 탭 줄 보임), 1: 탭을 선택함 (전체 화면, 탭 줄 숨김)
-        private float _transitionProgress;
-        private Coroutine _transitionRoutine;
+        // 2depth 메뉴에 들어와 있는지
+        private bool _isInsideTab;
 
         // 누르고 있는 동안 계속 실행되지 않도록 이전 프레임 선택 키를 기억
         private bool HM_lastSelect;
-
-        // 탭을 선택한 그 프레임에는 하위 메뉴 입력을 처리하지 않음
-        private int HM_ignoreInputFrame = -1;
 
         void Awake()
         {
             if (HM_uiControl == null) HM_uiControl = FindAnyObjectByType<UIControl>(FindObjectsInactive.Include);
 
-            if (_tabBar != null)
-            {
-                _tabBarShownPosition = _tabBar.anchoredPosition;
-                _tabBarGroup = _tabBar.GetComponent<CanvasGroup>();
-                if (_tabBarGroup == null) _tabBarGroup = _tabBar.gameObject.AddComponent<CanvasGroup>();
-            }
-
-            if (HM_backButton != null) HM_backButton.onClick.AddListener(Back);
+            if (HM_screenFade == null) HM_screenFade = FindAnyObjectByType<ScreenFade>(FindObjectsInactive.Include);
+            if (_hubCamera == null) _hubCamera = Camera.main;
+            if (_hubCamera != null) _cameraHomePosition = _hubCamera.transform.position;
 
             for (int i = 0; i < _hubTabs.Length; i++)
             {
@@ -99,8 +93,7 @@ namespace Game.UI.Hub
         void Start()
         {
             ShowTab(0);
-            ApplyTransition(0f);
-            if (HM_backButton != null) HM_backButton.gameObject.SetActive(false);
+            ShowMainScreen();
         }
 
         void Update()
@@ -109,8 +102,8 @@ namespace Game.UI.Hub
 
             bool select = HM_uiControl.uiSelect;
 
-            // 팝업·옵션 창이 열려 있으면 입력만 기억하고 메뉴는 움직이지 않음
-            if (IsInputBlocked() || Time.frameCount == HM_ignoreInputFrame)
+            // 팝업·옵션 창이 열려 있거나 화면이 전환 중이면 입력만 기억하고 메뉴는 움직이지 않음
+            if (IsInputBlocked())
             {
                 HM_lastSelect = select;
                 return;
@@ -119,7 +112,7 @@ namespace Game.UI.Hub
             bool isSelectPressed = select && !HM_lastSelect;
             HM_lastSelect = select;
 
-            // ESC / Start: 탭 줄, 탭 안, 상점 창 어디서든 바로 설정을 엶
+            // ESC / Start: 메인화면, 2depth, 상점 창 어디서든 바로 설정을 엶
             if (HM_uiControl.uiClose)
             {
                 HM_uiControl.uiClose = false;
@@ -130,19 +123,20 @@ namespace Game.UI.Hub
             // 상점 창이 열려 있으면 그 창이 입력을 처리함
             if (ShopWindow.SW_IsOpen) return;
 
+            if (HM_uiControl.uiCancelDown || IsRightClicked())
+            {
+                // 같은 키로 열린 팝업까지 닫히지 않도록 처리한 입력은 지움
+                HM_uiControl.uiCancelDown = false;
+                Back();
+                return;
+            }
+
             if (!_isInsideTab)
             {
                 if (HM_uiControl.uiLeftStep || HM_uiControl.uiLeftPG) MoveTab(-1);
                 else if (HM_uiControl.uiRightStep || HM_uiControl.uiRightPG) MoveTab(1);
 
-                if (isSelectPressed) SelectTab(startItemIndex: 0);
-                return;
-            }
-
-            if (HM_uiControl.uiCancelDown || IsRightClicked())
-            {
-                HM_uiControl.uiCancelDown = false;
-                Back();
+                if (isSelectPressed) SelectTab();
                 return;
             }
 
@@ -160,6 +154,15 @@ namespace Game.UI.Hub
             LoadingScene.LoadScene(sceneName);
         }
 
+        // 페이드로 타이틀에 돌아감. 확인 팝업의 예 버튼 OnClick에 연결
+        public void ReturnToTitle()
+        {
+            if (HM_screenFade != null && HM_screenFade.SF_IsPlaying) return;
+
+            if (_titlePopup != null) _titlePopup.gameObject.SetActive(false);
+            PlayFade(() => LoadScene(_titleScene), _backFadeTime);
+        }
+
         // ===== 연결 =====
 
         private void ConnectTab(int tabIndex)
@@ -172,17 +175,14 @@ namespace Game.UI.Hub
                 TMP_Text label = tab.TabButton.GetComponentInChildren<TMP_Text>(includeInactive: true);
                 if (label != null && !string.IsNullOrEmpty(tab.TabName)) label.text = tab.TabName;
 
-                AddPointerEvent(tab.TabButton.gameObject, EventTriggerType.PointerEnter, () =>
-                {
-                    if (_isInsideTab || IsInputBlocked()) return;
-                    ShowTab(tabIndex);
-                });
-                tab.TabButton.onClick.AddListener(() =>
-                {
-                    if (_isInsideTab || IsInputBlocked()) return;
-                    ShowTab(tabIndex);
-                    SelectTab(startItemIndex: 0);
-                });
+                AddPointerEvent(tab.TabButton.gameObject, EventTriggerType.PointerEnter, () => HoverTab(tabIndex));
+                tab.TabButton.onClick.AddListener(() => ClickTab(tabIndex));
+            }
+
+            if (tab.LinkedObject != null)
+            {
+                tab.LinkedObject.HoverStarted += () => HoverTab(tabIndex);
+                tab.LinkedObject.LeftClicked += () => ClickTab(tabIndex);
             }
 
             HubMenuItem[] items = tab.Items;
@@ -212,7 +212,20 @@ namespace Game.UI.Hub
             trigger.triggers.Add(entry);
         }
 
-        // ===== 탭 =====
+        // ===== 1depth 메뉴 =====
+
+        private void HoverTab(int tabIndex)
+        {
+            if (_isInsideTab || IsInputBlocked()) return;
+            ShowTab(tabIndex);
+        }
+
+        private void ClickTab(int tabIndex)
+        {
+            if (_isInsideTab || IsInputBlocked()) return;
+            ShowTab(tabIndex);
+            SelectTab();
+        }
 
         private void MoveTab(int direction)
         {
@@ -220,7 +233,7 @@ namespace Game.UI.Hub
             ShowTab((_tabIndex + direction + _hubTabs.Length) % _hubTabs.Length);
         }
 
-        // 위 화면을 그 탭의 화면으로 바꿈 (선택하지는 않음)
+        // 1depth 항목을 고름 (메뉴 바와 오브젝트를 강조, 선택하지는 않음)
         private void ShowTab(int tabIndex)
         {
             if (tabIndex < 0 || tabIndex >= _hubTabs.Length) return;
@@ -233,9 +246,7 @@ namespace Game.UI.Hub
                 if (tab == null) continue;
 
                 bool isCurrent = i == tabIndex;
-                tab.gameObject.SetActive(isCurrent);
-                tab.ShowDialogue(false);
-                SetItemsSelected(tab, selectedIndex: -1);
+                if (tab.LinkedObject != null) tab.LinkedObject.SetHighlighted(isCurrent);
 
                 if (tab.TabButton != null)
                 {
@@ -247,12 +258,12 @@ namespace Game.UI.Hub
             if (_descriptionText != null) _descriptionText.text = _hubTabs[tabIndex] != null ? _hubTabs[tabIndex].Description : "";
         }
 
-        private void SelectTab(int startItemIndex)
+        private void SelectTab()
         {
             HubTab tab = _hubTabs[_tabIndex];
             if (tab == null) return;
 
-            // 팝업형: 화면을 확대하지 않고 팝업만 띄움
+            // 팝업형: 확대·페이드 없이 팝업만 띄움
             if (tab.Type == HubTab.TabType.Popup)
             {
                 if (tab.IsPopupBuilt) tab.OpenPopup();
@@ -260,37 +271,88 @@ namespace Game.UI.Hub
                 return;
             }
 
-            _isInsideTab = true;
-            HM_ignoreInputFrame = Time.frameCount;
-
-            int itemCount = tab.Items != null ? tab.Items.Length : 0;
-            _itemIndex = itemCount > 0 ? Mathf.Clamp(startItemIndex, 0, itemCount - 1) : -1;
-            SetItemsSelected(tab, _itemIndex);
-            tab.ShowDialogue(true);
-
-            if (HM_backButton != null) HM_backButton.gameObject.SetActive(true);
-            StartTransition(1f);
+            if (tab.LinkedObject != null) StartZoom(tab.LinkedObject.ZoomPosition);
+            PlayFade(ShowTabScreen, _zoomTime);
         }
 
-        // 탭 선택을 풀고 탭 줄로 돌아감
         private void Back()
         {
-            if (!_isInsideTab) return;
-
-            _isInsideTab = false;
-
-            HubTab tab = _hubTabs[_tabIndex];
-            if (tab != null)
-            {
-                tab.ShowDialogue(false);
-                SetItemsSelected(tab, selectedIndex: -1);
-            }
-
-            if (HM_backButton != null) HM_backButton.gameObject.SetActive(false);
-            StartTransition(0f);
+            if (_isInsideTab) PlayFade(ShowMainScreen, _backFadeTime);
+            else if (_titlePopup != null) _titlePopup.gameObject.SetActive(true);
         }
 
-        // ===== 하위 메뉴 =====
+        // ===== 화면 전환 =====
+
+        private void ShowTabScreen()
+        {
+            ResetZoom();
+            _isInsideTab = true;
+
+            for (int i = 0; i < _hubTabs.Length; i++)
+            {
+                if (_hubTabs[i] != null) _hubTabs[i].gameObject.SetActive(i == _tabIndex);
+            }
+            SetMainScreenActive(false);
+
+            HubTab tab = _hubTabs[_tabIndex];
+            int itemCount = tab.Items != null ? tab.Items.Length : 0;
+            _itemIndex = itemCount > 0 ? 0 : -1;
+            SetItemsSelected(tab, _itemIndex);
+            tab.ShowDialogue(true);
+        }
+
+        private void ShowMainScreen()
+        {
+            ResetZoom();
+            _isInsideTab = false;
+
+            SetMainScreenActive(true);
+        }
+
+        private void SetMainScreenActive(bool isActive)
+        {
+            if (_tabBar != null) _tabBar.gameObject.SetActive(isActive);
+            if (_screenArea != null) _screenArea.gameObject.SetActive(!isActive);
+        }
+
+        private void PlayFade(System.Action onBlack, float fadeInTime)
+        {
+            if (HM_screenFade != null) HM_screenFade.Play(onBlack, fadeInTime);
+            else onBlack();
+        }
+
+        // 카메라가 오브젝트 쪽으로 다가감 (검은 화면이 되면 ResetZoom으로 되돌림)
+        private void StartZoom(Vector3 targetPosition)
+        {
+            if (_hubCamera == null || HM_screenFade == null) return;
+
+            Vector3 endPosition = targetPosition - _hubCamera.transform.forward * _zoomDistance;
+            _zoomRoutine = StartCoroutine(ZoomRoutine(endPosition));
+        }
+
+        private void ResetZoom()
+        {
+            if (_zoomRoutine != null) StopCoroutine(_zoomRoutine);
+            _zoomRoutine = null;
+
+            if (_hubCamera != null) _hubCamera.transform.position = _cameraHomePosition;
+        }
+
+        private IEnumerator ZoomRoutine(Vector3 endPosition)
+        {
+            float elapsedTime = 0f;
+            while (elapsedTime < _zoomTime)
+            {
+                elapsedTime += Time.unscaledDeltaTime;
+                float progress = Mathf.SmoothStep(0f, 1f, elapsedTime / _zoomTime);
+                _hubCamera.transform.position = Vector3.Lerp(_cameraHomePosition, endPosition, progress);
+                yield return null;
+            }
+
+            _zoomRoutine = null;
+        }
+
+        // ===== 2depth 메뉴 =====
 
         private void MoveItem(int direction, bool canWrap)
         {
@@ -311,14 +373,7 @@ namespace Game.UI.Hub
 
         private void ClickItem(int tabIndex, int itemIndex)
         {
-            if (IsInputBlocked() || tabIndex != _tabIndex) return;
-
-            // 탭 줄이 활성인 동안 누르면 그 탭을 선택한 것으로 봄
-            if (!_isInsideTab)
-            {
-                SelectTab(startItemIndex: itemIndex);
-                return;
-            }
+            if (!_isInsideTab || IsInputBlocked() || tabIndex != _tabIndex) return;
 
             SelectItem(itemIndex);
             RunItem(itemIndex);
@@ -360,65 +415,14 @@ namespace Game.UI.Hub
 
         // ===== 입력 =====
 
-        private static bool IsInputBlocked()
+        private bool IsInputBlocked()
         {
-            return SettingPopup.IsAnyOpen;
+            return SettingPopup.IsAnyOpen || (HM_screenFade != null && HM_screenFade.SF_IsPlaying);
         }
 
         private static bool IsRightClicked()
         {
             return Mouse.current != null && Mouse.current.rightButton.wasPressedThisFrame;
-        }
-
-        // ===== 확대·축소 =====
-
-        private void StartTransition(float target)
-        {
-            if (_transitionRoutine != null) StopCoroutine(_transitionRoutine);
-            _transitionRoutine = StartCoroutine(TransitionRoutine(target));
-        }
-
-        private IEnumerator TransitionRoutine(float target)
-        {
-            // 탭 줄은 움직이기 시작할 때 바로 막고, 다 올라온 뒤에 다시 누를 수 있게 함
-            if (_tabBarGroup != null)
-            {
-                _tabBarGroup.interactable = false;
-                _tabBarGroup.blocksRaycasts = false;
-            }
-
-            float speed = _transitionTime > 0f ? 1f / _transitionTime : float.MaxValue;
-            while (!Mathf.Approximately(_transitionProgress, target))
-            {
-                ApplyTransition(Mathf.MoveTowards(_transitionProgress, target, speed * Time.unscaledDeltaTime));
-                yield return null;
-            }
-
-            ApplyTransition(target);
-            _transitionRoutine = null;
-        }
-
-        private void ApplyTransition(float progress)
-        {
-            _transitionProgress = progress;
-            float eased = Mathf.SmoothStep(0f, 1f, progress);
-
-            if (_screenArea != null)
-            {
-                float zoom = _shouldZoomScreen ? eased : 0f;
-                _screenArea.offsetMin = Vector2.Lerp(new Vector2(_smallScreenInset.x, _smallScreenInset.y), Vector2.zero, zoom);
-                _screenArea.offsetMax = Vector2.Lerp(new Vector2(-_smallScreenInset.z, -_smallScreenInset.w), Vector2.zero, zoom);
-            }
-
-            if (_tabBar != null) _tabBar.anchoredPosition = _tabBarShownPosition + Vector2.down * (_tabBarHideDistance * eased);
-
-            if (_tabBarGroup != null)
-            {
-                _tabBarGroup.alpha = 1f - eased;
-                bool isTabBarActive = !_isInsideTab && progress <= 0f;
-                _tabBarGroup.interactable = isTabBarActive;
-                _tabBarGroup.blocksRaycasts = isTabBarActive;
-            }
         }
     }
 }
