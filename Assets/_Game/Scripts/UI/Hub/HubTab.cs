@@ -7,7 +7,7 @@ namespace Game.UI.Hub
     // 메인화면(거점)의 1depth 메뉴 항목 하나 (2depth 화면 오브젝트에 붙여서 사용, HubMenu의 화면 영역 안에 둠)
     // 2depth 메뉴 형태 (5. UI/UX '2depth 메뉴 형태')
     // - 일반형: 왼쪽에 항목 이름과 2depth 메뉴(세로 목록), 오른쪽에 일러스트, 일러스트 밑에 대사 자막 상자
-    // - 보드형: 화이트보드가 화면 전체를 채우고 포스트잇(목록)과 오른쪽 아래 구석 버튼을 고름. 대사 없음
+    // - 보드형: 수사보드가 화면을 채우고 보드 위의 종이·칼과 구석 버튼을 고름. 대사 없음
     // - 팝업형: 2depth 화면 없음. 선택하면 확대·페이드 없이 팝업을 띄움 (Popup Open 이벤트)
     public class HubTab : MonoBehaviour
     {
@@ -32,7 +32,7 @@ namespace Game.UI.Hub
         [Tooltip("메인화면 배경에서 이 항목과 연결된 2D 오브젝트 (없으면 비워 둠)")]
         [SerializeField] private HubObject _linkedObject;
 
-        [Tooltip("일반형: 2depth 메뉴(위에서 아래 순서) / 보드형: 포스트잇 다음에 구석 버튼 순서")]
+        [Tooltip("일반형: 2depth 메뉴(위에서 아래 순서) / 보드형: 보드 위의 항목 (첫 항목이 처음에 선택됨)")]
         [SerializeField] private HubMenuItem[] _items;
 
         [Tooltip("일반형만: 일러스트 밑의 대사 자막 상자 (2depth에 들어왔을 때 보임)")]

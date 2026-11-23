@@ -140,10 +140,16 @@ namespace Game.UI.Hub
                 return;
             }
 
-            // 일반형은 세로 목록, 보드형은 포스트잇이 가로로 놓여 있어 위·왼쪽은 이전, 아래·오른쪽은 다음
+            // 고르고 있던 항목이 사라졌으면(고정을 해제한 칼 등) 첫 항목으로 옮김
+            if (!IsItemActive(_itemIndex)) SelectFirstItem();
+
+            // 일반형은 세로 목록이라 위·왼쪽은 이전, 아래·오른쪽은 다음. 보드형은 누른 방향에 있는 항목으로 옮김
             bool canWrap = !HM_uiControl.isRepeating;
-            if (HM_uiControl.uiUpStep || HM_uiControl.uiLeftStep) MoveItem(-1, canWrap);
-            else if (HM_uiControl.uiDownStep || HM_uiControl.uiRightStep) MoveItem(1, canWrap);
+            bool isBoard = _hubTabs[_tabIndex].Type == HubTab.TabType.Board;
+            if (HM_uiControl.uiUpStep) MoveItem(-1, canWrap, isBoard, Vector2.up);
+            else if (HM_uiControl.uiLeftStep) MoveItem(-1, canWrap, isBoard, Vector2.left);
+            else if (HM_uiControl.uiDownStep) MoveItem(1, canWrap, isBoard, Vector2.down);
+            else if (HM_uiControl.uiRightStep) MoveItem(1, canWrap, isBoard, Vector2.right);
 
             if (isSelectPressed) RunItem(_itemIndex);
         }
@@ -354,15 +360,71 @@ namespace Game.UI.Hub
 
         // ===== 2depth 메뉴 =====
 
-        private void MoveItem(int direction, bool canWrap)
+        private void MoveItem(int direction, bool canWrap, bool isBoard, Vector2 screenDirection)
         {
             HubMenuItem[] items = _hubTabs[_tabIndex].Items;
             if (items == null || items.Length == 0) return;
+
+            if (isBoard)
+            {
+                MoveBoardItem(items, screenDirection);
+                return;
+            }
 
             int next = _itemIndex + direction;
             if (!canWrap && (next < 0 || next >= items.Length)) return;
 
             SelectItem((next + items.Length) % items.Length);
+        }
+
+        // 누른 방향에 있는 항목 중 가장 가까운 것을 고름 (방향에서 벗어날수록 멀리 있는 것으로 봄)
+        private void MoveBoardItem(HubMenuItem[] items, Vector2 screenDirection)
+        {
+            if (!IsItemActive(_itemIndex)) return;
+
+            Transform current = items[_itemIndex].transform;
+            int bestIndex = -1;
+            float bestScore = float.MaxValue;
+
+            for (int i = 0; i < items.Length; i++)
+            {
+                if (i == _itemIndex || !IsItemActive(i)) continue;
+
+                // 캔버스 크기와 상관없도록 화면 영역 기준 위치로 비교
+                Vector2 offset = _screenArea.InverseTransformPoint(items[i].transform.position) - _screenArea.InverseTransformPoint(current.position);
+                float forward = Vector2.Dot(offset, screenDirection);
+                if (forward <= 1f) continue;
+
+                float sideways = (offset - screenDirection * forward).magnitude;
+                float score = forward + sideways * 2f;
+                if (score >= bestScore) continue;
+
+                bestScore = score;
+                bestIndex = i;
+            }
+
+            if (bestIndex >= 0) SelectItem(bestIndex);
+        }
+
+        private bool IsItemActive(int itemIndex)
+        {
+            HubMenuItem[] items = _hubTabs[_tabIndex].Items;
+            return items != null && itemIndex >= 0 && itemIndex < items.Length
+                && items[itemIndex] != null && items[itemIndex].gameObject.activeInHierarchy;
+        }
+
+        private void SelectFirstItem()
+        {
+            HubMenuItem[] items = _hubTabs[_tabIndex].Items;
+            if (items == null) return;
+
+            for (int i = 0; i < items.Length; i++)
+            {
+                if (!IsItemActive(i)) continue;
+
+                SelectItem(i);
+                return;
+            }
         }
 
         private void SelectItem(int itemIndex)

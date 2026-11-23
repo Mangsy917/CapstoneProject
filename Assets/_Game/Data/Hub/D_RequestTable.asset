@@ -1,0 +1,49 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a7270a4c85017e346a78dd4bfd3de2fb, type: 3}
+  m_Name: D_RequestTable
+  m_EditorClassIdentifier: Assembly-CSharp::Game.UI.Hub.RequestTable
+  _baseRerollCost: 50
+  _factions:
+  - _factionName: "\uB3C4\uBBF8\uB2C8\uC624"
+    _places:
+    - "\uD074\uB7FD"
+    - "\uC0AC\uBB34\uC2E4"
+  - _factionName: "\uD558\uCE74\uC774\uAD6C\uBBF8"
+    _places:
+    - "\uC544\uC9C0\uD2B8"
+    - "\uD669\uBB34\uC9C0"
+  - _factionName: "\uB808\uC9C0\uC2A4\uD0D5\uC2A4"
+    _places:
+    - "\uC9C0\uD558 \uC218\uB85C"
+    - "\uC9C0\uD558\uCCA0\uC5ED\xB7\uD3D0\uAC00(\uBBF8\uC815)"
+  _lengthRatios:
+  - _minLevel: 1
+    _shortRatio: 1
+    _mediumRatio: 0
+    _longRatio: 0
+  - _minLevel: 5
+    _shortRatio: 7
+    _mediumRatio: 3
+    _longRatio: 0
+  - _minLevel: 10
+    _shortRatio: 4
+    _mediumRatio: 6
+    _longRatio: 0
+  - _minLevel: 15
+    _shortRatio: 2
+    _mediumRatio: 5
+    _longRatio: 3
+  - _minLevel: 20
+    _shortRatio: 1
+    _mediumRatio: 3
+    _longRatio: 6
