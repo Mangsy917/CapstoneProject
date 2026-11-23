@@ -1,0 +1,74 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bf2a54c7b13f41c42acd37abd6475518, type: 3}
+  m_Name: D_CollectionCommand
+  m_EditorClassIdentifier: Assembly-CSharp::Game.UI.Hub.CollectionData
+  _collectionEntries:
+  - _entryName: "\uAE30\uBCF8\uAE30"
+    _entryGroup: 
+    _entryDescription: "L : \uC57D. \uBE60\uB978 \uBC1C\uB3D9\uC758 \uAE30\uBCF8\uAE30\nH
+      : \uAC15. \uB290\uB9B0 \uBC1C\uB3D9\uC758 \uAE30\uBCF8\uAE30\nD : \uB4DC\uB77C\uC774\uBE0C.
+      \uB0C9\uAC01\uC218 \uC18C\uBAA8\nOD : \uC624\uBC84 \uB4DC\uB77C\uC774\uBE0C.
+      \uC624\uBC84\uD074\uB7ED \uC18C\uBAA8"
+    _entryIcon: {fileID: 0}
+    _linkedItem: {fileID: 0}
+  - _entryName: "\uC549\uC544 \uAE30\uBCF8\uAE30"
+    _entryGroup: 
+    _entryDescription: '2 + L
+
+      2 + H'
+    _entryIcon: {fileID: 0}
+    _linkedItem: {fileID: 0}
+  - _entryName: "\uC810\uD504 \uAE30\uBCF8\uAE30"
+    _entryGroup: 
+    _entryDescription: "\uC810\uD504 \uC911 L\n\uC810\uD504 \uC911 H\n\uC810\uD504
+      \uC911 D\n\uC810\uD504 \uC911 OD"
+    _entryIcon: {fileID: 0}
+    _linkedItem: {fileID: 0}
+  - _entryName: "\uD0C0\uAE43 \uCF64\uBCF4"
+    _entryGroup: 
+    _entryDescription: "L > L\nH > H\n\n\uCCAB \uD0C0\uAC00 \uB9DE\uAC70\uB098 \uAC00\uB4DC\uB418\uAC70\uB098
+      \uD5DB\uCCD0\uB3C4 2\uD0C0\uAC00 \uB098\uAC04\uB2E4. 2\uD0C0\uB294 \uD544\uC0B4\uAE30\uB85C
+      \uCE94\uC2AC\uD560 \uC218 \uC788\uB2E4."
+    _entryIcon: {fileID: 0}
+    _linkedItem: {fileID: 0}
+  - _entryName: "\uD544\uC0B4\uAE30"
+    _entryGroup: 
+    _entryDescription: "\uC549\uC544 D : 2 + D \uB610\uB294 623 + D\n\uC549\uC544
+      OD : 2 + OD \uB610\uB294 623 + OD\n\uB4A4 D : 4 + D \uB610\uB294 214 + D\n\uB4A4
+      OD : 4 + OD \uB610\uB294 214 + OD\n\uC55E D : 6 + D \uB610\uB294 236 + D\n\uC55E
+      OD : 6 + OD \uB610\uB294 236 + OD\n\n\uCEE4\uB9E8\uB4DC\uB85C \uC785\uB825\uD558\uBA74
+      \uB370\uBBF8\uC9C0\uAC00 1.2\uBC30\uAC00 \uB41C\uB2E4."
+    _entryIcon: {fileID: 0}
+    _linkedItem: {fileID: 0}
+  - _entryName: "\uCD08\uD544\uC0B4\uAE30"
+    _entryGroup: 
+    _entryDescription: "\uB808\uBCA8 1 : 236236 + OD (\uC624\uBC84\uD074\uB7ED 3\uCE78)\n\uB808\uBCA8
+      2 : 214214 + OD (\uC624\uBC84\uD074\uB7ED 4\uCE78)\n\n\uCEE4\uB9E8\uB4DC \uC785\uB825\uC73C\uB85C\uB9CC
+      \uBC1C\uB3D9\uD55C\uB2E4."
+    _entryIcon: {fileID: 0}
+    _linkedItem: {fileID: 0}
+  - _entryName: "\uC7A1\uAE30"
+    _entryGroup: 
+    _entryDescription: "T \uB610\uB294 L + H \uB3D9\uC2DC \uC785\uB825"
+    _entryIcon: {fileID: 0}
+    _linkedItem: {fileID: 0}
+  - _entryName: "\uBE0C\uB808\uC774\uD06C"
+    _entryGroup: 
+    _entryDescription: "L, H, D, OD \uC911 \uC544\uBB34 \uBC84\uD2BC 3\uAC1C \uB3D9\uC2DC
+      \uC785\uB825\n\n\uCF64\uBCF4\uB97C \uB9DE\uB294 \uB3C4\uC911 \uB0C9\uAC01\uC218
+      3\uCE78\uC744 \uC18C\uBAA8\uD558\uC5EC \uD0C8\uCD9C\uD55C\uB2E4. \uB0C9\uAC01\uC218\uAC00
+      \uBAA8\uC790\uB77C\uB3C4 \uC870\uAE08\uC774\uB77C\uB3C4 \uC788\uC73C\uBA74
+      \uD0C8\uCD9C\uD558\uACE0, \uD0C8\uCD9C\uD55C \uB4A4 \uACFC\uBD80\uD558\uAC00
+      \uB41C\uB2E4."
+    _entryIcon: {fileID: 0}
+    _linkedItem: {fileID: 0}

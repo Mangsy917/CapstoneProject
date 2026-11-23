@@ -1,0 +1,45 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bf2a54c7b13f41c42acd37abd6475518, type: 3}
+  m_Name: D_CollectionModule
+  m_EditorClassIdentifier: Assembly-CSharp::Game.UI.Hub.CollectionData
+  _collectionEntries:
+  - _entryName: 
+    _entryGroup: 
+    _entryDescription: 
+    _entryIcon: {fileID: 0}
+    _linkedItem: {fileID: 11400000, guid: 053406c5360f8754682140db4b61cc83, type: 2}
+  - _entryName: 
+    _entryGroup: 
+    _entryDescription: 
+    _entryIcon: {fileID: 0}
+    _linkedItem: {fileID: 11400000, guid: 29d1ef2dc9cae4e4e8442a5c125abf17, type: 2}
+  - _entryName: 
+    _entryGroup: 
+    _entryDescription: 
+    _entryIcon: {fileID: 0}
+    _linkedItem: {fileID: 11400000, guid: 4d3eb2c2203943242a950cefc79bd94d, type: 2}
+  - _entryName: 
+    _entryGroup: 
+    _entryDescription: 
+    _entryIcon: {fileID: 0}
+    _linkedItem: {fileID: 11400000, guid: c80a9f3631ac2d749b23e22331483872, type: 2}
+  - _entryName: 
+    _entryGroup: 
+    _entryDescription: 
+    _entryIcon: {fileID: 0}
+    _linkedItem: {fileID: 11400000, guid: a84dc720113ed4142b52a2da6398dfcd, type: 2}
+  - _entryName: 
+    _entryGroup: 
+    _entryDescription: 
+    _entryIcon: {fileID: 0}
+    _linkedItem: {fileID: 11400000, guid: c53619eaccad25d448cb4581c6e900c4, type: 2}
