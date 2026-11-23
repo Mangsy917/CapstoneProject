@@ -10,9 +10,10 @@ namespace Game.UI.Hub
     // 거점 메뉴 (거점 씬의 UI 관리 오브젝트에 붙여서 사용, 5. UI/UX '거점 화면')
     // 하단 탭 줄은 윈도우 작업 표시줄처럼 동작함
     // - 탭을 옮김 (좌우, LB·RB(Q·E), 마우스 올리기): 위 화면이 그 탭의 화면으로 바로 바뀜. 전환 연출·대사 없음
-    // - 탭을 선택 (선택 키, 마우스 클릭): 탭 화면이 전체 화면으로 확대되고, 탭 줄은 내려가며 투명해지고 비활성화됨
+    // - 탭을 선택 (선택 키, 마우스 클릭): 탭 화면은 그대로 두고, 탭 줄만 내려가며 투명해지고 비활성화됨
+    //   (Should Zoom Screen을 켜면 탭 화면이 전체 화면으로 확대됨)
     //   일반형 탭이면 일러스트 밑에 대사 자막 상자가 보임. 이제 하위 메뉴(보드형은 포스트잇·구석 버튼)를 고름
-    // - 뒤로 가기 (취소 키, 뒤로 버튼, 마우스 우클릭): 탭 줄이 올라오며 선명해지고, 탭 화면은 원래 크기로 돌아감
+    // - 뒤로 가기 (취소 키, 뒤로 버튼, 마우스 우클릭): 탭 줄이 올라오며 선명해지고 다시 활성화됨
     // - ESC / 패드 Start(Menu·Options) 버튼: 어디서든 바로 설정 탭의 팝업(시스템 설정)을 엶
     // - 탭 줄이 활성인 동안 탭 화면의 하위 메뉴를 마우스로 누르면 그 탭을 선택한 것으로 봄 (그 하위 메뉴가 선택된 채로 확대)
     // - 팝업형 탭을 선택하면 화면을 확대하지 않고 팝업을 띄움
@@ -33,8 +34,11 @@ namespace Game.UI.Hub
         [Tooltip("탭 화면들이 들어 있는 영역 (앵커는 화면 전체로 늘려 둠)")]
         [SerializeField] private RectTransform _screenArea;
 
-        [Tooltip("탭을 고르는 동안 탭 화면이 화면 가장자리에서 들어가는 거리 (x 왼쪽, y 아래, z 오른쪽, w 위)")]
+        [Tooltip("탭 화면이 화면 가장자리에서 들어가는 거리 (x 왼쪽, y 아래, z 오른쪽, w 위)")]
         [SerializeField] private Vector4 _smallScreenInset = new Vector4(160f, 250f, 160f, 130f);
+
+        [Tooltip("켜면 탭을 선택했을 때 탭 화면이 전체 화면으로 확대됨. 끄면 화면은 그대로 두고 탭 줄만 내려가며 비활성화됨")]
+        [SerializeField] private bool _shouldZoomScreen;
 
         [Tooltip("탭 줄 (탭 버튼과 한 줄 설명이 들어 있음)")]
         [SerializeField] private RectTransform _tabBar;
@@ -401,8 +405,9 @@ namespace Game.UI.Hub
 
             if (_screenArea != null)
             {
-                _screenArea.offsetMin = Vector2.Lerp(new Vector2(_smallScreenInset.x, _smallScreenInset.y), Vector2.zero, eased);
-                _screenArea.offsetMax = Vector2.Lerp(new Vector2(-_smallScreenInset.z, -_smallScreenInset.w), Vector2.zero, eased);
+                float zoom = _shouldZoomScreen ? eased : 0f;
+                _screenArea.offsetMin = Vector2.Lerp(new Vector2(_smallScreenInset.x, _smallScreenInset.y), Vector2.zero, zoom);
+                _screenArea.offsetMax = Vector2.Lerp(new Vector2(-_smallScreenInset.z, -_smallScreenInset.w), Vector2.zero, zoom);
             }
 
             if (_tabBar != null) _tabBar.anchoredPosition = _tabBarShownPosition + Vector2.down * (_tabBarHideDistance * eased);
