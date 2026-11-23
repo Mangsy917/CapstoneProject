@@ -8,7 +8,8 @@ namespace Game.UI.Setting
 {
     // 옵션 창 (P_OptionWindow 프리팹)에 붙여서 사용. 타이틀과 연습 씬의 옵션 버튼이 같은 창을 엶
     // 옵션을 열면 화면 전체가 옵션 배경으로 바뀜 (뒤의 게임 화면, 설정창은 보이지 않음, 씬 이동은 아님)
-    // 옵션 메뉴: 컨트롤러 설정, 키보드 매핑, 사운드 설정, 화면 설정, 그래픽 설정, 게임 설정, 닫기
+    // 옵션 메뉴: 컨트롤러 설정, 키보드 매핑, 사운드 설정, 화면 설정, 그래픽 설정, 게임 설정, 게임 종료, 닫기
+    //   - 게임 종료: '게임을 종료하시겠습니까?' 예 / 아니오 팝업 (예 버튼 OnClick에 QuitGame 연결)
     // - 메뉴에서 고른 페이지가 열리면 메뉴는 숨겨지고 그 페이지만 보임. 페이지를 닫으면 메뉴로 돌아감
     //   - 컨트롤러 설정: 공격 버튼에 연결할 패드 버튼을 바꾸는 창 (KeyBindingWindow)
     //   - 키보드 매핑: 키보드 키를 Xbox 버튼에 연결하는 창 (KeyboardMappingWindow, 오른쪽에 열림)
@@ -45,7 +46,11 @@ namespace Game.UI.Setting
         [SerializeField] private Button _displaySettingButton;
         [SerializeField] private Button _graphicsSettingButton;
         [SerializeField] private Button _gameSettingButton;
+        [SerializeField] private Button _exitButton;
         [SerializeField] private Button OW_closeButton;
+
+        [Tooltip("게임 종료 확인 팝업 (예 / 아니오)")]
+        [SerializeField] private SettingPopup _exitPopup;
 
         [Header("페이지")]
         [SerializeField] private KeyBindingWindow _keyBindingWindow;
@@ -74,6 +79,9 @@ namespace Game.UI.Setting
         // 누르고 있는 동안 계속 실행되지 않도록 이전 프레임 선택 키를 기억
         private bool OW_lastSelect;
 
+        // 게임 종료 팝업이 마지막으로 열려 있던 프레임 (닫힌 다음 프레임까지 메뉴 입력을 막음)
+        private int _exitPopupSeenFrame = int.MinValue / 2;
+
         void Awake()
         {
             if (OW_uiControl == null) OW_uiControl = FindAnyObjectByType<UIControl>(FindObjectsInactive.Include);
@@ -83,10 +91,11 @@ namespace Game.UI.Setting
             if (_displaySettingButton != null && _displaySettingPage != null) _displaySettingButton.onClick.AddListener(_displaySettingPage.Open);
             if (_graphicsSettingButton != null && _graphicsSettingPage != null) _graphicsSettingButton.onClick.AddListener(_graphicsSettingPage.Open);
             if (_gameSettingButton != null && _gameSettingPage != null) _gameSettingButton.onClick.AddListener(_gameSettingPage.Open);
+            if (_exitButton != null && _exitPopup != null) _exitButton.onClick.AddListener(OpenExitPopup);
             if (OW_closeButton != null) OW_closeButton.onClick.AddListener(Close);
 
             List<Button> menuButtons = new List<Button>();
-            foreach (Button button in new[] { _controllerSettingButton, _keyboardMappingButton, _soundSettingButton, _displaySettingButton, _graphicsSettingButton, _gameSettingButton, OW_closeButton })
+            foreach (Button button in new[] { _controllerSettingButton, _keyboardMappingButton, _soundSettingButton, _displaySettingButton, _graphicsSettingButton, _gameSettingButton, _exitButton, OW_closeButton })
             {
                 if (button != null) menuButtons.Add(button);
             }
@@ -130,6 +139,7 @@ namespace Game.UI.Setting
             OW_openCount--;
             OW_closedFrame = Time.frameCount;
             ClosePages();
+            if (_exitPopup != null) _exitPopup.gameObject.SetActive(false);
             // 꺼지면 코루틴이 멈추므로 나타나는 중이던 화면은 다 나타난 상태로 둠
             if (_fadingGroup != null) _fadingGroup.alpha = 1f;
             _fadingGroup = null;
@@ -148,6 +158,28 @@ namespace Game.UI.Setting
             gameObject.SetActive(false);
         }
 
+        // 게임 종료 팝업 > 예
+        public void QuitGame()
+        {
+            Application.Quit();
+            // 에디터 전용 코드는 빌드에 들어가면 빌드가 실패하므로 에디터에서만 컴파일
+#if UNITY_EDITOR
+            UnityEditor.EditorApplication.isPlaying = false;
+#endif
+        }
+
+        private void OpenExitPopup()
+        {
+            _exitPopup.gameObject.SetActive(true);
+        }
+
+        // 게임 종료 팝업이 열려 있는지 (닫힌 다음 프레임까지 포함, 팝업을 닫은 선택 키로 메뉴가 다시 실행되지 않도록)
+        private bool IsExitPopupOpen()
+        {
+            if (_exitPopup != null && _exitPopup.gameObject.activeSelf) _exitPopupSeenFrame = Time.frameCount;
+            return Time.frameCount - _exitPopupSeenFrame <= 1;
+        }
+
         void Update()
         {
             // 페이지가 열리거나 닫혔으면 보이는 화면을 바꿈
@@ -156,7 +188,7 @@ namespace Game.UI.Setting
             if (OW_uiControl == null) return;
 
             // 페이지가 열려 있으면 그 페이지가 입력을 처리함 (닫힌 다음 프레임까지 포함)
-            if (IsPageOpen() || Time.frameCount == OW_ignoreInputFrame)
+            if (IsPageOpen() || IsExitPopupOpen() || Time.frameCount == OW_ignoreInputFrame)
             {
                 RememberInput();
                 return;
@@ -303,7 +335,7 @@ namespace Game.UI.Setting
 
         private void SelectButton(int index)
         {
-            if (IsPageOpen() || !OW_menuButtons[index].IsInteractable()) return;
+            if (IsPageOpen() || IsExitPopupOpen() || !OW_menuButtons[index].IsInteractable()) return;
 
             OW_highlightIndex = index;
             RefreshHighlight();

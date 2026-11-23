@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.Serialization;
 using TMPro;
 
 public class WhatIsSetting : MonoBehaviour
@@ -25,10 +26,12 @@ public class WhatIsSetting : MonoBehaviour
     [SerializeField] private GameObject commandListWindow;
     [SerializeField] private GameObject displaySettingWindow;
 
-    // 타이틀로 버튼을 눌렀을 때 이동할 씬 이름
-    [SerializeField] private string titleSceneName = "Title";
-    // "타이틀로 돌아가시겠습니까?" 팝업
-    [SerializeField] private GameObject goTitlePopup;
+    // 거점으로 버튼을 눌렀을 때 이동할 씬 이름
+    [FormerlySerializedAs("titleSceneName")]
+    [SerializeField] private string hubSceneName = "Hub";
+    // "거점으로 돌아가시겠습니까?" 팝업
+    [FormerlySerializedAs("goTitlePopup")]
+    [SerializeField] private GameObject goHubPopup;
 
     private const float selectValue = 255f / 255f;
     private const float notSelectValue = 50f / 255f;
@@ -53,7 +56,7 @@ public class WhatIsSetting : MonoBehaviour
         texts = new TMP_Text[] { pSTXT, shortPSTXT, parameterTXT, dummyTXT, commandLTXT, displaySTXT };
         windows = new GameObject[] { practiceSettingWindow, shortPracticeSettingWindow, parameterWindow, dummySettingWindow, commandListWindow, displaySettingWindow };
 
-        if (goTitlePopup != null) goTitlePopup.SetActive(false);
+        if (goHubPopup != null) goHubPopup.SetActive(false);
         Refresh();
     }
 
@@ -94,22 +97,22 @@ public class WhatIsSetting : MonoBehaviour
         Refresh();
     }
 
-    // 연습설정 > 타이틀로 : 확인 팝업을 띄움
-    public void PressGoTitleBT()
+    // 연습설정 > 거점으로 : 확인 팝업을 띄움
+    public void PressGoHubBT()
     {
-        goTitlePopup.SetActive(true);
+        goHubPopup.SetActive(true);
     }
 
-    // 타이틀로 팝업 > 예 : 타이틀 씬으로 이동
-    public void PressGoTitleYesBT()
+    // 거점으로 팝업 > 예 : 거점 씬으로 이동
+    public void PressGoHubYesBT()
     {
-        LoadingScene.LoadScene(titleSceneName);
+        LoadingScene.LoadScene(hubSceneName);
     }
 
-    // 타이틀로 팝업 > 아니오 : 팝업을 닫음
-    public void PressGoTitleNoBT()
+    // 거점으로 팝업 > 아니오 : 팝업을 닫음
+    public void PressGoHubNoBT()
     {
-        goTitlePopup.SetActive(false);
+        goHubPopup.SetActive(false);
     }
 
     // 선택된 번호를 기준으로 모든 탭의 위치, 글자 크기, 알파값을 다시 맞춤

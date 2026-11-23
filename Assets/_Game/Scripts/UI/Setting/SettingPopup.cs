@@ -45,6 +45,9 @@ public class SettingPopup : MonoBehaviour
 
     void Awake()
     {
+        // 프리팹 안의 팝업(옵션 창의 게임 종료 등)은 씬의 UIControl을 연결할 수 없으므로 비어 있으면 씬에서 찾음
+        if (uiControl == null) uiControl = FindAnyObjectByType<UIControl>(FindObjectsInactive.Include);
+
         buttons = new Button[] { yesButton, noButton };
 
         // 마우스를 올리면 그 버튼이 선택되도록 연결

@@ -22426,7 +22426,7 @@ GameObject:
   - component: {fileID: 909779236}
   - component: {fileID: 909779235}
   m_Layer: 5
-  m_Name: BTN_GoTitle
+  m_Name: BTN_GoHub
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -22498,7 +22498,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 963688963}
         m_TargetAssemblyTypeName: WhatIsSetting, Assembly-CSharp
-        m_MethodName: PressGoTitleBT
+        m_MethodName: PressGoHubBT
         m_Mode: 0
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -23420,8 +23420,8 @@ MonoBehaviour:
   dummySettingWindow: {fileID: 606131662}
   commandListWindow: {fileID: 688080923}
   displaySettingWindow: {fileID: 2076829632}
-  titleSceneName: Title
-  goTitlePopup: {fileID: 1415293894}
+  hubSceneName: Hub
+  goHubPopup: {fileID: 1415293894}
 --- !u!1 &969994832
 GameObject:
   m_ObjectHideFlags: 0
@@ -31664,7 +31664,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 963688963}
         m_TargetAssemblyTypeName: WhatIsSetting, Assembly-CSharp
-        m_MethodName: PressGoTitleNoBT
+        m_MethodName: PressGoHubNoBT
         m_Mode: 0
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -33531,7 +33531,7 @@ GameObject:
   - component: {fileID: 1415293896}
   - component: {fileID: 1415293895}
   m_Layer: 5
-  m_Name: Popup_GoTitle
+  m_Name: Popup_GoHub
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -33928,7 +33928,7 @@ GameObject:
   - component: {fileID: 1433916827}
   - component: {fileID: 1433916826}
   m_Layer: 5
-  m_Name: TXT_GoTitle
+  m_Name: TXT_GoHub
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -33973,7 +33973,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "\uD0C0\uC774\uD2C0\uB85C"
+  m_text: "\uAC70\uC810\uC73C\uB85C"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 43dcfe858b544cb4c9d1d582f2fabccb, type: 2}
   m_sharedMaterial: {fileID: -815202500433089127, guid: 43dcfe858b544cb4c9d1d582f2fabccb, type: 2}
@@ -38883,7 +38883,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "\uD0C0\uC774\uD2C0\uB85C \uB3CC\uC544\uAC00\uC2DC\uACA0\uC2B5\uB2C8\uAE4C?"
+  m_text: "\uAC70\uC810\uC73C\uB85C \uB3CC\uC544\uAC00\uC2DC\uACA0\uC2B5\uB2C8\uAE4C?"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 43dcfe858b544cb4c9d1d582f2fabccb, type: 2}
   m_sharedMaterial: {fileID: -815202500433089127, guid: 43dcfe858b544cb4c9d1d582f2fabccb, type: 2}
@@ -41543,7 +41543,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 963688963}
         m_TargetAssemblyTypeName: WhatIsSetting, Assembly-CSharp
-        m_MethodName: PressGoTitleYesBT
+        m_MethodName: PressGoHubYesBT
         m_Mode: 0
         m_Arguments:
           m_ObjectArgument: {fileID: 0}

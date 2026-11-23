@@ -12,7 +12,8 @@ namespace Game.UI.Hub
     // - 탭을 옮김 (좌우, LB·RB(Q·E), 마우스 올리기): 위 화면이 그 탭의 화면으로 바로 바뀜. 전환 연출·대사 없음
     // - 탭을 선택 (선택 키, 마우스 클릭): 탭 화면이 전체 화면으로 확대되고, 탭 줄은 내려가며 투명해지고 비활성화됨
     //   일반형 탭이면 일러스트 밑에 대사 자막 상자가 보임. 이제 하위 메뉴(보드형은 포스트잇·구석 버튼)를 고름
-    // - 뒤로 가기 (취소 키, ESC, 뒤로 버튼, 마우스 우클릭): 탭 줄이 올라오며 선명해지고, 탭 화면은 원래 크기로 돌아감
+    // - 뒤로 가기 (취소 키, 뒤로 버튼, 마우스 우클릭): 탭 줄이 올라오며 선명해지고, 탭 화면은 원래 크기로 돌아감
+    // - ESC / 패드 Start(Menu·Options) 버튼: 어디서든 바로 설정 탭의 팝업(시스템 설정)을 엶
     // - 탭 줄이 활성인 동안 탭 화면의 하위 메뉴를 마우스로 누르면 그 탭을 선택한 것으로 봄 (그 하위 메뉴가 선택된 채로 확대)
     // - 팝업형 탭을 선택하면 화면을 확대하지 않고 팝업을 띄움
     // - 아직 제작되지 않은 메뉴(Is Built 꺼짐)를 고르면 '미완성된 시스템입니다' 팝업을 띄움
@@ -48,6 +49,9 @@ namespace Game.UI.Hub
         [SerializeField] private Button HM_backButton;
 
         [SerializeField] private UnfinishedPopup _unfinishedPopup;
+
+        [Tooltip("ESC / Start 버튼을 누르면 이 탭의 팝업을 엶 (시스템 설정 탭)")]
+        [SerializeField] private HubTab _settingTab;
 
         [Tooltip("탭 화면이 확대·축소되는 시간(초, 실제 시간 기준)")]
         [SerializeField] private float _transitionTime = 0.25f;
@@ -111,6 +115,17 @@ namespace Game.UI.Hub
             bool isSelectPressed = select && !HM_lastSelect;
             HM_lastSelect = select;
 
+            // ESC / Start: 탭 줄, 탭 안, 상점 창 어디서든 바로 설정을 엶
+            if (HM_uiControl.uiClose)
+            {
+                HM_uiControl.uiClose = false;
+                OpenSetting();
+                return;
+            }
+
+            // 상점 창이 열려 있으면 그 창이 입력을 처리함
+            if (ShopWindow.SW_IsOpen) return;
+
             if (!_isInsideTab)
             {
                 if (HM_uiControl.uiLeftStep || HM_uiControl.uiLeftPG) MoveTab(-1);
@@ -120,10 +135,9 @@ namespace Game.UI.Hub
                 return;
             }
 
-            if (HM_uiControl.uiCancelDown || HM_uiControl.uiClose || IsRightClicked())
+            if (HM_uiControl.uiCancelDown || IsRightClicked())
             {
                 HM_uiControl.uiCancelDown = false;
-                HM_uiControl.uiClose = false;
                 Back();
                 return;
             }
@@ -330,6 +344,14 @@ namespace Game.UI.Hub
         private void OpenUnfinishedPopup()
         {
             if (_unfinishedPopup != null) _unfinishedPopup.Open();
+        }
+
+        private void OpenSetting()
+        {
+            if (_settingTab == null) return;
+
+            if (_settingTab.IsPopupBuilt) _settingTab.OpenPopup();
+            else OpenUnfinishedPopup();
         }
 
         // ===== 입력 =====
