@@ -1433,7 +1433,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TitleMenu
   uiControl: {fileID: 299426511}
-  sceneName: Practice
+  sceneName: Hub
   mainButtons:
   - {fileID: 224039522}
   - {fileID: 441315445}
