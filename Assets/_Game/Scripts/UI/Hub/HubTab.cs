@@ -6,7 +6,7 @@ namespace Game.UI.Hub
 {
     // 메인화면(거점)의 1depth 메뉴 항목 하나 (2depth 화면 오브젝트에 붙여서 사용, HubMenu의 화면 영역 안에 둠)
     // 2depth 메뉴 형태 (5. UI/UX '2depth 메뉴 형태')
-    // - 일반형: 상단에 항목 이름과 2depth 메뉴(좌우로 움직이는 탭 줄), 그 아래에 고른 탭의 3depth 내용
+    // - 일반형: 2depth 메뉴(좌우로 움직이는 탭 줄), 그 아래에 고른 탭의 3depth 내용. 상점·튜닝은 오른쪽에 일러스트
     // - 보드형: 수사보드가 화면을 채우고 보드 위의 종이·칼과 구석 버튼을 고름. 대사 없음
     // - 팝업형: 2depth 화면 없음. 선택하면 확대·페이드 없이 팝업을 띄움 (Popup Open 이벤트)
     public class HubTab : MonoBehaviour
@@ -35,9 +35,6 @@ namespace Game.UI.Hub
         [Tooltip("일반형: 상단 2depth 탭(왼쪽부터 순서대로) / 보드형: 보드 위의 항목 (첫 항목이 처음에 선택됨)")]
         [SerializeField] private HubMenuItem[] _items;
 
-        [Tooltip("일반형만: 대사 자막 상자 (2depth에 들어왔을 때 보임, 비워 두면 대사 없음)")]
-        [SerializeField] private GameObject _dialogueBox;
-
         [Header("팝업형")]
         [Tooltip("제작된 팝업이면 켬. 꺼져 있으면 선택했을 때 '미완성된 시스템입니다' 팝업이 뜸")]
         [SerializeField] private bool _isPopupBuilt;
@@ -56,11 +53,6 @@ namespace Game.UI.Hub
         public void OpenPopup()
         {
             _onPopupOpen?.Invoke();
-        }
-
-        public void ShowDialogue(bool isShown)
-        {
-            if (_dialogueBox != null) _dialogueBox.SetActive(isShown && _tabType == TabType.Normal);
         }
     }
 }

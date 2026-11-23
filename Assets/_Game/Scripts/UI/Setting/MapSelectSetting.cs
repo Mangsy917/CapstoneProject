@@ -34,8 +34,8 @@ namespace Game.UI.Setting
         [SerializeField] private Image[] _cardThumbnails;
         [SerializeField] private TMP_Text[] _cardNameTexts;
 
-        private static readonly Color selectColor = new Color(0.5f, 0.5f, 0.5f, 1f);
-        private static readonly Color notSelectColor = new Color(1f, 1f, 1f, 0f);
+        private static readonly Color selectColor = Game.UI.MenuColors.Highlight;
+        private static readonly Color notSelectColor = Game.UI.MenuColors.Unselected;
 
         private bool MSS_isOpen;
         private int MSS_selectedIndex;

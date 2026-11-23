@@ -62,8 +62,8 @@ namespace Game.UI.Setting
         [Tooltip("화면이 바뀔 때 새 화면이 나타나는 시간(초, 실제 시간 기준)")]
         [SerializeField] private float OW_fadeTime = 0.2f;
 
-        private static readonly Color OW_highlightColor = new Color(0.5f, 0.5f, 0.5f, 1f);
-        private static readonly Color OW_normalColor = new Color(1f, 1f, 1f, 0f);
+        private static readonly Color OW_highlightColor = Game.UI.MenuColors.Highlight;
+        private static readonly Color OW_normalColor = Game.UI.MenuColors.Unselected;
 
         private Button[] OW_menuButtons;
         private int OW_highlightIndex;

@@ -61,8 +61,8 @@ namespace Game.UI.Setting
         [SerializeField] private string _lockedMessage = "메뉴 버튼은 ESC로 고정되어 있습니다";
         [SerializeField] private string KMW_waitingKeyText = "...";
 
-        private static readonly Color KMW_highlightColor = new Color(0.5f, 0.5f, 0.5f, 1f);
-        private static readonly Color KMW_normalColor = new Color(1f, 1f, 1f, 0f);
+        private static readonly Color KMW_highlightColor = Game.UI.MenuColors.Highlight;
+        private static readonly Color KMW_normalColor = Game.UI.MenuColors.Unselected;
 
         // 위에서 아래 순서: Xbox 버튼 줄들, 기본값, 닫기
         private Button[] KMW_menuButtons;

@@ -8,7 +8,7 @@ namespace Game.UI.Hub
     [RequireComponent(typeof(Button))]
     public class ShopSlot : MonoBehaviour
     {
-        private static readonly Color _slotHighlightColor = new Color(0.5f, 0.5f, 0.5f, 1f);
+        private static readonly Color _slotHighlightColor = Game.UI.MenuColors.Highlight;
         private static readonly Color _slotNormalColor = new Color(1f, 1f, 1f, 0.1f);
 
         [Tooltip("품목 아이콘 자리")]

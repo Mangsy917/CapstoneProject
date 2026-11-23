@@ -31,8 +31,8 @@ namespace Game.UI.Setting
         [Tooltip("게임 화면인데 그 HUD만 없을 때 위치 대신 보여줄 글자")]
         [SerializeField] private string _noHudText = "없음";
 
-        private static readonly Color _enabledTextColor = Color.black;
-        private static readonly Color _disabledTextColor = new Color(0.6f, 0.6f, 0.6f, 1f);
+        private static readonly Color _enabledTextColor = Game.UI.MenuColors.EnabledText;
+        private static readonly Color _disabledTextColor = Game.UI.MenuColors.DisabledText;
 
         // 스테퍼 선택지에서 ON이 몇 번째인지 (OFF, ON 순서면 1)
         private const int OnIndex = 1;

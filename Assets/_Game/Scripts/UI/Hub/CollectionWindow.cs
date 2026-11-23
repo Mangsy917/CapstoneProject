@@ -27,6 +27,7 @@ namespace Game.UI.Hub
         [SerializeField] private RectTransform _rowRoot;
 
         [Header("오른쪽 내용")]
+        [Tooltip("그림이 없는 탭(커맨드 리스트)은 비워 둠")]
         [SerializeField] private Image _pictureImage;
         [SerializeField] private TMP_Text _nameText;
         [SerializeField] private TMP_Text _groupText;
@@ -114,9 +115,12 @@ namespace Game.UI.Hub
             CollectionData.Entry entry = _collectionData.GetEntry(rowIndex);
             if (entry == null) return;
 
-            _pictureImage.sprite = entry.EntryIcon;
-            // 그림이 없으면 빈 자리만 보이도록 반투명하게 둠
-            _pictureImage.color = entry.EntryIcon != null ? Color.white : new Color(1f, 1f, 1f, 0.08f);
+            if (_pictureImage != null)
+            {
+                _pictureImage.sprite = entry.EntryIcon;
+                // 그림이 없으면 빈 자리만 보이도록 반투명하게 둠
+                _pictureImage.color = entry.EntryIcon != null ? Color.white : new Color(1f, 1f, 1f, 0.08f);
+            }
             _nameText.text = entry.EntryName;
             _groupText.text = entry.EntryGroup;
             _contentText.text = string.IsNullOrEmpty(entry.EntryDescription) ? "내용 미정" : entry.EntryDescription;

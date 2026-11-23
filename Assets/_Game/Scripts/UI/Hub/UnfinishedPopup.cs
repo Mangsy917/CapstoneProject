@@ -11,7 +11,7 @@ namespace Game.UI.Hub
     // 열려 있는 동안 뒤의 메뉴는 입력을 받지 않음 (SettingPopup.IsAnyOpen)
     public class UnfinishedPopup : MonoBehaviour
     {
-        private static readonly Color _confirmHighlightColor = new Color(0.5f, 0.5f, 0.5f, 1f);
+        private static readonly Color _confirmHighlightColor = Game.UI.MenuColors.Highlight;
 
         // 비워두면 씬에서 찾음
         [SerializeField] private UIControl UP_uiControl;

@@ -12,8 +12,8 @@ namespace Game.UI.Hub
     [RequireComponent(typeof(Button))]
     public class HubMenuItem : MonoBehaviour
     {
-        private static readonly Color _itemHighlightColor = new Color(0.5f, 0.5f, 0.5f, 1f);
-        private static readonly Color _itemNormalColor = new Color(1f, 1f, 1f, 0f);
+        private static readonly Color _itemHighlightColor = Game.UI.MenuColors.Highlight;
+        private static readonly Color _itemNormalColor = Game.UI.MenuColors.Unselected;
 
         [Tooltip("제작된 기능이면 켬. 꺼져 있으면 선택했을 때 '미완성된 시스템입니다' 팝업이 뜸")]
         [SerializeField] private bool _isBuilt;

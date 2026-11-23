@@ -75,8 +75,8 @@ namespace Game.UI.Setting
         [SerializeField] private string _notMappedMessage = "Xbox 버튼에 연결되지 않은 키입니다 (옵션에서 연결)";
         [SerializeField] private string _waitingKeyText = "...";
 
-        private static readonly Color _highlightColor = new Color(0.5f, 0.5f, 0.5f, 1f);
-        private static readonly Color _normalColor = new Color(1f, 1f, 1f, 0f);
+        private static readonly Color _highlightColor = Game.UI.MenuColors.Highlight;
+        private static readonly Color _normalColor = Game.UI.MenuColors.Unselected;
 
         // 위에서 아래 순서: 공격 버튼 줄들, 버튼 확인, 기본값, 닫기
         private Button[] _menuButtons;

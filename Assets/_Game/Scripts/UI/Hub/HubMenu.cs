@@ -20,7 +20,7 @@ namespace Game.UI.Hub
     // 팝업·옵션 창이 열려 있거나 화면이 전환되는 동안에는 입력을 받지 않음
     public class HubMenu : MonoBehaviour
     {
-        private static readonly Color HM_highlightColor = new Color(0.12f, 0.55f, 0.52f, 1f);
+        private static readonly Color HM_highlightColor = Game.UI.MenuColors.Highlight;
         private static readonly Color HM_normalColor = new Color(1f, 1f, 1f, 0.06f);
 
         // 비워두면 씬에서 찾음
@@ -310,7 +310,6 @@ namespace Game.UI.Hub
             int itemCount = tab.Items != null ? tab.Items.Length : 0;
             _itemIndex = itemCount > 0 ? 0 : -1;
             SetItemsSelected(tab, _itemIndex);
-            tab.ShowDialogue(true);
             SetMainScreenActive(false);
         }
 

@@ -14,8 +14,8 @@ public class SettingMenu : MonoBehaviour
 {
     [SerializeField] private UIControl uiControl;
 
-    private static readonly Color selectColor = new Color(0.5f, 0.5f, 0.5f, 1f);
-    private static readonly Color notSelectColor = new Color(1f, 1f, 1f, 0f);
+    private static readonly Color selectColor = Game.UI.MenuColors.Highlight;
+    private static readonly Color notSelectColor = Game.UI.MenuColors.Unselected;
 
     // 지금 켜져 있는 패널 (PracticeSetting, Parameter ...)
     private Transform currentPanel;

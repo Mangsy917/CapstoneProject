@@ -35,8 +35,8 @@ namespace Game.UI.Setting
         [Tooltip("누르면 이 페이지를 닫는 줄")]
         [SerializeField] private Button _backButton;
 
-        private static readonly Color OP_selectColor = new Color(0.5f, 0.5f, 0.5f, 1f);
-        private static readonly Color OP_notSelectColor = new Color(1f, 1f, 1f, 0f);
+        private static readonly Color OP_selectColor = Game.UI.MenuColors.Highlight;
+        private static readonly Color OP_notSelectColor = Game.UI.MenuColors.Unselected;
 
         private int OP_selectedIndex;
 
