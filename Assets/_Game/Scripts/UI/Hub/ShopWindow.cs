@@ -3,35 +3,23 @@ using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
-using UnityEngine.InputSystem;
 using UnityEngine.UI;
 
 namespace Game.UI.Hub
 {
-    // 상점 구매 창 (보조 아이템 구매, 무기 모듈 구매가 같은 스크립트를 씀)
-    // 거점 상점 탭의 하위 메뉴(On Select)에서 Open으로 엶
+    // 상점의 구매 화면 (보조 아이템, 무기 모듈 탭의 3depth 내용이 같은 스크립트를 씀)
+    // 상단 탭(HubMenuItem)의 Content Page에 연결하면 HubMenu가 켜고 끔. 탭 이동과 뒤로 가기도 HubMenu가 처리함
     // - 왼쪽: 품목 칸 (Slot Template을 품목 수만큼 복사), 오른쪽: 고른 품목의 아이콘·이름·설명·가격·보유 수와 구매 버튼
-    // - 방향키: 품목 이동, 선택 키 / 구매 버튼: 구매 확인 팝업, 취소 키 / 마우스 우클릭 / 닫기 버튼: 창 닫기
+    // - 방향키: 품목 이동, 선택 키 / 구매 버튼: 구매 확인 팝업
     // - 마우스: 칸에 올리거나 누르면 그 품목이 선택됨
     // - 크레딧이 모자라면 사지 않고 안내 문구를 잠깐 보여 줌
-    // 팝업·옵션 창이 열려 있는 동안에는 입력을 받지 않음
+    // 팝업·옵션 창이 열려 있거나 화면이 전환되는 동안에는 입력을 받지 않음
     public class ShopWindow : MonoBehaviour
     {
-        // 창이 열려 있으면 거점 메뉴는 입력을 받지 않음 (닫힌 다음 프레임까지 열린 것으로 봄)
-        public static bool SW_IsOpen => SW_openCount > 0 || Time.frameCount - SW_closedFrame <= 1;
-        private static int SW_openCount = 0;
-        private static int SW_closedFrame = int.MinValue / 2;
-
-        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
-        private static void ResetOpenCount()
-        {
-            SW_openCount = 0;
-            SW_closedFrame = int.MinValue / 2;
-        }
-
         // 비워두면 씬에서 찾음
         [SerializeField] private UIControl SW_uiControl;
         [SerializeField] private HubInventory _inventory;
+        [SerializeField] private ScreenFade SW_screenFade;
 
         [Tooltip("파는 품목 (칸 순서대로)")]
         [SerializeField] private ShopItemData[] _shopItems;
@@ -58,7 +46,6 @@ namespace Game.UI.Hub
 
         [Header("버튼")]
         [SerializeField] private Button _buyButton;
-        [SerializeField] private Button SW_closeButton;
 
         [Header("구매 확인 팝업")]
         [Tooltip("예 / 아니오 팝업. 예 버튼 OnClick에 ConfirmBuy, 아니오 버튼에 팝업 끄기를 연결")]
@@ -69,7 +56,7 @@ namespace Game.UI.Hub
         private int _shopSelectedIndex;
         private Coroutine _messageRoutine;
 
-        // 창을 연 그 프레임에는 입력을 처리하지 않음
+        // 화면이 켜진 그 프레임에는 입력을 처리하지 않음
         private int SW_ignoreInputFrame = -1;
 
         // 누르고 있는 동안 계속 실행되지 않도록 이전 프레임 선택 키를 기억
@@ -78,10 +65,10 @@ namespace Game.UI.Hub
         void Awake()
         {
             if (SW_uiControl == null) SW_uiControl = FindAnyObjectByType<UIControl>(FindObjectsInactive.Include);
+            if (SW_screenFade == null) SW_screenFade = FindAnyObjectByType<ScreenFade>(FindObjectsInactive.Include);
             if (_inventory == null) _inventory = FindAnyObjectByType<HubInventory>(FindObjectsInactive.Include);
 
             if (_buyButton != null) _buyButton.onClick.AddListener(RequestBuy);
-            if (SW_closeButton != null) SW_closeButton.onClick.AddListener(Close);
             if (_confirmPopup != null) _confirmPopup.gameObject.SetActive(false);
 
             CreateSlots();
@@ -89,7 +76,6 @@ namespace Game.UI.Hub
 
         void OnEnable()
         {
-            SW_openCount++;
             SW_ignoreInputFrame = Time.frameCount;
             if (SW_uiControl != null) SW_lastSelect = SW_uiControl.uiSelect;
 
@@ -102,22 +88,9 @@ namespace Game.UI.Hub
 
         void OnDisable()
         {
-            SW_openCount--;
-            SW_closedFrame = Time.frameCount;
-
             if (_inventory != null) _inventory.InventoryChanged -= Refresh;
             if (_confirmPopup != null) _confirmPopup.gameObject.SetActive(false);
             _messageRoutine = null;
-        }
-
-        public void Open()
-        {
-            gameObject.SetActive(true);
-        }
-
-        public void Close()
-        {
-            gameObject.SetActive(false);
         }
 
         void Update()
@@ -126,7 +99,7 @@ namespace Game.UI.Hub
 
             bool select = SW_uiControl.uiSelect;
 
-            if (SettingPopup.IsAnyOpen || Time.frameCount == SW_ignoreInputFrame)
+            if (IsShopInputBlocked() || Time.frameCount == SW_ignoreInputFrame)
             {
                 SW_lastSelect = select;
                 return;
@@ -134,13 +107,6 @@ namespace Game.UI.Hub
 
             bool isSelectPressed = select && !SW_lastSelect;
             SW_lastSelect = select;
-
-            if (SW_uiControl.uiCancelDown || IsRightClicked())
-            {
-                SW_uiControl.uiCancelDown = false;
-                Close();
-                return;
-            }
 
             if (SW_uiControl.uiLeftStep) MoveSelection(-1);
             else if (SW_uiControl.uiRightStep) MoveSelection(1);
@@ -179,12 +145,12 @@ namespace Game.UI.Hub
                 int index = i;
                 AddPointerEnter(slot.gameObject, () =>
                 {
-                    if (SettingPopup.IsAnyOpen) return;
+                    if (IsShopInputBlocked()) return;
                     SelectSlot(index);
                 });
                 slot.SlotButton.onClick.AddListener(() =>
                 {
-                    if (SettingPopup.IsAnyOpen) return;
+                    if (IsShopInputBlocked()) return;
                     SelectSlot(index);
                 });
             }
@@ -235,7 +201,7 @@ namespace Game.UI.Hub
 
         private void RequestBuy()
         {
-            if (SettingPopup.IsAnyOpen) return;
+            if (IsShopInputBlocked()) return;
 
             ShopItemData item = GetSelectedItem();
             if (item == null) return;
@@ -298,9 +264,9 @@ namespace Game.UI.Hub
             _messageRoutine = null;
         }
 
-        private static bool IsRightClicked()
+        private bool IsShopInputBlocked()
         {
-            return Mouse.current != null && Mouse.current.rightButton.wasPressedThisFrame;
+            return SettingPopup.IsAnyOpen || (SW_screenFade != null && SW_screenFade.SF_IsPlaying);
         }
     }
 }

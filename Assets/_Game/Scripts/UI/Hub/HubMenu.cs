@@ -10,7 +10,8 @@ namespace Game.UI.Hub
     // 모던 바 3D 배경 위의 2D 오브젝트(HubObject)와 하단 1depth 메뉴 바가 같은 선택 상태를 공유함
     // - 1depth 항목을 옮김 (좌우, LB·RB(Q·E), 메뉴·오브젝트에 마우스 올리기): 그 항목의 오브젝트가 외곽 빛으로 강조됨
     // - 선택 (선택 키, 메뉴·오브젝트 클릭): 오브젝트 쪽으로 확대되면서 검은 화면 -> 2depth 메뉴 (전체 화면)
-    //   오브젝트가 없는 항목은 확대 없이 검은 화면만 거침. 일반형이면 일러스트 밑에 대사 자막 상자가 보임
+    //   오브젝트가 없는 항목은 확대 없이 검은 화면만 거침
+    // - 일반형 2depth: 상단 탭을 LB·RB(Q·E)나 클릭으로 옮기면 아래 3depth 내용이 바로 바뀜 (방향키는 3depth 내용이 씀)
     // - 2depth에서 뒤로 가기 (취소 키, 마우스 우클릭): 페이드로 메인화면에 돌아옴
     // - 메인화면에서 뒤로 가기: 확인 팝업 -> 페이드로 타이틀에 돌아감
     // - 팝업형 항목을 선택하면 확대·페이드 없이 팝업을 띄움
@@ -112,16 +113,13 @@ namespace Game.UI.Hub
             bool isSelectPressed = select && !HM_lastSelect;
             HM_lastSelect = select;
 
-            // ESC / Start: 메인화면, 2depth, 상점 창 어디서든 바로 설정을 엶
+            // ESC / Start: 메인화면, 2depth 어디서든 바로 설정을 엶
             if (HM_uiControl.uiClose)
             {
                 HM_uiControl.uiClose = false;
                 OpenSetting();
                 return;
             }
-
-            // 상점 창이 열려 있으면 그 창이 입력을 처리함
-            if (ShopWindow.SW_IsOpen) return;
 
             if (HM_uiControl.uiCancelDown || IsRightClicked())
             {
@@ -140,16 +138,22 @@ namespace Game.UI.Hub
                 return;
             }
 
+            // 일반형: LB·RB로 상단 탭만 옮김. 방향키와 선택 키는 3depth 내용(상점 등)이 직접 처리함
+            if (_hubTabs[_tabIndex].Type == HubTab.TabType.Normal)
+            {
+                if (HM_uiControl.uiLeftPG) MoveTopTab(-1);
+                else if (HM_uiControl.uiRightPG) MoveTopTab(1);
+                return;
+            }
+
             // 고르고 있던 항목이 사라졌으면(고정을 해제한 칼 등) 첫 항목으로 옮김
             if (!IsItemActive(_itemIndex)) SelectFirstItem();
 
-            // 일반형은 세로 목록이라 위·왼쪽은 이전, 아래·오른쪽은 다음. 보드형은 누른 방향에 있는 항목으로 옮김
-            bool canWrap = !HM_uiControl.isRepeating;
-            bool isBoard = _hubTabs[_tabIndex].Type == HubTab.TabType.Board;
-            if (HM_uiControl.uiUpStep) MoveItem(-1, canWrap, isBoard, Vector2.up);
-            else if (HM_uiControl.uiLeftStep) MoveItem(-1, canWrap, isBoard, Vector2.left);
-            else if (HM_uiControl.uiDownStep) MoveItem(1, canWrap, isBoard, Vector2.down);
-            else if (HM_uiControl.uiRightStep) MoveItem(1, canWrap, isBoard, Vector2.right);
+            // 보드형: 누른 방향에 있는 항목으로 옮김
+            if (HM_uiControl.uiUpStep) MoveBoardItem(Vector2.up);
+            else if (HM_uiControl.uiLeftStep) MoveBoardItem(Vector2.left);
+            else if (HM_uiControl.uiDownStep) MoveBoardItem(Vector2.down);
+            else if (HM_uiControl.uiRightStep) MoveBoardItem(Vector2.right);
 
             if (isSelectPressed) RunItem(_itemIndex);
         }
@@ -202,6 +206,9 @@ namespace Game.UI.Hub
                 AddPointerEvent(items[i].gameObject, EventTriggerType.PointerEnter, () =>
                 {
                     if (!_isInsideTab || _tabIndex != tabIndex || IsInputBlocked()) return;
+
+                    // 상단 탭은 지나가기만 해도 내용이 바뀌지 않도록 클릭으로만 고름
+                    if (_hubTabs[tabIndex].Type == HubTab.TabType.Normal) return;
                     SelectItem(itemIndex);
                 });
                 items[i].ItemButton.onClick.AddListener(() => ClickItem(tabIndex, itemIndex));
@@ -298,13 +305,13 @@ namespace Game.UI.Hub
             {
                 if (_hubTabs[i] != null) _hubTabs[i].gameObject.SetActive(i == _tabIndex);
             }
-            SetMainScreenActive(false);
-
+            // 화면이 켜지기 전에 첫 항목을 골라 이전에 보던 3depth 내용이 잠깐 켜지지 않게 함
             HubTab tab = _hubTabs[_tabIndex];
             int itemCount = tab.Items != null ? tab.Items.Length : 0;
             _itemIndex = itemCount > 0 ? 0 : -1;
             SetItemsSelected(tab, _itemIndex);
             tab.ShowDialogue(true);
+            SetMainScreenActive(false);
         }
 
         private void ShowMainScreen()
@@ -360,28 +367,21 @@ namespace Game.UI.Hub
 
         // ===== 2depth 메뉴 =====
 
-        private void MoveItem(int direction, bool canWrap, bool isBoard, Vector2 screenDirection)
+        // 상단 탭을 옮김 (양 끝에서 더 가면 반대쪽 끝으로)
+        private void MoveTopTab(int direction)
         {
             HubMenuItem[] items = _hubTabs[_tabIndex].Items;
             if (items == null || items.Length == 0) return;
 
-            if (isBoard)
-            {
-                MoveBoardItem(items, screenDirection);
-                return;
-            }
-
-            int next = _itemIndex + direction;
-            if (!canWrap && (next < 0 || next >= items.Length)) return;
-
-            SelectItem((next + items.Length) % items.Length);
+            SelectItem((_itemIndex + direction + items.Length) % items.Length);
         }
 
         // 누른 방향에 있는 항목 중 가장 가까운 것을 고름 (방향에서 벗어날수록 멀리 있는 것으로 봄)
-        private void MoveBoardItem(HubMenuItem[] items, Vector2 screenDirection)
+        private void MoveBoardItem(Vector2 screenDirection)
         {
             if (!IsItemActive(_itemIndex)) return;
 
+            HubMenuItem[] items = _hubTabs[_tabIndex].Items;
             Transform current = items[_itemIndex].transform;
             int bestIndex = -1;
             float bestScore = float.MaxValue;
@@ -438,7 +438,7 @@ namespace Game.UI.Hub
             if (!_isInsideTab || IsInputBlocked() || tabIndex != _tabIndex) return;
 
             SelectItem(itemIndex);
-            RunItem(itemIndex);
+            if (_hubTabs[tabIndex].Type != HubTab.TabType.Normal) RunItem(itemIndex);
         }
 
         private void RunItem(int itemIndex)
