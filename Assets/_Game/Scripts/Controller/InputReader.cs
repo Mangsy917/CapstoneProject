@@ -16,7 +16,7 @@ public class InputReader : MonoBehaviour
     [SerializeField] private string actionMapName = "Char";
 
     private InputAction moveUp, moveDown, moveLeft, moveRight;
-    private InputAction attackL, attackM, attackH, attackEX, openUI, restart;
+    private InputAction attackL, attackH, attackD, attackOD, openUI, restart;
 
     [Header("컨트롤러 방향 상태")]
     public bool controllerDL = false;
@@ -31,15 +31,15 @@ public class InputReader : MonoBehaviour
 
     [Header("컨트롤러 공격 버튼 상태 (누르고 있는 동안 true)")]
     public bool buttonL = false;
-    public bool buttonM = false;
     public bool buttonH = false;
-    public bool buttonEX = false;
+    public bool buttonD = false;
+    public bool buttonOD = false;
 
     [Header("이번 프레임에 새로 눌린 버튼 (누른 순간 1프레임만 true)")]
     public bool buttonLDown = false;
-    public bool buttonMDown = false;
     public bool buttonHDown = false;
-    public bool buttonEXDown = false;
+    public bool buttonDDown = false;
+    public bool buttonODDown = false;
 
     public bool uiOpen = false;
 
@@ -78,9 +78,9 @@ public class InputReader : MonoBehaviour
         moveRight = map.FindAction("Right");
 
         attackL = map.FindAction("AttackL");
-        attackM = map.FindAction("AttackM");
         attackH = map.FindAction("AttackH");
-        attackEX = map.FindAction("AttackEX");
+        attackD = map.FindAction("AttackD");
+        attackOD = map.FindAction("AttackOD");
 
         openUI = map.FindAction("OpenUI");
         restart = map.FindAction("Restart");
@@ -117,19 +117,19 @@ public class InputReader : MonoBehaviour
         bool right = moveRight != null && moveRight.IsPressed();
 
         bool l = attackL != null && attackL.IsPressed();
-        bool m = attackM != null && attackM.IsPressed();
         bool h = attackH != null && attackH.IsPressed();
-        bool ex = attackEX != null && attackEX.IsPressed();
+        bool d = attackD != null && attackD.IsPressed();
+        bool od = attackOD != null && attackOD.IsPressed();
 
         bool lDown = attackL != null && attackL.WasPressedThisFrame();
-        bool mDown = attackM != null && attackM.WasPressedThisFrame();
         bool hDown = attackH != null && attackH.WasPressedThisFrame();
-        bool exDown = attackEX != null && attackEX.WasPressedThisFrame();
+        bool dDown = attackD != null && attackD.WasPressedThisFrame();
+        bool odDown = attackOD != null && attackOD.WasPressedThisFrame();
 
         bool open = openUI != null && openUI.WasPressedThisFrame();
 
         UpdateDirectionState(up, down, left, right);
-        UpdateAttackButtonStates(l, m, h, ex, lDown, mDown, hDown, exDown, open);
+        UpdateAttackButtonStates(l, h, d, od, lDown, hDown, dDown, odDown, open);
 
         // 플레이스테이션 패드는 터치패드로만 재시작 (Share 버튼은 무시)
         restartDown = restart != null && restart.WasPressedThisFrame() &&
@@ -170,19 +170,19 @@ public class InputReader : MonoBehaviour
         else { controllerN = true; Direction = 5; }
     }
 
-    private void UpdateAttackButtonStates(bool l, bool m, bool h, bool ex,
-                                          bool lDown, bool mDown, bool hDown, bool exDown,
+    private void UpdateAttackButtonStates(bool l, bool h, bool d, bool od,
+                                          bool lDown, bool hDown, bool dDown, bool odDown,
                                           bool opne)
     {
         buttonL = l;
-        buttonM = m;
         buttonH = h;
-        buttonEX = ex;
+        buttonD = d;
+        buttonOD = od;
 
         buttonLDown = lDown;
-        buttonMDown = mDown;
         buttonHDown = hDown;
-        buttonEXDown = exDown;
+        buttonDDown = dDown;
+        buttonODDown = odDown;
 
         uiOpen = opne;
     }

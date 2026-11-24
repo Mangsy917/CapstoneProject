@@ -32,6 +32,12 @@ namespace Game.Character
         // 0보다 크면 히트 종류와 상관없이 다운되고, 이 프레임 수만큼 쓰러지는 동안 피격 경직 (누른 버튼마다 정한 다운)
         private readonly int _buttonFallFrames;
 
+        // 피격 경직에 더하는 프레임 (과부하 중의 D 기술이면 음수)
+        private readonly int _hitStunChange;
+
+        /// <summary>양쪽 게이지를 바꿀 공격 종류 (null이면 바꾸지 않음. 다단 공격의 2타부터)</summary>
+        public AttackGaugeType? GaugeType { get; }
+
         public HitInfo(int hitStunFrames, float hitBackDistance, int hitBackFrames,
                        int blockStunFrames, float guardBackDistance, int guardBackFrames,
                        AttackHeight height, HitMotion motion, bool isThrow,
@@ -39,8 +45,10 @@ namespace Game.Character
                        AttackData.HitTypeResult normalHitResult = null,
                        AttackData.HitTypeResult counterHitResult = null,
                        AttackData.HitTypeResult punishCounterResult = null,
-                       int buttonFallFrames = 0)
+                       int buttonFallFrames = 0, AttackGaugeType? gaugeType = null, int hitStunChange = 0)
         {
+            GaugeType = gaugeType;
+            _hitStunChange = hitStunChange;
             _buttonFallFrames = buttonFallFrames;
             HitStopFrames = hitStopFrames;
             _normalHitResult = normalHitResult;
@@ -85,6 +93,11 @@ namespace Game.Character
         // 히트 종류에 피격 경직을 직접 정해 두었으면 땅 / 공중에 따라 그 값, 아니면 히트 시 유리 프레임 기준 경직 + 추가 경직
         // 버튼별로 다운을 정한 기술은 위키의 KD 값이 히트 종류와 상관없이 같으므로 추가 경직을 더하지 않음
         private int GetTotalStunFrames(HitType hitType, bool isAirborne)
+        {
+            return Mathf.Max(1, GetBaseStunFrames(hitType, isAirborne) + _hitStunChange);
+        }
+
+        private int GetBaseStunFrames(HitType hitType, bool isAirborne)
         {
             if (_buttonFallFrames > 0) return HitStunFrames;
             AttackData.HitTypeResult result = GetResult(hitType);
@@ -155,7 +168,9 @@ namespace Game.Character
     //   히트 종류마다 데미지 배율, 추가 경직, 다운 여부, 피격 모션을 공격(AttackData)의 히트 종류별 결과에서 정함
     //   피격 모션은 히트 종류에 정한 모션 → 기술의 모션 순서로 쓰고, 자동이면 상단 공격은 MiddleHit, 중단 공격은 Top2Low, 하단 공격은 맞은 피격 상자 위치에 따라 정함
     // - 가드하면: 가드 경직 + 가드백 + 가드 모션 (가드한 피격 상자 위치에 따라 Top / Middle / Bottom), 데미지 없음
-    // - 히트스톱: 장풍을 제외한 모든 공격은 맞거나 가드되면 양쪽이 잠깐 멈춤 (HitStop). 가드는 기술의 히트스톱 값을 씀
+    // - 게이지: 히트 / 가드할 때 양쪽의 냉각수(가드 게이지)와 오버클럭을 바꿈 (CharacterGauge). 과부하 중에 가드하면 체력이 조금 깎임
+    // - 브레이크: 콤보를 맞는 중에 빠져나와 잠깐 무적 (EscapeHitStun)
+    // - 히트스톱: 장풍과 잡기를 제외한 모든 공격은 맞거나 가드되면 양쪽이 잠깐 멈춤 (HitStop). 가드는 기술의 히트스톱 값을 씀
     // - 히트백 / 가드백: 정해진 프레임 동안 뒤로 밀려남. 벽에 붙어 있으면 대신 때린 쪽이 밀려남 (장풍은 제외)
     // - 때린 쪽 움직임 따라가기: 띄우는 공격에 맞으면 때린 쪽이 움직이던 속도(앞으로, 위로)를 따라 같이 떠오름
     //   뛰어오르는 속도가 빠르거나 데미지가 클수록 높이 뜸. 공중에서 맞으면 앞으로 가던 공격의 가로 속도를 같이 받음
@@ -222,6 +237,10 @@ namespace Game.Character
         [Tooltip("히트백 / 가드백 중 벽에 붙었는지 확인할 Pushbox. 비워두면 같은 오브젝트에서 찾음")]
         [SerializeField] private Pushbox _pushbox;
 
+        [Header("브레이크")]
+        [Tooltip("브레이크로 콤보에서 빠져나온 뒤 무적인 프레임 수")]
+        [SerializeField] private int _breakInvincibleFrames = 20;
+
         [Header("때린 쪽 움직임 따라가기")]
         [Tooltip("띄우는 공격에 맞거나 공중에서 맞았을 때, 때린 쪽이 움직이던 속도를 얼마나 따라가는지 (1이면 같은 속도, 0이면 따라가지 않음).\n" +
                  "예) 승룡권에 맞으면 위로 뛰어오르는 승룡권과 같은 속도로 같이 떠오름")]
@@ -266,6 +285,10 @@ namespace Game.Character
         /// <summary>마지막으로 맞았을 때의 히트 종류 (노말 히트 / 카운터 / 퍼니시 카운터)</summary>
         public HitType LastHitType { get; private set; } = HitType.Normal;
 
+        /// <summary>브레이크로 빠져나온 뒤의 무적 중인지</summary>
+        public bool IsBreakInvincible => _breakInvincibleFramesLeft > 0;
+
+        private int _breakInvincibleFramesLeft;
         private int _pendingDownFrames; // 피격 경직이 끝나면 시작할 다운 프레임 (0이면 다운 안 함)
         private int _reactionStartFrame = -1; // 마지막으로 맞거나 가드한 프레임 (그 프레임에는 경직 / 밀림을 진행하지 않음)
         private int _pushBackFramesLeft;
@@ -284,7 +307,13 @@ namespace Game.Character
             var reaction = target.GetComponent<CharacterHitReaction>();
 
             // 다운 중에는 무적 (피격 상자를 끄기 전 프레임에 닿은 공격도 맞지 않도록 여기서도 막음)
-            if (reaction != null && reaction.IsDown) return;
+            if (reaction != null && (reaction.IsDown || reaction.IsBreakInvincible)) return;
+
+            // 잡기는 맞아도 가드돼도 멈추지 않음 (기획서 3-7)
+            if (info.IsThrow) shouldHitStop = false;
+
+            var targetGauge = target.GetComponent<CharacterGauge>();
+            var attackerGauge = attacker != null ? attacker.GetComponent<CharacterGauge>() : null;
 
             Transform pushedAttacker = shouldPushAttacker && attacker != null ? attacker.transform : null;
             if (reaction != null && reaction.CanGuard(info))
@@ -294,6 +323,11 @@ namespace Game.Character
                 // 가드해도 맞혔을 때처럼 가드한 쪽과 때린 쪽을 멈춤 (기술의 히트스톱, 히트 종류별 값은 쓰지 않음)
                 // 두 쪽이 같은 프레임 수만큼 멈추므로 가드 시 유리 프레임은 그대로
                 if (shouldHitStop) StopBoth(target, attacker, info.HitStopFrames);
+
+                // 과부하 중에 가드하면 체력이 조금 깎임
+                if (targetGauge != null && targetGauge.IsOverloaded && target.TryGetComponent(out CharacterHealth guardHealth))
+                    guardHealth.TakeDamage(Mathf.RoundToInt(damage * targetGauge.Data.OverloadGuardDamageRate), attacker: attacker);
+                if (info.GaugeType.HasValue) CharacterGauge.ChangeByGuard(attackerGauge, targetGauge, info.GaugeType.Value);
                 return;
             }
 
@@ -311,6 +345,10 @@ namespace Game.Character
             // 맞은 쪽이 따라 움직일 때린 쪽의 속도 (장풍은 때린 쪽 몸이 아니므로 따라가지 않음)
             Vector2 attackerVelocity = shouldPushAttacker && attacker != null ? GetVelocity(attacker.gameObject) : Vector2.zero;
             if (!isAbsorbed && reaction != null) reaction.ReceiveHit(info, hitbox, direction, pushedAttacker, hitType, attackerVelocity, finalDamage);
+
+            // 슈퍼아머로 버틴 공격은 콤보가 아니므로 첫 타로 봄
+            if (info.GaugeType.HasValue)
+                CharacterGauge.ChangeByHit(attackerGauge, targetGauge, info.GaugeType.Value, isComboHit, comboCount: reaction != null && !isAbsorbed ? reaction.ComboCount : 1);
 
             // 맞은 쪽의 판정 표시(StateUI)에 노말 히트 / 카운터 / 퍼니시 카운터를 넣음 (다음에 맞을 때까지 유지)
             var targetState = target.GetComponent<CharactorState>();
@@ -419,6 +457,18 @@ namespace Game.Character
                 }
             }
             if (GuardStunFramesLeft > 0) GuardStunFramesLeft--;
+            if (_breakInvincibleFramesLeft > 0) _breakInvincibleFramesLeft--;
+        }
+
+        /// <summary>브레이크: 맞고 있는 콤보에서 빠져나옴 (경직과 히트백을 취소하고 잠깐 무적)</summary>
+        public void EscapeHitStun()
+        {
+            HitStunFramesLeft = 0;
+            _pendingDownFrames = 0;
+            ComboCount = 0;
+            _pushBackFramesLeft = 0;
+            _pushBackAttacker = null;
+            _breakInvincibleFramesLeft = _breakInvincibleFrames;
         }
 
         // 이번 프레임만큼 뒤로 밀려남. 벽에 붙어 있으면 때린 쪽을 반대로 밀어냄
@@ -584,6 +634,7 @@ namespace Game.Character
         public void ResetReaction()
         {
             HitStunFramesLeft = 0;
+            _breakInvincibleFramesLeft = 0;
             DownFramesLeft = 0;
             _pendingDownFrames = 0;
             GuardStunFramesLeft = 0;

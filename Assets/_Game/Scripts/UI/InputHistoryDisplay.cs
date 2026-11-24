@@ -294,9 +294,9 @@ public class InputHistoryDisplay : MonoBehaviour
     private bool[] ReadCurrentAttackStates()
     {
         currentAttackStates[0] = inputReadObject.buttonL;
-        currentAttackStates[1] = inputReadObject.buttonM;
-        currentAttackStates[2] = inputReadObject.buttonH;
-        currentAttackStates[3] = inputReadObject.buttonEX;
+        currentAttackStates[1] = inputReadObject.buttonH;
+        currentAttackStates[2] = inputReadObject.buttonD;
+        currentAttackStates[3] = inputReadObject.buttonOD;
         return currentAttackStates;
     }
 

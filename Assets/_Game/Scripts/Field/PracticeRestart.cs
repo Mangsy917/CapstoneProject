@@ -12,7 +12,7 @@ namespace Game.Field
     //   위: 위치는 그대로 두고 지금 사이드의 반대쪽으로 바꿈 (1P → 2P, 2P → 1P)
     //   대각선, 레버 없음: 설정해 둔 사이드 / 위치 그대로
     //   바꾼 값은 설정창의 시작 위치 / 시작 사이드에도 그대로 반영됨
-    // - 하던 점프, 대쉬, 달리기, 공격, 착지 경직, 피격 경직, 입력 버퍼를 모두 취소하고 날아가던 투사체를 지움, 두 캐릭터의 체력을 가득 채움
+    // - 하던 점프, 대쉬, 달리기, 공격, 착지 경직, 피격 경직, 입력 버퍼를 모두 취소하고 날아가던 투사체를 지움, 두 캐릭터의 체력과 게이지를 설정한 값으로 채움
     // - 설정창이 열려 있을 때는 캐릭터 조작 입력(InputReader)이 꺼져 있으므로 재시작되지 않음
     public class PracticeRestart : MonoBehaviour
     {
@@ -57,6 +57,7 @@ namespace Game.Field
             foreach (var command in FindObjectsByType<CharacterCommand>(FindObjectsSortMode.None)) command.ClearBuffer();
             foreach (var projectile in FindObjectsByType<Projectile>(FindObjectsSortMode.None)) Destroy(projectile.gameObject);
             foreach (var health in FindObjectsByType<CharacterHealth>(FindObjectsSortMode.None)) health.ResetHealth();
+            foreach (var gauge in FindObjectsByType<CharacterGauge>(FindObjectsSortMode.None)) gauge.ResetGauge();
             HitStop.ResetAll();
 
             // 재시작 직후 잠깐 입력을 받지 않음

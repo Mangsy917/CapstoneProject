@@ -20,9 +20,9 @@ public class InputShowUI : MonoBehaviour
 
     [Header("공격 UI")]
     [SerializeField, FormerlySerializedAs("LButton")] private Image lButton;
-    [SerializeField, FormerlySerializedAs("MButton")] private Image mButton;
-    [SerializeField, FormerlySerializedAs("HButton")] private Image hButton;
-    [SerializeField, FormerlySerializedAs("EXButton")] private Image exButton;
+    [SerializeField] private Image hButton;
+    [SerializeField] private Image dButton;
+    [SerializeField] private Image odButton;
 
     private const float pressedValue = 255f / 255f;
     private const float releasedValue = 123f / 255f;
@@ -46,9 +46,9 @@ public class InputShowUI : MonoBehaviour
         UpdateImage(direction9, inputReader.controllerUR);
 
         UpdateImage(lButton, inputReader.buttonL);
-        UpdateImage(mButton, inputReader.buttonM);
         UpdateImage(hButton, inputReader.buttonH);
-        UpdateImage(exButton, inputReader.buttonEX);
+        UpdateImage(dButton, inputReader.buttonD);
+        UpdateImage(odButton, inputReader.buttonOD);
     }
 
     private void UpdateImage(Image image, bool active)

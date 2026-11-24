@@ -28718,10 +28718,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 20bda9ddc1524bd4c92479eb9dfe7222, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Game.UI.Hub.HubInventory
-  _startCredit: 1000
-  _playerLevel: 1
+  HI_startData: {fileID: 11400000, guid: d550046d6a16f814988ab0891c12ebcd, type: 2}
   _levelText: {fileID: 970629200}
   _creditText: {fileID: 125295525}
+  _experienceFill: {fileID: 1602513223}
 --- !u!4 &1267023208
 Transform:
   m_ObjectHideFlags: 0
@@ -38972,7 +38972,7 @@ RectTransform:
   m_Father: {fileID: 1956298682}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 1, y: 1}
+  m_AnchorMax: {x: 0, y: 1}
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
@@ -39001,7 +39001,7 @@ MonoBehaviour:
   m_PreserveAspect: 0
   m_FillCenter: 1
   m_FillMethod: 0
-  m_FillAmount: 0
+  m_FillAmount: 1
   m_FillClockwise: 1
   m_FillOrigin: 0
   m_UseSpriteMesh: 0

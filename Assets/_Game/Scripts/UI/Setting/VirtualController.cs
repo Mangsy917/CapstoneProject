@@ -17,7 +17,7 @@ namespace Game.UI.Setting
         [Serializable]
         public class AttackButtonView
         {
-            // Input Actions 에셋의 액션 이름 (AttackL, AttackM ...)
+            // Input Actions 에셋의 액션 이름 (AttackL, AttackH ...)
             public string VC_actionName;
             public Image buttonImage;
         }

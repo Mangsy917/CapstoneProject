@@ -1,0 +1,88 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e9197081c5ec07546b1188fce5ba0f0a, type: 3}
+  m_Name: D_GaugeData
+  m_EditorClassIdentifier: Assembly-CSharp::Game.Character.GaugeData
+  _driveNormalCost: 500
+  _driveSpecialCost: 2000
+  _breakCost: 3000
+  _overdriveCost: 100
+  _coolantRecoveryPerSecond: 300
+  _recoveryDelayAfterUse: 60
+  _recoveryDelayAfterHit: 30
+  _guardRecoveryRate: 0.5
+  _overloadRecoveryRate: 0.5
+  _peaceRecoveryRate: 3
+  _overloadReleaseCoolant: 3000
+  _overloadCoolantGain: 300
+  _overloadDamageRate: 0.7
+  _overloadHitStunFrames: -2
+  _overloadBlockStunFrames: -4
+  _overloadGuardDamageRate: 0.05
+  _reducedComboCount: 5
+  _reducedComboRate: 0.5
+  _commandDamageRate: 1.2
+  _gaugeChanges:
+  - GD_type: 0
+    _hitCoolantGain: 160
+    _blockedCoolantGain: 40
+    _hitOverclockGain: 10
+    _blockedOverclockGain: 5
+    _damagedCoolantLoss: 200
+    _guardCoolantLoss: 100
+    _damagedOverclockGain: 5
+    _guardOverclockGain: 2.5
+  - GD_type: 1
+    _hitCoolantGain: 240
+    _blockedCoolantGain: 60
+    _hitOverclockGain: 14
+    _blockedOverclockGain: 7
+    _damagedCoolantLoss: 400
+    _guardCoolantLoss: 200
+    _damagedOverclockGain: 7
+    _guardOverclockGain: 3.5
+  - GD_type: 2
+    _hitCoolantGain: 360
+    _blockedCoolantGain: 90
+    _hitOverclockGain: 30
+    _blockedOverclockGain: 15
+    _damagedCoolantLoss: 600
+    _guardCoolantLoss: 300
+    _damagedOverclockGain: 15
+    _guardOverclockGain: 7.5
+  - GD_type: 3
+    _hitCoolantGain: 500
+    _blockedCoolantGain: 125
+    _hitOverclockGain: 45
+    _blockedOverclockGain: 22.5
+    _damagedCoolantLoss: 600
+    _guardCoolantLoss: 300
+    _damagedOverclockGain: 22
+    _guardOverclockGain: 11
+  - GD_type: 4
+    _hitCoolantGain: 400
+    _blockedCoolantGain: 100
+    _hitOverclockGain: 10
+    _blockedOverclockGain: 5
+    _damagedCoolantLoss: 1000
+    _guardCoolantLoss: 500
+    _damagedOverclockGain: 12
+    _guardOverclockGain: 6
+  - GD_type: 5
+    _hitCoolantGain: 600
+    _blockedCoolantGain: 150
+    _hitOverclockGain: 15
+    _blockedOverclockGain: 7.5
+    _damagedCoolantLoss: 1000
+    _guardCoolantLoss: 500
+    _damagedOverclockGain: 20
+    _guardOverclockGain: 10

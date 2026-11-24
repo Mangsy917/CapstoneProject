@@ -42,8 +42,8 @@ namespace Game.Controller
             "<Keyboard>/s",
             "<Keyboard>/a",
             "<Keyboard>/d",
-            "<Keyboard>/j",
             "<Keyboard>/k",
+            "<Keyboard>/j",
             "<Keyboard>/u",
             "<Keyboard>/i",
             "<Keyboard>/q",
@@ -121,6 +121,7 @@ namespace Game.Controller
 
         // 에셋의 키보드 바인딩을 표에 맞춰 덮어씀
         // 액션마다 패드 바인딩 중 표에 있는 첫 번째 버튼을 찾아, 그 버튼의 키를 첫 번째 키보드 바인딩에 넣음
+        // 패드 바인딩과 그 버튼의 키가 모두 처음 값이면 에셋에 적힌 키를 그대로 씀 (메뉴의 선택 J / 취소 K는 공격 버튼의 키와 따로 둠)
         // (같은 액션의 다른 키보드 바인딩은 꺼짐. 표에 있는 패드 버튼이 없는 액션은 키보드 바인딩을 그대로 둠)
         public static void ApplyTo(InputActionAsset asset)
         {
@@ -132,6 +133,12 @@ namespace Game.Controller
             {
                 string key = FindKeyForAction(action);
                 if (key == null) continue;
+
+                if (IsDefaultAction(action))
+                {
+                    RemoveKeyboardOverrides(action);
+                    continue;
+                }
 
                 bool isFirst = true;
                 for (int i = 0; i < action.bindings.Count; i++)
@@ -145,6 +152,29 @@ namespace Game.Controller
                     if (IsSamePath(binding.path, path)) action.RemoveBindingOverride(i);
                     else action.ApplyBindingOverride(i, path);
                 }
+            }
+        }
+
+        // 액션의 패드 바인딩(표에 있는 첫 번째 버튼)이 바뀌지 않았고, 그 버튼의 키도 처음 값인지
+        private static bool IsDefaultAction(InputAction action)
+        {
+            foreach (InputBinding binding in action.bindings)
+            {
+                if (binding.isComposite || binding.isPartOfComposite) continue;
+
+                int index = IndexOfPath(GamepadPaths, ToGamepadPath(binding.effectivePath));
+                if (index < 0) continue;
+                return IsSamePath(binding.path, binding.effectivePath) && IsSamePath(_keys[index], _defaultKeys[index]);
+            }
+            return false;
+        }
+
+        private static void RemoveKeyboardOverrides(InputAction action)
+        {
+            for (int i = 0; i < action.bindings.Count; i++)
+            {
+                InputBinding binding = action.bindings[i];
+                if (!binding.isComposite && !binding.isPartOfComposite && IsKeyboardBinding(binding)) action.RemoveBindingOverride(i);
             }
         }
 

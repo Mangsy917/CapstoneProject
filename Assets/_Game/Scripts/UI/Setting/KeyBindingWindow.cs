@@ -27,7 +27,7 @@ namespace Game.UI.Setting
         [Serializable]
         public class BindingRow
         {
-            // Input Actions 에셋의 액션 이름 (AttackL, AttackM ...)
+            // Input Actions 에셋의 액션 이름 (AttackL, AttackH ...)
             public string KBW_actionName;
             public Button rowButton;
             public TMP_Text keyboardText;

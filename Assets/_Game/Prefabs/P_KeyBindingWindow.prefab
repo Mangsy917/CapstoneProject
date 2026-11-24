@@ -300,7 +300,7 @@ GameObject:
   - component: {fileID: 3633350870833186772}
   - component: {fileID: 3259382714018760061}
   m_Layer: 5
-  m_Name: BTN_AttackM
+  m_Name: BTN_AttackH
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -512,19 +512,19 @@ MonoBehaviour:
     gamepadText: {fileID: 6666347035355132840}
     keyboardIcon: {fileID: 5340904123276829622}
     gamepadIcon: {fileID: 4290568532095454759}
-  - KBW_actionName: AttackM
+  - KBW_actionName: AttackH
     rowButton: {fileID: 3259382714018760061}
     keyboardText: {fileID: 950467731955915595}
     gamepadText: {fileID: 5143427385065569640}
     keyboardIcon: {fileID: 2907393946459044184}
     gamepadIcon: {fileID: 7206620558142680744}
-  - KBW_actionName: AttackH
+  - KBW_actionName: AttackD
     rowButton: {fileID: 4793958179130423848}
     keyboardText: {fileID: 2892641648316746781}
     gamepadText: {fileID: 5347772444941969430}
     keyboardIcon: {fileID: 5375747483084594147}
     gamepadIcon: {fileID: 5156038802453953474}
-  - KBW_actionName: AttackEX
+  - KBW_actionName: AttackOD
     rowButton: {fileID: 7739144239716391168}
     keyboardText: {fileID: 4474057850795013493}
     gamepadText: {fileID: 8663524934858834419}
@@ -1070,7 +1070,7 @@ GameObject:
   - component: {fileID: 1370935735822277461}
   - component: {fileID: 4793958179130423848}
   m_Layer: 5
-  m_Name: BTN_AttackH
+  m_Name: BTN_AttackD
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1988,7 +1988,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "\uC57D \uACF5\uACA9"
+  m_text: "\uC57D \uACF5\uACA9 (L)"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 43dcfe858b544cb4c9d1d582f2fabccb, type: 2}
   m_sharedMaterial: {fileID: -815202500433089127, guid: 43dcfe858b544cb4c9d1d582f2fabccb, type: 2}
@@ -3835,11 +3835,11 @@ MonoBehaviour:
   _attackButtons:
   - VC_actionName: AttackL
     buttonImage: {fileID: 8499381190066154261}
-  - VC_actionName: AttackM
-    buttonImage: {fileID: 1654286158102652806}
   - VC_actionName: AttackH
+    buttonImage: {fileID: 1654286158102652806}
+  - VC_actionName: AttackD
     buttonImage: {fileID: 7027034956915126498}
-  - VC_actionName: AttackEX
+  - VC_actionName: AttackOD
     buttonImage: {fileID: 559034937855254443}
   _canvasGroup: {fileID: 329488656125012567}
   _idleAlpha: 0.35
@@ -4060,7 +4060,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "EX \uACF5\uACA9"
+  m_text: "\uC624\uBC84\uB4DC\uB77C\uC774\uBE0C (OD)"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 43dcfe858b544cb4c9d1d582f2fabccb, type: 2}
   m_sharedMaterial: {fileID: -815202500433089127, guid: 43dcfe858b544cb4c9d1d582f2fabccb, type: 2}
@@ -4334,7 +4334,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "\uAC15 \uACF5\uACA9"
+  m_text: "\uB4DC\uB77C\uC774\uBE0C (D)"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 43dcfe858b544cb4c9d1d582f2fabccb, type: 2}
   m_sharedMaterial: {fileID: -815202500433089127, guid: 43dcfe858b544cb4c9d1d582f2fabccb, type: 2}
@@ -4419,7 +4419,7 @@ GameObject:
   - component: {fileID: 9052257259810233349}
   - component: {fileID: 7739144239716391168}
   m_Layer: 5
-  m_Name: BTN_AttackEX
+  m_Name: BTN_AttackOD
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -4710,7 +4710,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "\uC911 \uACF5\uACA9"
+  m_text: "\uAC15 \uACF5\uACA9 (H)"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 43dcfe858b544cb4c9d1d582f2fabccb, type: 2}
   m_sharedMaterial: {fileID: -815202500433089127, guid: 43dcfe858b544cb4c9d1d582f2fabccb, type: 2}

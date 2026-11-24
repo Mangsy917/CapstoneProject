@@ -52,8 +52,8 @@ namespace Game.Character
 
             AttackData attack = GetCurrentAttack();
 
-            // 완전 무적인 동안(예: EX 승룡권 1~8프레임)과 다운 중에는 피격 상자를 모두 끔
-            bool isInvincible = (attack != null && CH_characterAttack.IsInvincible) || (CH_hitReaction != null && CH_hitReaction.IsDown);
+            // 완전 무적인 동안(예: OD 승룡권 1~8프레임)과 다운 중에는 피격 상자를 모두 끔
+            bool isInvincible = (attack != null && CH_characterAttack.IsInvincible) || (CH_hitReaction != null && (CH_hitReaction.IsDown || CH_hitReaction.IsBreakInvincible));
 
             bool isCrouching = (CH_characterMove != null && CH_characterMove.IsCrouching) || (CH_dummyAction != null && CH_dummyAction.DA_IsCrouching);
             bool shouldHideTop = isCrouching || (attack != null && attack.ShouldHideTopHitbox);

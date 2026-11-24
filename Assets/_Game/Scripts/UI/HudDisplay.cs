@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace Game.UI
 {
-    // 상단 / 하단 HUD 오브젝트에 붙여서 사용 (지금은 상단 = HealthBars, 하단 HUD는 아직 없음)
+    // 상단 / 하단 HUD 오브젝트에 붙여서 사용 (상단 = HealthBars, 하단 = BottomHud)
     // 옵션의 화면 설정(DisplaySettings)에 맞춰 HUD를 보이거나 숨기고, 위치를 화면 안쪽으로 옮김
     // - 숨길 때는 오브젝트를 끄지 않고 CanvasGroup 투명도로 숨김
     //   (다른 스크립트가 이 오브젝트를 켜고 끄는 것과 겹치지 않도록)

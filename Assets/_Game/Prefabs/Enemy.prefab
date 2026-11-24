@@ -21,6 +21,7 @@ GameObject:
   - component: {fileID: 305886227930586829}
   - component: {fileID: 723814536119699407}
   - component: {fileID: 7108824292023844698}
+  - component: {fileID: 8493613590140282385}
   m_Layer: 0
   m_Name: Enemy
   m_TagString: Enemy
@@ -215,6 +216,7 @@ MonoBehaviour:
   CH_characterMove: {fileID: 0}
   CH_characterAttack: {fileID: 0}
   CH_dummyAction: {fileID: 0}
+  CH_hitReaction: {fileID: 0}
 --- !u!114 &2024175151764231273
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -260,6 +262,10 @@ MonoBehaviour:
   _dummyAction: {fileID: 0}
   _characterHitboxes: {fileID: 0}
   _pushbox: {fileID: 0}
+  _breakInvincibleFrames: 20
+  _attackerVelocityFollowRatio: 1
+  _launchReferenceDamage: 1200
+  _launchDamageScaleRange: {x: 0.5, y: 2}
 --- !u!114 &305886227930586829
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -277,19 +283,6 @@ MonoBehaviour:
   CAP_characterAttack: {fileID: 0}
   CAP_hitReaction: {fileID: 0}
   CAP_dummyAction: {fileID: 0}
-  _idleState: Idle
-  _sitState: Sit
-  _jumpState: Jump
-  _walkForwardState: WalkForward
-  _walkBackState: WalkBack
-  _topHitState: TopHit
-  _middleHitState: MiddleHit
-  _lowHitState: LowHit
-  _top2LowHitState: Top2LowHit
-  _low2TopHitState: Low2TopHit
-  _topGuardState: TopGuard
-  _middleGuardState: MiddleGuard
-  _bottomGuardState: BottomGuard
 --- !u!114 &723814536119699407
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -321,6 +314,27 @@ MonoBehaviour:
   _jumpStartupFrames: 5
   DA_characterState: {fileID: 0}
   DA_hitReaction: {fileID: 0}
+--- !u!114 &8493613590140282385
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2347769319118467310}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1d8bfc191e1b41640939f5d9ed69f136, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Game.Character.CharacterGauge
+  _gaugeData: {fileID: 11400000, guid: a552b4ea52bbd9c4095d42bcc039ed25, type: 2}
+  _baseCoolant: 3000
+  _baseOverclock: 0
+  _coolantStatCount: 0
+  _overclockStatCount: 0
+  _overclockRefillDelay: 60
+  _overclockRefillFrames: 30
+  _coolantMode: 0
+  _overclockMode: 1
 --- !u!1 &7336444245606331161
 GameObject:
   m_ObjectHideFlags: 0

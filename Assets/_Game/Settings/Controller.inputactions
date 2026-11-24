@@ -57,7 +57,7 @@
                     "priority": 0
                 },
                 {
-                    "name": "AttackM",
+                    "name": "AttackH",
                     "type": "Button",
                     "id": "9daaca6a-77ab-4ff0-b929-3bc73f4f80c7",
                     "expectedControlType": "",
@@ -67,7 +67,7 @@
                     "priority": 0
                 },
                 {
-                    "name": "AttackH",
+                    "name": "AttackD",
                     "type": "Button",
                     "id": "dcc6605d-4793-4165-ae59-1d8d66b11d89",
                     "expectedControlType": "",
@@ -77,7 +77,7 @@
                     "priority": 0
                 },
                 {
-                    "name": "AttackEX",
+                    "name": "AttackOD",
                     "type": "Button",
                     "id": "38910cac-d473-45ec-9daf-027376e9c3f5",
                     "expectedControlType": "",
@@ -269,7 +269,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": ";PC",
-                    "action": "AttackM",
+                    "action": "AttackH",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -280,7 +280,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": ";GamePad",
-                    "action": "AttackM",
+                    "action": "AttackH",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -291,18 +291,18 @@
                     "interactions": "",
                     "processors": "",
                     "groups": ";PC",
-                    "action": "AttackH",
+                    "action": "AttackD",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
                 {
                     "name": "",
                     "id": "fbf3d059-ed3a-41b8-ada8-24cc801ea9d4",
-                    "path": "<Gamepad>/buttonSouth",
+                    "path": "<Gamepad>/buttonEast",
                     "interactions": "",
                     "processors": "",
                     "groups": ";GamePad",
-                    "action": "AttackH",
+                    "action": "AttackD",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -313,18 +313,18 @@
                     "interactions": "",
                     "processors": "",
                     "groups": ";PC",
-                    "action": "AttackEX",
+                    "action": "AttackOD",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
                 {
                     "name": "",
                     "id": "3e7ca111-5c08-4b2e-bc2d-6f5b38feef89",
-                    "path": "<Gamepad>/buttonEast",
+                    "path": "<Gamepad>/buttonSouth",
                     "interactions": "",
                     "processors": "",
                     "groups": ";GamePad",
-                    "action": "AttackEX",
+                    "action": "AttackOD",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },

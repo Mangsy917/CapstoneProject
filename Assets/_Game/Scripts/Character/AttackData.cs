@@ -577,7 +577,7 @@ namespace Game.Character
             new FrameSegment(FrameType.Recovery, 10)
         };
 
-        [Tooltip("누른 버튼마다 프레임을 다르게 할 때 사용 (예: 236을 L / M / H / EX로 썼을 때).\n목록에 없는 버튼으로 나가면 위의 프레임 목록을 사용")]
+        [Tooltip("누른 버튼마다 프레임을 다르게 할 때 사용 (예: 236을 D / OD로 썼을 때).\n목록에 없는 버튼으로 나가면 위의 프레임 목록을 사용")]
         [SerializeField] private ButtonFrames[] _buttonFrames = new ButtonFrames[0];
 
         [Header("프레임 구간별 특성")]
@@ -616,6 +616,11 @@ namespace Game.Character
                  "지속이 끝나고 회수 프레임에 들어갈 때 회수 대신 새 공격이 시작됨. 헛치면 캔슬되지 않음\n" +
                  "횟수 제한은 없고, 밀려난 상대에게 공격이 닿지 않으면 연타도 끊김")]
         [SerializeField] private AttackData[] _chainAttacks = new AttackData[0];
+
+        [Header("타깃 콤보")]
+        [Tooltip("이 공격 중에 같은 버튼을 다시 누르면 이어서 나갈 2타. 비워두면 없음\n" +
+                 "캔슬과 달리 헛쳐도 나가고, 회수 프레임에 들어갈 때 이어짐")]
+        [SerializeField] private AttackData _targetComboAttack;
 
         [Header("착지 경직")]
         [Tooltip("공중에서 착지했을 때 움직일 수 없는 프레임 수. 0이면 경직 없음")]
@@ -659,8 +664,11 @@ namespace Game.Character
         /// <summary>이 공격이 상대에게 닿은 뒤 attack으로 바로 이어갈 수 있는지</summary>
         public bool CanChainTo(AttackData attack)
         {
+            if (attack != null && attack == _targetComboAttack) return true;
             return _chainAttacks != null && Array.IndexOf(_chainAttacks, attack) >= 0;
         }
+
+        public AttackData TargetComboAttack => _targetComboAttack;
 
         public bool HoldUntilLanding => _holdUntilLanding;
         public int LandingRecoveryFrames => _landingRecoveryFrames;
@@ -721,8 +729,12 @@ namespace Game.Character
             return buttonFrames != null && buttonFrames.AD_HitStopFrames > 0 ? buttonFrames.AD_HitStopFrames : _hitStopFrames;
         }
 
-        /// <summary>이 버튼으로 나간 공격의 hitIndex번째 타(1타 = 0)가 맞았을 때(또는 가드됐을 때) 상대에게 줄 정보</summary>
-        public HitInfo GetHitInfo(CharacterCommand.AttackButtonType button, int hitIndex = 0)
+        /// <summary>
+        /// 이 버튼으로 나간 공격의 hitIndex번째 타(1타 = 0)가 맞았을 때(또는 가드됐을 때) 상대에게 줄 정보
+        /// gaugeType: 양쪽 게이지를 바꿀 공격 종류 (null이면 바꾸지 않음). hitStunChange / blockStunChange: 과부하 중의 D 기술이면 줄어드는 경직
+        /// </summary>
+        public HitInfo GetHitInfo(CharacterCommand.AttackButtonType button, int hitIndex = 0,
+                                  AttackGaugeType? gaugeType = null, int hitStunChange = 0, int blockStunChange = 0)
         {
             // 버튼별로 다운을 정해 두었으면 히트 종류와 상관없이 그 쓰러지는 프레임으로 다운시킴 (0이면 히트 종류의 설정을 따름)
             ButtonFrames buttonFrames = FindButtonFrames(button);
@@ -730,11 +742,11 @@ namespace Game.Character
 
             return new HitInfo(
                 hitStunFrames: GetHitStunFrames(button, hitIndex), hitBackDistance: _hitBackDistance, hitBackFrames: _hitBackFrames,
-                blockStunFrames: GetBlockStunFrames(button, hitIndex), guardBackDistance: _guardBackDistance, guardBackFrames: _guardBackFrames,
+                blockStunFrames: Mathf.Max(1, GetBlockStunFrames(button, hitIndex) + blockStunChange), guardBackDistance: _guardBackDistance, guardBackFrames: _guardBackFrames,
                 height: _height, motion: _hitMotion, isThrow: HasTrait(AttackTrait.Throw),
                 hitStopFrames: GetHitStopFrames(button),
                 normalHitResult: _normalHitResult, counterHitResult: _counterHitResult, punishCounterResult: _punishCounterResult,
-                buttonFallFrames: buttonFallFrames);
+                buttonFallFrames: buttonFallFrames, gaugeType: gaugeType, hitStunChange: hitStunChange);
         }
 
         // 버튼별 프레임 목록에 없을 때 쓰는 기본 프레임

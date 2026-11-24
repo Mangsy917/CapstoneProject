@@ -17,9 +17,9 @@ namespace Game.Character
         public enum AttackButtonType
         {
             L = 1 << 0,
-            M = 1 << 1,
-            H = 1 << 2,
-            EX = 1 << 3
+            H = 1 << 1,
+            D = 1 << 2,
+            OD = 1 << 3
         }
 
         // 기술을 쓸 수 있는 상태
@@ -63,6 +63,9 @@ namespace Game.Character
             [Tooltip("여러 커맨드가 동시에 맞으면 이 값이 큰 것이 나감")]
             public int priority = 0;
 
+            [Tooltip("필살기인지 (원버튼, 커맨드 입력 모두 체크). 게이지 소모와 캔슬, 선입력 규칙에 사용")]
+            public bool isSpecial = false;
+
             [Tooltip("커맨드가 성공하면 나갈 공격")]
             public AttackData attack;
         }
@@ -81,8 +84,10 @@ namespace Game.Character
         [Tooltip("각 커맨드의 windowFrames를 0(또는 음수)으로 두면 이 값이 기본값으로 사용됩니다.\n" +
                  "방향과 방향 사이, 마지막 방향과 버튼 사이에 허용하는 프레임 수입니다.")]
         [SerializeField] private int _defaultCommandWindowFrames = 4;
+        [Tooltip("레버 커맨드의 첫 방향부터 마지막 방향까지 이 프레임 안에 완성해야 합니다. (첫 방향은 누르고 있던 마지막 프레임부터 셈)")]
+        [SerializeField] private int _motionWindowFrames = 12;
         [Tooltip("requireAllButtons(동시입력) 커맨드에서 comboWindowFrames를 0(또는 음수)으로 두면 이 값이 기본값으로 사용됩니다.\n" +
-                 "예) 2로 두면 L, M을 2프레임 이내에 누른 경우까지 '동시에 누름'으로 인정합니다.")]
+                 "예) 2로 두면 L, H를 2프레임 이내에 누른 경우까지 '동시에 누름'으로 인정합니다.")]
         [SerializeField] private int _defaultComboWindowFrames = 2;
 
         [Tooltip("방향 커맨드에서 버튼을 마지막 방향보다 이 프레임 수만큼 먼저 눌러도 인정합니다.")]
@@ -113,9 +118,15 @@ namespace Game.Character
         /// </summary>
         public Func<CommandData, bool> CanUseCommand { get; set; }
 
+        /// <summary>L, H, D, OD 중 아무 버튼 3개를 동시에 눌렀을 때 먼저 호출 (브레이크). true를 돌려주면 이번 입력으로 기술이 나가지 않음</summary>
+        public Func<bool> TryBreak { get; set; }
+
+        // 브레이크에 필요한 버튼 수
+        private const int BreakButtonCount = 3;
+
         private static readonly AttackButtonType[] _allButtonFlags =
         {
-            AttackButtonType.L, AttackButtonType.M, AttackButtonType.H, AttackButtonType.EX
+            AttackButtonType.L, AttackButtonType.H, AttackButtonType.D, AttackButtonType.OD
         };
 
         // 입력 버퍼에 쌓이는 한 프레임의 입력
@@ -138,7 +149,7 @@ namespace Game.Character
         private List<CommandData> _sortedCommandList;
         private int CC_frameCounter = 0;
 
-        // 한 프레임에 여러 버튼이 동시에 눌리는 경우(예: L, M이 정확히 같은 프레임에 눌림),
+        // 한 프레임에 여러 버튼이 동시에 눌리는 경우(예: L, H가 정확히 같은 프레임에 눌림),
         // 같은 콤보 커맨드가 버튼별로 중복 출력되지 않도록 이번 프레임에 이미 채택된 커맨드를 기록해둔다.
         // (버튼을 누를 때마다 새로 만들지 않도록 하나를 비워서 다시 씀)
         private readonly HashSet<CommandData> _triggeredThisFrame = new HashSet<CommandData>();
@@ -174,7 +185,15 @@ namespace Game.Character
             AddToBuffer(new BufferedInput(CC_frameCounter, direction, pressedButtons));
 
             if (pressedButtons != 0)
+            {
+                // 동시에 누른 다른 버튼의 기술이 나가지 않도록 버퍼도 비움
+                if (IsBreakPressed() && TryBreak != null && TryBreak())
+                {
+                    ClearBuffer();
+                    return;
+                }
                 CheckCommands(pressedButtons);
+            }
 
             if (isDirectionChanged)
                 CheckLateMotion();
@@ -212,9 +231,9 @@ namespace Game.Character
         {
             AttackButtonType pressedButtons = 0;
             if (CC_inputReader.buttonLDown) pressedButtons |= AttackButtonType.L;
-            if (CC_inputReader.buttonMDown) pressedButtons |= AttackButtonType.M;
             if (CC_inputReader.buttonHDown) pressedButtons |= AttackButtonType.H;
-            if (CC_inputReader.buttonEXDown) pressedButtons |= AttackButtonType.EX;
+            if (CC_inputReader.buttonDDown) pressedButtons |= AttackButtonType.D;
+            if (CC_inputReader.buttonODDown) pressedButtons |= AttackButtonType.OD;
             return pressedButtons;
         }
 
@@ -288,6 +307,19 @@ namespace Game.Character
             }
         }
 
+        // 지금 눌려 있는 버튼 중 3개 이상이 동시입력 유예 프레임 안에 눌렸는지
+        private bool IsBreakPressed()
+        {
+            int pressedCount = 0;
+            foreach (var flag in _allButtonFlags)
+            {
+                int? pressFrame = FindLastPressFrame(flag);
+                if (pressFrame == null || !IsButtonCurrentlyPressed(flag)) continue;
+                if (CC_frameCounter - pressFrame.Value <= _defaultComboWindowFrames) pressedCount++;
+            }
+            return pressedCount >= BreakButtonCount;
+        }
+
         // 요구 버튼이 모두 눌려 있고, 버퍼에 남은 마지막 누른 프레임끼리의 차이가 comboWindowFrames 이내인지 확인
         private bool IsButtonComboSatisfied(CommandData command)
         {
@@ -328,9 +360,9 @@ namespace Game.Character
             switch (flag)
             {
                 case AttackButtonType.L: return CC_inputReader.buttonL;
-                case AttackButtonType.M: return CC_inputReader.buttonM;
                 case AttackButtonType.H: return CC_inputReader.buttonH;
-                case AttackButtonType.EX: return CC_inputReader.buttonEX;
+                case AttackButtonType.D: return CC_inputReader.buttonD;
+                case AttackButtonType.OD: return CC_inputReader.buttonOD;
                 default: return false;
             }
         }
@@ -356,6 +388,7 @@ namespace Game.Character
             int[] motion = command.directionSequence;
             int motionIndex = motion.Length - 1;
             int lastMatchedFrame = CC_frameCounter; // 버튼이 눌린 현재 프레임을 기준점으로 시작
+            int motionEndFrame = CC_frameCounter; // 마지막 방향을 누른 프레임
 
             // 버퍼의 가장 오래된 입력은 언제 처음 눌렸는지 알 수 없으므로 확인하지 않는다.
             for (int i = _inputBuffer.Count - 1; i >= 1 && motionIndex >= 0; i--)
@@ -370,6 +403,8 @@ namespace Game.Character
                     return false;
 
                 lastMatchedFrame = entry.frame;
+                if (motionIndex == motion.Length - 1) motionEndFrame = entry.frame;
+                else if (motionEndFrame - entry.frame > _motionWindowFrames) return false;
                 motionIndex--;
             }
 
@@ -381,6 +416,7 @@ namespace Game.Character
             if (_bufferFrames < 2) _bufferFrames = 2;
             if (_defaultCommandWindowFrames < 1) _defaultCommandWindowFrames = 1;
             if (_defaultComboWindowFrames < 0) _defaultComboWindowFrames = 0;
+            if (_motionWindowFrames < 1) _motionWindowFrames = 1;
         }
     }
 }

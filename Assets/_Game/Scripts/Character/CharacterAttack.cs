@@ -31,6 +31,9 @@ namespace Game.Character
         [Tooltip("피격 / 가드 경직 중에는 공격하지 않도록 확인할 CharacterHitReaction. 비워두면 같은 오브젝트에서 찾음")]
         [SerializeField] private CharacterHitReaction CA_hitReaction;
 
+        [Tooltip("D / OD 기술에 쓸 게이지. 비워두면 같은 오브젝트에서 찾음 (없으면 게이지 없이 기술을 씀)")]
+        [SerializeField] private CharacterGauge _characterGauge;
+
         [Tooltip("투사체가 맞힐 상대의 태그 (Player에는 Enemy)")]
         [SerializeField] private string CA_opponentTag = "Enemy";
 
@@ -52,7 +55,7 @@ namespace Game.Character
 
         /// <summary>
         /// 지금 프레임에 완전 무적인지 (피격 상자를 모두 끔)
-        /// 버튼별 무적 프레임(예: EX 승룡권 1~8프레임) 또는 프레임 구간별 특성의 무적
+        /// 버튼별 무적 프레임(예: OD 승룡권 1~8프레임) 또는 프레임 구간별 특성의 무적
         /// </summary>
         public bool IsInvincible =>
             IsAttacking && !IsLanding &&
@@ -78,7 +81,9 @@ namespace Game.Character
         private CharacterCommand.AttackButtonType _bufferedButton;
         private int _bufferedFramesLeft;
 
-        private bool _isSpecialAttack;  // 지금 공격이 필살기(레버를 두 방향 이상 순서대로 넣는 커맨드, 예: 236, 623)인지
+        private bool _isSpecialAttack;  // 지금 공격이 필살기(원버튼 또는 커맨드)인지
+        private bool _isOverloadAttack; // 지금 공격이 과부하 중에 쓴 D 기술인지 (데미지와 경직이 줄어듦)
+        private float CA_damageRate = 1f; // 지금 공격의 데미지 배율 (커맨드 입력, 과부하)
         private bool _isBufferLocked;   // 필살기가 상대에게 닿아서(히트 / 가드 / 슈퍼아머) 이 공격이 끝날 때까지 선입력을 받지 않는 중인지
 
         private int _attackStartedFrame = -1; // 마지막으로 공격을 시작한 Time.frameCount
@@ -91,6 +96,7 @@ namespace Game.Character
             if (CA_characterState == null) CA_characterState = GetComponent<CharactorState>();
             if (CA_characterMove == null) CA_characterMove = GetComponent<CharacterMove>();
             if (CA_hitReaction == null) CA_hitReaction = GetComponent<CharacterHitReaction>();
+            if (_characterGauge == null) _characterGauge = GetComponent<CharacterGauge>();
 
             if (_characterCommand == null)
                 Debug.LogError("[CharacterAttack] CharacterCommand를 찾을 수 없습니다. Character Command 칸에 지정해 주세요.", this);
@@ -101,6 +107,7 @@ namespace Game.Character
             if (_characterCommand == null) return;
             _characterCommand.OnCommandTriggered += HandleCommandTriggered;
             _characterCommand.CanUseCommand = CanUseCommand;
+            _characterCommand.TryBreak = TryBreak;
         }
 
         private void OnDisable()
@@ -109,6 +116,7 @@ namespace Game.Character
             if (_characterCommand == null) return;
             _characterCommand.OnCommandTriggered -= HandleCommandTriggered;
             if (_characterCommand.CanUseCommand == CanUseCommand) _characterCommand.CanUseCommand = null;
+            if (_characterCommand.TryBreak == TryBreak) _characterCommand.TryBreak = null;
         }
 
         // 커맨드 판정에서 쓸 수 있는 커맨드인지 알려줌
@@ -117,6 +125,17 @@ namespace Game.Character
         {
             if (command.attack == null || command.attack.ProjectilePrefab == null) return true;
             return !Projectile.HasActiveProjectile(gameObject);
+        }
+
+        // 브레이크: 콤보를 맞는 중이고 냉각수가 남아 있으면 빠져나옴
+        private bool TryBreak()
+        {
+            if (CA_hitReaction == null || !CA_hitReaction.IsInHitStun) return false;
+            if (_characterGauge == null || !_characterGauge.TryPayBreak()) return false;
+
+            _bufferedCommand = null;
+            CA_hitReaction.EscapeHitStun();
+            return true;
         }
 
         private void Update()
@@ -208,7 +227,7 @@ namespace Game.Character
             Vector3 position = transform.position + new Vector3(isFacingRight ? offset.x : -offset.x, offset.y, 0f);
 
             Projectile projectile = Instantiate(attack.ProjectilePrefab, position, Quaternion.identity);
-            projectile.Launch(isFacingRight, owner: gameObject, targetTag: CA_opponentTag, damage: attack.GetProjectileDamage(_currentButton), hitInfo: attack.GetHitInfo(_currentButton), distancePerFrame: attack.GetProjectileDistancePerFrame(_currentButton), count: attack.ProjectileCount);
+            projectile.Launch(isFacingRight, owner: gameObject, targetTag: CA_opponentTag, damage: GetRatedDamage(attack.GetProjectileDamage(_currentButton)), hitInfo: GetCurrentHitInfo(attack, hitIndex: 0, shouldChangeGauge: true), distancePerFrame: attack.GetProjectileDistancePerFrame(_currentButton), count: attack.ProjectileCount);
         }
 
         // 이번 프레임의 공격 상자와 겹치는 상대(피격 상자)가 있으면 hitIndex번째 타의 데미지를 줌 (공격 상자가 없는 프레임이면 아무것도 안 함)
@@ -225,11 +244,41 @@ namespace Game.Character
                 Hitbox hitbox = Hitbox.FindHitHitbox(opponent, attackBoxCenter, size);
                 if (hitbox == null) continue;
 
+                // 다단 공격의 게이지는 처음 맞은 타에서 한 번만 변함
+                bool isFirstHit = _lastHitIndex < 0;
                 _lastHitIndex = hitIndex;
                 _lastHitReaction = opponent.GetComponent<CharacterHitReaction>();
-                CharacterHitReaction.HitTarget(opponent, attack.GetDamage(_currentButton, hitIndex), attack.GetHitInfo(_currentButton, hitIndex), hitbox, direction: facingSign, attacker: this, shouldPushAttacker: true);
+                CharacterHitReaction.HitTarget(opponent, GetRatedDamage(attack.GetDamage(_currentButton, hitIndex)), GetCurrentHitInfo(attack, hitIndex, shouldChangeGauge: isFirstHit), hitbox, direction: facingSign, attacker: this, shouldPushAttacker: true);
                 LockBufferIfSpecial();
                 return;
+            }
+        }
+
+        // 이번 공격의 배율(커맨드 입력, 과부하)을 곱한 데미지
+        private int GetRatedDamage(int damage)
+        {
+            return Mathf.RoundToInt(damage * CA_damageRate);
+        }
+
+        private HitInfo GetCurrentHitInfo(AttackData attack, int hitIndex, bool shouldChangeGauge)
+        {
+            AttackGaugeType? gaugeType = null;
+            if (shouldChangeGauge) gaugeType = GetGaugeType(_currentButton, _isSpecialAttack);
+
+            int hitStunChange = _isOverloadAttack ? _characterGauge.Data.OverloadHitStunFrames : 0;
+            int blockStunChange = _isOverloadAttack ? _characterGauge.Data.OverloadBlockStunFrames : 0;
+            return attack.GetHitInfo(_currentButton, hitIndex, gaugeType, hitStunChange, blockStunChange);
+        }
+
+        // 버튼과 필살기 여부로 정하는 게이지 공격 종류
+        private static AttackGaugeType GetGaugeType(CharacterCommand.AttackButtonType button, bool isSpecial)
+        {
+            switch (button)
+            {
+                case CharacterCommand.AttackButtonType.H: return AttackGaugeType.H;
+                case CharacterCommand.AttackButtonType.D: return isSpecial ? AttackGaugeType.DriveSpecial : AttackGaugeType.DriveNormal;
+                case CharacterCommand.AttackButtonType.OD: return AttackGaugeType.Overdrive;
+                default: return AttackGaugeType.L;
             }
         }
 
@@ -250,9 +299,12 @@ namespace Game.Character
         {
             if (command.attack == null || _attackStartedFrame == Time.frameCount) return;
 
+            // 오버클럭이 모자라면 OD 기술은 나가지 않고 게이지 UI가 깜빡임
+            if (!CanPayOverdrive(button)) return;
+
             if (!HitStop.IsStoppedNow(this) && CanStartCommand(command))
             {
-                StartAttack(command.attack, button, isSpecial: IsSpecialCommand(command));
+                StartCommandAttack(command, button);
                 return;
             }
 
@@ -278,6 +330,7 @@ namespace Game.Character
             if (!CanUseCommand(command)) return false;
             if (CA_hitReaction != null && CA_hitReaction.IsInStun) return false;
             if (!IsAttacking) return true;
+            if (ResolveAttack(command) != command.attack) return CurrentFrames.GetFrameType(AttackFrame + 1) == FrameType.Recovery;
             if (CanCancelInto(command.attack)) return CurrentFrames.GetFrameType(AttackFrame + 1) == FrameType.Recovery;
             return HasMotion(command) && CanReplaceChainedStartup(command.attack);
         }
@@ -287,10 +340,37 @@ namespace Game.Character
             return command.directionSequence != null && command.directionSequence.Length > 0;
         }
 
-        // 필살기 커맨드인지 (레버를 두 방향 이상 순서대로 넣는 커맨드. 6M처럼 한 방향만 누르는 특수기는 아님)
-        private static bool IsSpecialCommand(CharacterCommand.CommandData command)
+        // 커맨드로 실제로 나갈 공격. 타깃 콤보의 1타 중에 같은 버튼을 다시 누르면 2타
+        private AttackData ResolveAttack(CharacterCommand.CommandData command)
         {
-            return command.directionSequence != null && command.directionSequence.Length >= 2;
+            bool isTargetCombo = IsAttacking && !IsLanding && CurrentAttack == command.attack && CurrentAttack.TargetComboAttack != null;
+            return isTargetCombo ? CurrentAttack.TargetComboAttack : command.attack;
+        }
+
+        private bool CanPayOverdrive(CharacterCommand.AttackButtonType button)
+        {
+            return button != CharacterCommand.AttackButtonType.OD || _characterGauge == null || _characterGauge.CheckOverdrive();
+        }
+
+        // 게이지를 소모하고 커맨드의 공격을 시작함
+        private void StartCommandAttack(CharacterCommand.CommandData command, CharacterCommand.AttackButtonType button)
+        {
+            float damageRate = 1f;
+            bool isOverloadAttack = false;
+            if (_characterGauge != null)
+            {
+                // 이 공격으로 과부하가 되는 경우는 약해지지 않도록 소모하기 전에 확인
+                isOverloadAttack = button == CharacterCommand.AttackButtonType.D && _characterGauge.IsOverloaded;
+                if (isOverloadAttack) damageRate *= _characterGauge.Data.OverloadDamageRate;
+                if (command.isSpecial && HasMotion(command)) damageRate *= _characterGauge.Data.CommandDamageRate;
+
+                _characterGauge.PayCoolant(GetGaugeType(button, command.isSpecial));
+                if (button == CharacterCommand.AttackButtonType.OD) _characterGauge.PayOverdrive();
+            }
+
+            StartAttack(ResolveAttack(command), button, command.isSpecial);
+            CA_damageRate = damageRate;
+            _isOverloadAttack = isOverloadAttack;
         }
 
         // 필살기가 상대에게 닿으면(히트, 가드, 슈퍼아머로 버팀 모두) 이 공격이 끝날 때까지 선입력을 받지 않고, 기억해 둔 입력도 버림
@@ -355,7 +435,7 @@ namespace Game.Character
             if (CanStartCommand(command))
             {
                 _bufferedCommand = null;
-                StartAttack(command.attack, _bufferedButton, isSpecial: IsSpecialCommand(command));
+                if (CanPayOverdrive(_bufferedButton)) StartCommandAttack(command, _bufferedButton);
                 return;
             }
 
@@ -374,6 +454,8 @@ namespace Game.Character
         public void StartAttack(AttackData attack, CharacterCommand.AttackButtonType button, bool isSpecial = false)
         {
             _isSpecialAttack = isSpecial;
+            _isOverloadAttack = false;
+            CA_damageRate = 1f;
             _isBufferLocked = false;
 
             // 캔슬이면 맞고 있는 상대를 기억해 둠 (아래에서 값을 지우기 전에)
