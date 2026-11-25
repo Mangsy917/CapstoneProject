@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 
@@ -6,7 +7,9 @@ namespace Game.UI.Hub
 {
     // 의뢰 2depth의 수사보드 (의뢰 화면 오브젝트에 붙여서 사용)
     // - 가운데의 메인 의뢰를 일반 의뢰 3개(세력마다 1개)가 삼각형으로 둘러쌈. 메인 의뢰는 재탐색해도 바뀌지 않음
-    // - 의뢰 재탐색: 크레딧을 내고 길이(레벨 비율)와 배경을 다시 뽑음. 비용은 재탐색할 때마다 2배
+    // - 의뢰를 고르면 폴라로이드가 확대되고 내용이 보임 (RequestDetail)
+    // - 의뢰 재탐색: 기존 사진이 떨어져 사라진 뒤, 같은 자리에 새 사진이 나타나며 흔들림
+    //   크레딧을 내고 길이(레벨 비율)와 배경을 다시 뽑음. 비용은 재탐색할 때마다 2배
     // - 실패한 의뢰는 칼로 고정되어 재탐색해도 남음. 칼을 고르면 고정을 해제할지 묻고, 해제하면 일반 의뢰로 돌아감
     // 아직 의뢰 플레이와 저장 기능이 없어서 씬을 나가면 처음 값으로 돌아감
     public class RequestBoard : MonoBehaviour
@@ -17,6 +20,16 @@ namespace Game.UI.Hub
 
         [Tooltip("일반 의뢰 (데이터 테이블의 세력 순서)")]
         [SerializeField] private RequestNote[] _requestNotes;
+
+        [Tooltip("메인 의뢰 (재탐색해도 바뀌지 않음)")]
+        [SerializeField] private RequestNote _mainNote;
+
+        [Tooltip("의뢰를 골랐을 때의 확대 화면")]
+        [SerializeField] private RequestDetail _requestDetail;
+
+        [Tooltip("재탐색할 때 사진마다 나타나는 시간 차이(초)")]
+        [Min(0f)]
+        [SerializeField] private float _appearInterval = 0.12f;
 
         [Tooltip("재탐색 버튼의 글자 (비용 표시)")]
         [SerializeField] private TMP_Text _rerollText;
@@ -36,11 +49,16 @@ namespace Game.UI.Hub
         private int _unpinIndex = -1;
         private Coroutine _noticeRoutine;
 
+        // 재탐색으로 사라졌고 아직 새 내용이 나타나지 않은 의뢰 번호
+        private readonly Queue<int> _waitingIndexes = new Queue<int>();
+
         void Awake()
         {
             if (RB_inventory == null) RB_inventory = FindAnyObjectByType<HubInventory>(FindObjectsInactive.Include);
 
             _rerollCost = _requestTable.BaseRerollCost;
+
+            if (_mainNote != null) _mainNote.DrawMain(_requestTable);
 
             for (int i = 0; i < _requestNotes.Length; i++)
             {
@@ -57,12 +75,17 @@ namespace Game.UI.Hub
 
         void OnDisable()
         {
+            // 재탐색 도중에 화면이 꺼지면 남은 의뢰의 내용을 바로 바꿈
+            while (_waitingIndexes.Count > 0) DrawNote(_waitingIndexes.Dequeue());
             _noticeRoutine = null;
         }
 
         // 의뢰 재탐색 버튼의 On Select에 연결
         public void Reroll()
         {
+            // 사진이 바뀌는 중에는 다시 뽑지 않음
+            if (_waitingIndexes.Count > 0) return;
+
             if (!HasRerollableNote())
             {
                 ShowNotice("재탐색할 수 있는 의뢰가 없습니다");
@@ -77,13 +100,22 @@ namespace Game.UI.Hub
 
             for (int i = 0; i < _requestNotes.Length; i++)
             {
-                if (!_requestNotes[i].IsPinned) DrawNote(i);
+                if (!_requestNotes[i].IsPinned) _waitingIndexes.Enqueue(i);
             }
+            StartCoroutine(RerollRoutine());
 
             // 계속 2배가 되어도 int 범위를 넘지 않도록 함
             _rerollCost = _rerollCost > int.MaxValue / 2 ? int.MaxValue : _rerollCost * 2;
             RefreshRerollText();
             ShowNotice("의뢰를 다시 찾았습니다");
+        }
+
+        // 폴라로이드의 On Select에 그 의뢰와 함께 연결
+        public void OpenDetail(RequestNote note)
+        {
+            // 사진이 바뀌는 중에는 열지 않음
+            if (_waitingIndexes.Count > 0) return;
+            _requestDetail.Open(note);
         }
 
         // 칼의 On Select에 의뢰 번호(0부터)와 함께 연결
@@ -101,6 +133,26 @@ namespace Game.UI.Hub
             if (_unpinIndex < 0 || _unpinIndex >= _requestNotes.Length) return;
             _requestNotes[_unpinIndex].SetPinned(false);
             _unpinIndex = -1;
+        }
+
+        private IEnumerator RerollRoutine()
+        {
+            float fallTime = 0f;
+            foreach (int noteIndex in _waitingIndexes)
+            {
+                _requestNotes[noteIndex].PlayFall();
+                fallTime = Mathf.Max(fallTime, _requestNotes[noteIndex].FallTime);
+            }
+
+            yield return new WaitForSecondsRealtime(fallTime + 0.05f);
+
+            while (_waitingIndexes.Count > 0)
+            {
+                int noteIndex = _waitingIndexes.Dequeue();
+                DrawNote(noteIndex);
+                _requestNotes[noteIndex].PlayAppear();
+                yield return new WaitForSecondsRealtime(_appearInterval);
+            }
         }
 
         private void DrawNote(int noteIndex)

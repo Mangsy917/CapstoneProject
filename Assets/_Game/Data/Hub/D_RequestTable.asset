@@ -15,17 +15,42 @@ MonoBehaviour:
   _baseRerollCost: 50
   _factions:
   - _factionName: "\uB3C4\uBBF8\uB2C8\uC624"
-    _places:
-    - "\uD074\uB7FD"
-    - "\uC0AC\uBB34\uC2E4"
+    _placeInfos:
+    - _placeName: "\uD074\uB7FD"
+      _concept: "\uD074\uB7FD \uBB34\uB300\uAC00 \uC544\uB2CC \uC678\uACFD\uACFC
+        \uBCF5\uB3C4, \uBB34\uB300 \uB4A4\uD3B8. \uD654\uB824\uD558\uACE0 \uC5B4\uB450\uC6B4
+        \uBB34\uB300\uC640 \uB2EC\uB9AC \uD770\uC0C9 \uBE5B\uC774 \uBE44\uCD94\uB294
+        \uACF5\uAC04."
+      _photo: {fileID: 0}
+    - _placeName: "\uC0AC\uBB34\uC2E4"
+      _concept: "\uAC08\uC0C9 \uBE5B\uC758 \uB0B4\uBD80 \uC778\uD14C\uB9AC\uC5B4\uC640
+        \uACE0\uAE09\uC2A4\uB7EC\uC6B4 \uC678\uAD00\uC758 \uAC74\uBB3C."
+      _photo: {fileID: 0}
   - _factionName: "\uD558\uCE74\uC774\uAD6C\uBBF8"
-    _places:
-    - "\uC544\uC9C0\uD2B8"
-    - "\uD669\uBB34\uC9C0"
+    _placeInfos:
+    - _placeName: "\uC544\uC9C0\uD2B8"
+      _concept: "\uC784\uC2DC \uCC9C\uB9C9\uACFC \uD310\uC7A3\uC9D1\uCC98\uB7FC \uC57C\uC678\uC5D0
+        \uAE09\uC870\uD55C \uAC70\uC8FC \uACF5\uAC04."
+      _photo: {fileID: 0}
+    - _placeName: "\uD669\uBB34\uC9C0"
+      _concept: "\uC0AC\uB9C9 \uB4A4\uD3B8\uC73C\uB85C \uCEE4\uB2E4\uB780 \uD611\uACE1
+        \uC9C0\uD615\uC774 \uD3BC\uCCD0\uC9C4 \uACF3."
+      _photo: {fileID: 0}
   - _factionName: "\uB808\uC9C0\uC2A4\uD0D5\uC2A4"
-    _places:
-    - "\uC9C0\uD558 \uC218\uB85C"
-    - "\uC9C0\uD558\uCCA0\uC5ED\xB7\uD3D0\uAC00(\uBBF8\uC815)"
+    _placeInfos:
+    - _placeName: "\uC9C0\uD558 \uC218\uB85C"
+      _concept: "\uB3C4\uC2DC \uC544\uB798\uB85C \uC774\uC5B4\uC9C0\uB294 \uC9C0\uD558
+        \uD558\uC218 \uC218\uB85C."
+      _photo: {fileID: 0}
+    - _placeName: "\uC9C0\uD558\uCCA0\uC5ED\xB7\uD3D0\uAC00(\uBBF8\uC815)"
+      _concept: "\uBBF8\uC815"
+      _photo: {fileID: 0}
+  _mainTitle: "\uBA54\uC778 \uC758\uB8B0"
+  _mainLength: "2\uC2A4\uD14C\uC774\uC9C0 (\uC77C\uBC18 \u2192 \uBCF4\uC2A4)"
+  _mainPlace:
+    _placeName: "\uBBF8\uC815"
+    _concept: 
+    _photo: {fileID: 0}
   _lengthRatios:
   - _minLevel: 1
     _shortRatio: 1

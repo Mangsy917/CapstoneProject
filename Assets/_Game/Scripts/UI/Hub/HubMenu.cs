@@ -461,12 +461,14 @@ namespace Game.UI.Hub
             }
         }
 
-        private void OpenUnfinishedPopup()
+        // 의뢰 확대 화면의 출발 버튼도 씀
+        public void OpenUnfinishedPopup()
         {
             if (_unfinishedPopup != null) _unfinishedPopup.Open();
         }
 
-        private void OpenSetting()
+        // 의뢰 확대 화면에서 ESC / Start를 눌렀을 때도 씀
+        public void OpenSetting()
         {
             if (_settingTab == null) return;
 
@@ -478,7 +480,7 @@ namespace Game.UI.Hub
 
         private bool IsInputBlocked()
         {
-            return SettingPopup.IsAnyOpen || (HM_screenFade != null && HM_screenFade.SF_IsPlaying);
+            return SettingPopup.IsAnyOpen || RequestDetail.RD_IsOpen || (HM_screenFade != null && HM_screenFade.SF_IsPlaying);
         }
 
         private static bool IsRightClicked()

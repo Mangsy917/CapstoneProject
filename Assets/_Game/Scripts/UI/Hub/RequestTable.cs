@@ -14,6 +14,25 @@ namespace Game.UI.Hub
     [CreateAssetMenu(fileName = "D_RequestTable", menuName = "Game/Request Table")]
     public class RequestTable : ScriptableObject
     {
+        // 스테이지 배경 하나. 폴라로이드의 사진과 확대 화면의 내용으로 씀
+        [Serializable]
+        public class PlaceInfo
+        {
+            [Tooltip("스테이지 배경 이름")]
+            [SerializeField] private string _placeName;
+
+            [Tooltip("확대 화면 오른쪽에 적을 스테이지 컨셉")]
+            [TextArea]
+            [SerializeField] private string _concept;
+
+            [Tooltip("폴라로이드에 들어갈 그림 (정사각형). 비어 있으면 빈 칸으로 보임")]
+            [SerializeField] private Sprite _photo;
+
+            public string PlaceName => _placeName;
+            public string Concept => _concept;
+            public Sprite Photo => _photo;
+        }
+
         [Serializable]
         public class FactionInfo
         {
@@ -21,14 +40,14 @@ namespace Game.UI.Hub
             [SerializeField] private string _factionName;
 
             [Tooltip("이 세력의 스테이지 배경. 재탐색할 때마다 다른 배경으로 바뀜")]
-            [SerializeField] private string[] _places;
+            [SerializeField] private PlaceInfo[] _placeInfos;
 
             public string FactionName => _factionName;
-            public int PlaceCount => _places != null ? _places.Length : 0;
+            public int PlaceCount => _placeInfos != null ? _placeInfos.Length : 0;
 
-            public string GetPlace(int placeIndex)
+            public PlaceInfo GetPlace(int placeIndex)
             {
-                return placeIndex >= 0 && placeIndex < PlaceCount ? _places[placeIndex] : "";
+                return placeIndex >= 0 && placeIndex < PlaceCount ? _placeInfos[placeIndex] : null;
             }
         }
 
@@ -61,10 +80,19 @@ namespace Game.UI.Hub
         [Tooltip("의뢰를 주는 세력 (보드의 의뢰 1, 2, 3 순서)")]
         [SerializeField] private FactionInfo[] _factions;
 
+        [Header("메인 의뢰")]
+        [SerializeField] private string _mainTitle = "메인 의뢰";
+        [SerializeField] private string _mainLength = "2스테이지 (일반 → 보스)";
+        [SerializeField] private PlaceInfo _mainPlace;
+
+        [Header("길이 비율")]
         [Tooltip("레벨 구간별 의뢰 길이 비율 (낮은 레벨부터)")]
         [SerializeField] private LengthRatio[] _lengthRatios;
 
         public int BaseRerollCost => _baseRerollCost;
+        public string MainTitle => _mainTitle;
+        public string MainLength => _mainLength;
+        public PlaceInfo MainPlace => _mainPlace;
 
         public FactionInfo GetFaction(int factionIndex)
         {
