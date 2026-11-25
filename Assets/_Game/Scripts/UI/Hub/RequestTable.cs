@@ -14,22 +14,22 @@ namespace Game.UI.Hub
     [CreateAssetMenu(fileName = "D_RequestTable", menuName = "Game/Request Table")]
     public class RequestTable : ScriptableObject
     {
-        // 스테이지 배경 하나. 폴라로이드의 사진과 확대 화면의 내용으로 씀
+        // 의뢰 구역(스테이지 배경) 하나. 폴라로이드의 사진과 정보창의 내용으로 씀
         [Serializable]
         public class PlaceInfo
         {
-            [Tooltip("스테이지 배경 이름")]
+            [Tooltip("의뢰 구역 이름 (정보창 맨 위)")]
             [SerializeField] private string _placeName;
 
-            [Tooltip("확대 화면 오른쪽에 적을 스테이지 컨셉")]
+            [Tooltip("정보창에 적을 의뢰 내용. 비어 있으면 '의뢰 내용 미정'으로 보임")]
             [TextArea]
-            [SerializeField] private string _concept;
+            [SerializeField] private string _requestContent;
 
             [Tooltip("폴라로이드에 들어갈 그림 (정사각형). 비어 있으면 빈 칸으로 보임")]
             [SerializeField] private Sprite _photo;
 
             public string PlaceName => _placeName;
-            public string Concept => _concept;
+            public string RequestContent => _requestContent;
             public Sprite Photo => _photo;
         }
 
@@ -82,6 +82,8 @@ namespace Game.UI.Hub
 
         [Header("메인 의뢰")]
         [SerializeField] private string _mainTitle = "메인 의뢰";
+        [Tooltip("정보창에 적을 메인 의뢰의 세력")]
+        [SerializeField] private string _mainFaction = "미정";
         [SerializeField] private string _mainLength = "2스테이지 (일반 → 보스)";
         [SerializeField] private PlaceInfo _mainPlace;
 
@@ -91,6 +93,7 @@ namespace Game.UI.Hub
 
         public int BaseRerollCost => _baseRerollCost;
         public string MainTitle => _mainTitle;
+        public string MainFaction => _mainFaction;
         public string MainLength => _mainLength;
         public PlaceInfo MainPlace => _mainPlace;
 

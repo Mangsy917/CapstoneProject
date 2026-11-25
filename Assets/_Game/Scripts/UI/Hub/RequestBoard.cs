@@ -7,7 +7,7 @@ namespace Game.UI.Hub
 {
     // 의뢰 2depth의 수사보드 (의뢰 화면 오브젝트에 붙여서 사용)
     // - 가운데의 메인 의뢰를 일반 의뢰 3개(세력마다 1개)가 삼각형으로 둘러쌈. 메인 의뢰는 재탐색해도 바뀌지 않음
-    // - 의뢰를 고르면 폴라로이드가 확대되고 내용이 보임 (RequestDetail)
+    // - 의뢰를 고르면 화면이 그 폴라로이드로 다가가고 정보창이 보임 (RequestDetail)
     // - 의뢰 재탐색: 기존 사진이 떨어져 사라진 뒤, 같은 자리에 새 사진이 나타나며 흔들림
     //   크레딧을 내고 길이(레벨 비율)와 배경을 다시 뽑음. 비용은 재탐색할 때마다 2배
     // - 실패한 의뢰는 칼로 고정되어 재탐색해도 남음. 칼을 고르면 고정을 해제할지 묻고, 해제하면 일반 의뢰로 돌아감
@@ -24,7 +24,7 @@ namespace Game.UI.Hub
         [Tooltip("메인 의뢰 (재탐색해도 바뀌지 않음)")]
         [SerializeField] private RequestNote _mainNote;
 
-        [Tooltip("의뢰를 골랐을 때의 확대 화면")]
+        [Tooltip("의뢰를 골랐을 때의 확대와 정보창")]
         [SerializeField] private RequestDetail _requestDetail;
 
         [Tooltip("재탐색할 때 사진마다 나타나는 시간 차이(초)")]

@@ -6,7 +6,7 @@ using UnityEngine.UI;
 namespace Game.UI.Hub
 {
     // 의뢰 보드에 핀으로 꽂힌 폴라로이드 사진 하나 (RequestBoard가 내용을 정함)
-    // 사진 밑에는 조직 이름만 적고, 길이와 스테이지 컨셉은 골랐을 때 RequestDetail이 보여 줌
+    // 사진 밑에는 조직 이름만 적고, 나머지 내용은 골랐을 때 RequestDetail이 보여 줌
     // 실패한 의뢰는 '실패한 임무'가 적히고 칼로 고정되며, 칼이 꽂혀 있는 동안 재탐색해도 바뀌지 않음
     // 흔들릴 때 핀을 축으로 돌도록 피벗을 위쪽 가운데로 둠
     [RequireComponent(typeof(CanvasGroup))]
@@ -53,12 +53,11 @@ namespace Game.UI.Hub
         // 실패해서 칼로 고정된 의뢰인지
         public bool IsPinned { get; private set; }
 
-        // 확대 화면(RequestDetail)에 보여 줄 내용
-        public string NoteTitle { get; private set; } = "";
+        // 정보창(RequestDetail)에 보여 줄 내용
+        public string NoteFaction { get; private set; } = "";
         public string NoteLength { get; private set; } = "";
         public string NotePlace { get; private set; } = "";
-        public string NoteConcept { get; private set; } = "";
-        public Sprite NotePhoto { get; private set; }
+        public string NoteContent { get; private set; } = "";
 
         public float FallTime => _fallTime;
 
@@ -91,13 +90,13 @@ namespace Game.UI.Hub
 
             RequestLength requestLength = table.PickLength(level);
             string length = $"{RequestTable.GetLengthName(requestLength)} ({RequestTable.GetStageCount(requestLength)}스테이지)";
-            ShowContent(faction.FactionName, length, faction.GetPlace(_placeIndex));
+            ShowContent(faction.FactionName, faction.FactionName, length, faction.GetPlace(_placeIndex));
         }
 
         // 메인 의뢰: 재탐색해도 바뀌지 않음
         public void DrawMain(RequestTable table)
         {
-            ShowContent(table.MainTitle, table.MainLength, table.MainPlace);
+            ShowContent(table.MainTitle, table.MainFaction, table.MainLength, table.MainPlace);
         }
 
         public void SetPinned(bool isPinned)
@@ -107,11 +106,10 @@ namespace Game.UI.Hub
             if (_knife != null) _knife.SetActive(isPinned);
         }
 
-        // 확대 화면의 사진이 대신 보이는 동안 보드의 사진을 숨김
-        public void SetHidden(bool isHidden)
+        // 흔들리던 중이면 멈추고 원래 모습으로 돌려놓음
+        public void StopMotion()
         {
             ResetPose();
-            _noteGroup.alpha = isHidden ? 0f : 1f;
         }
 
         // 핀에서 떨어지며 사라짐
@@ -129,23 +127,22 @@ namespace Game.UI.Hub
         }
 
         // 사진이 없으면 사진 칸을 꺼서 뒤의 빈 칸이 보이게 함
-        public static void ShowPhoto(Image photoImage, Sprite photo)
+        private void ShowPhoto(Sprite photo)
         {
-            if (photoImage == null) return;
-            photoImage.sprite = photo;
-            photoImage.enabled = photo != null;
+            if (_photoImage == null) return;
+            _photoImage.sprite = photo;
+            _photoImage.enabled = photo != null;
         }
 
-        private void ShowContent(string title, string length, RequestTable.PlaceInfo place)
+        private void ShowContent(string title, string faction, string length, RequestTable.PlaceInfo place)
         {
-            NoteTitle = title;
+            NoteFaction = faction;
             NoteLength = length;
             NotePlace = place != null ? place.PlaceName : "";
-            NoteConcept = place != null ? place.Concept : "";
-            NotePhoto = place != null ? place.Photo : null;
+            NoteContent = place != null ? place.RequestContent : "";
 
             if (_noteText != null) _noteText.text = title;
-            ShowPhoto(_photoImage, NotePhoto);
+            ShowPhoto(place != null ? place.Photo : null);
         }
 
         // ===== 연출 =====
